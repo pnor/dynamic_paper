@@ -1,0 +1,28 @@
+.DS_Store
+.idea
+*.log
+tmp/
+*.o
+
+# Release
+Release
+
+# CMake
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Testing
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
+
+# clang
+.cache
+.clangd
+
+# editors
+.dir-locals.el
