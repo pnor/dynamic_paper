@@ -1,10 +1,14 @@
 #include <iostream>
 
 #include "./lib/argparse.hpp"
+#include "config.hpp"
 
 static void handleShowCommand(argparse::ArgumentParser &showCommand) {
   std::string wallpaperName = showCommand.get("name");
   std::cout << wallpaperName << std::endl;
+
+  dynamic_paper::Config cfg =
+      dynamic_paper::loadConfigFromFile("./files/test.yaml");
 }
 
 static void handleRandomCommand() { std::cout << "random" << std::endl; }

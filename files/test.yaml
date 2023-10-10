@@ -1,0 +1,3 @@
+method: "script"
+image_dir: "./files"
+hook_script: "./test.sh"
