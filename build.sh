@@ -46,9 +46,10 @@ test_name='dynamic_paper_test'
 
 # $1: destinaition to copy to
 function copy_assets {
-    if ! [[ -f "$1" ]]; then
-        cp -r files "$1"
+    if [[ -d "$1" ]]; then
+        rm -r "$1"
     fi
+    cp -r files "$1"
 }
 
 # update `compile_commands.json` in root with the one in release

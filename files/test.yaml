@@ -1,3 +1,3 @@
-method: "script"
+method: "wallutils"
 image_dir: "./files"
 hook_script: "./test.sh"
