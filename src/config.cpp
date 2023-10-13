@@ -27,25 +27,19 @@ Config loadConfigFromFile(std::filesystem::path path) {
 
   YAML::Node config = YAML::LoadFile(path.string());
 
-  BackgroundSetterMethod method = parseOrUseDefault<BackgroundSetterMethod>(
-      config, METHOD_KEY, ConfigDefaults::backgroundSetterMethod);
+  BackgroundSetterMethod method =
+      generalConfigParseOrUseDefault<BackgroundSetterMethod>(
+          config, METHOD_KEY, ConfigDefaults::backgroundSetterMethod);
 
   std::filesystem::path backgroundImageDir =
-      parseOrUseDefault<std::filesystem::path>(
+      generalConfigParseOrUseDefault<std::filesystem::path>(
           config, BACKGROUND_IMAGE_DIR_KEY, ConfigDefaults::backgroundImageDir);
 
   std::optional<std::filesystem::path> hookScript =
-      parseOrUseDefault<std::optional<std::filesystem::path>>(
+      generalConfigParseOrUseDefault<std::optional<std::filesystem::path>>(
           config, HOOK_SCRIPT_KEY, std::nullopt);
 
-  std::cout << (method == BackgroundSetterMethod::Script ? "script" : "wall")
-            << std::endl;
-  std::cout << backgroundImageDir << std::endl;
-  std::cout << hookScript.has_value() << std::endl;
-  std::cout << hookScript.value() << std::endl;
-  // TODO broke
-
-  return Config(path, BackgroundSetterMethod::Script, std::nullopt);
+  return Config(backgroundImageDir, method, hookScript);
 };
 
 } // namespace dynamic_paper

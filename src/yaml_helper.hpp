@@ -11,12 +11,13 @@
 namespace dynamic_paper {
 
 template <typename T>
-static std::optional<T> stringToType(const std::string &s) {
+static std::optional<T> generalConfigStringToType(const std::string &s) {
   return std::make_optional(static_cast<T>(s));
 }
 
 template <>
-std::optional<BackgroundSetterMethod> stringToType(const std::string &s) {
+std::optional<BackgroundSetterMethod>
+generalConfigStringToType(const std::string &s) {
   if (s == "script") {
     return std::make_optional(BackgroundSetterMethod::Script);
   } else if (s == "wallutils") {
@@ -27,16 +28,18 @@ std::optional<BackgroundSetterMethod> stringToType(const std::string &s) {
 }
 
 template <>
-std::optional<std::filesystem::path> stringToType(const std::string &s) {
+std::optional<std::filesystem::path>
+generalConfigStringToType(const std::string &s) {
   return std::make_optional(std::filesystem::path(s));
 }
 
 template <typename T>
-T parseOrUseDefault(const YAML::Node &config, const std::string &key,
-                    const T defaultValue) {
+T generalConfigParseOrUseDefault(const YAML::Node &config,
+                                 const std::string &key, const T defaultValue) {
   YAML::Node node = config[key];
   T val = node.IsDefined()
-              ? stringToType<T>(node.as<std::string>()).value_or(defaultValue)
+              ? generalConfigStringToType<T>(node.as<std::string>())
+                    .value_or(defaultValue)
               : defaultValue;
   return val;
 }

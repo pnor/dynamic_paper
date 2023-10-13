@@ -12,6 +12,7 @@ add_executable(
   dynamic_paper
   main.cpp
   config.cpp
+  background_set.cpp
 )
 
 target_link_libraries(

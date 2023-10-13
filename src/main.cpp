@@ -6,16 +6,14 @@
 static void handleShowCommand(argparse::ArgumentParser &showCommand) {
   std::string wallpaperName = showCommand.get("name");
   std::cout << wallpaperName << std::endl;
-
-  dynamic_paper::Config cfg =
-      dynamic_paper::loadConfigFromFile("./files/test.yaml");
 }
 
 static void handleRandomCommand() { std::cout << "random" << std::endl; }
 
 static void handleListCommand() { std::cout << "list " << std::endl; }
 
-auto main(int argc, char *argv[]) -> int {
+static bool parseArguements(const int argc, char *argv[],
+                            dynamic_paper::Config &&config) {
   argparse::ArgumentParser program("dynamic paper");
 
   argparse::ArgumentParser showCommand("show");
@@ -35,9 +33,10 @@ auto main(int argc, char *argv[]) -> int {
   try {
     program.parse_args(argc, argv);
   } catch (const std::runtime_error &err) {
+    std::cout << "Error parsing command line options:" << std::endl;
     std::cerr << err.what() << std::endl;
     std::cerr << program;
-    return 1;
+    return false;
   }
 
   if (program.is_subcommand_used(showCommand)) {
@@ -48,5 +47,13 @@ auto main(int argc, char *argv[]) -> int {
     handleRandomCommand();
   }
 
-  return 0;
+  return true;
+}
+
+auto main(int argc, char *argv[]) -> int {
+  dynamic_paper::Config config =
+      dynamic_paper::loadConfigFromFile("./files/test.yaml");
+  bool result = parseArguements(argc, argv, std::move(config));
+
+  return result ? 0 : 1;
 }
