@@ -6,11 +6,10 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include "background_set_enums.hpp"
+
 /** Object that represents a static/dynamic background to be shown */
 namespace dynamic_paper {
-
-enum class BackgroundSetMode { Center, Fill };
-enum class BackgroundSetOrder { Linear, Random };
 
 struct StaticBackgroundData {
   std::filesystem::path dataDirectory;
