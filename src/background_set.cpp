@@ -1,11 +1,15 @@
 #include "background_set.hpp"
 
+#include <algorithm>
+#include <cassert>
+#include <format>
 #include <type_traits>
 
 #include "yaml_helper.hpp"
 
 namespace dynamic_paper {
 
+// YAML Dict Key
 static constexpr std::string_view DATA_DIRECTORY = "data_directory";
 static constexpr std::string_view IMAGES = "images";
 static constexpr std::string_view IMAGE = "image";
@@ -15,6 +19,9 @@ static constexpr std::string_view TIMES = "times";
 static constexpr std::string_view TRANSITION = "transition";
 static constexpr std::string_view TRANSITION_LENGTH = "transition_length";
 static constexpr std::string_view TYPE = "type";
+// Default value
+static constexpr BackgroundSetMode DEFAULT_MODE = BackgroundSetMode::Center;
+static constexpr BackgroundSetOrder DEFAULT_ORDER = BackgroundSetOrder::Linear;
 
 // ===== Helper ===============
 
@@ -47,6 +54,35 @@ static void insertIntoParsingInfo(const YAML::const_iterator yaml,
   }
 
   field = std::make_optional<std::vector<T>>(std::move(yamlItems));
+}
+
+template <typename T>
+static void checkParsingInfoHas(const T &field, const std::string &errorMsg) {
+  if (!field.has_value()) {
+    throw std::runtime_error(errorMsg);
+  }
+}
+
+template <typename T, typename U>
+static void checkParsingInfoHasEither(const T &field1, const U &field2,
+                                      const std::string &errorMsg) {
+  if (field1.has_value() && field2.has_value()) {
+    throw std::runtime_error(errorMsg);
+  }
+}
+
+unsigned int timeStringToTimeOffset(const std::string &s) {
+  return 0;
+  // TODO
+}
+
+inline std::vector<unsigned int>
+timeStringsToOffsets(const std::vector<std::string> &timeStrings) {
+  std::vector<unsigned int> timeOffsets(timeStrings.size());
+  std::transform(
+      timeStrings.begin(), timeStrings.end(), timeOffsets.begin(),
+      [](const std::string &s) { return timeStringToTimeOffset(s); });
+  return timeOffsets;
 }
 
 // ===== Constructor ===============
@@ -84,7 +120,7 @@ struct ParsingInfo {
   std::optional<BackgroundSetOrder> order = std::nullopt;
   std::optional<std::vector<std::string>> images = std::nullopt;
   std::optional<std::string> image = std::nullopt;
-  std::optional<std::string> timeStrings = std::nullopt;
+  std::optional<std::vector<std::string>> timeStrings = std::nullopt;
 };
 
 static void updateParsingInfoWithYamlNode(const YAML::const_iterator yaml,
@@ -107,7 +143,8 @@ static void updateParsingInfoWithYamlNode(const YAML::const_iterator yaml,
   } else if (key == ORDER) {
     insertIntoParsingInfo<BackgroundSetOrder>(yaml, parsingInfo.order);
   } else if (key == TIMES) {
-    insertIntoParsingInfo<std::string>(yaml, parsingInfo.timeStrings);
+    insertIntoParsingInfo<std::vector<std::string>>(yaml,
+                                                    parsingInfo.timeStrings);
   } else if (key == TRANSITION) {
     insertIntoParsingInfo<bool>(yaml, parsingInfo.transition);
   } else if (key == TRANSITION_LENGTH) {
@@ -117,14 +154,80 @@ static void updateParsingInfoWithYamlNode(const YAML::const_iterator yaml,
   }
 }
 
-std::optional<BackgroundSet>
-createBackgroundSetFromInfo(const ParsingInfo &parsingInfo) {
-  if (!parsingInfo.type.has_value()) {
-    return std::nullopt;
+BackgroundSet createBackgroundSetFromInfo(const ParsingInfo &parsingInfo) {
+  checkParsingInfoHas(parsingInfo.name, "Background set did not have a name");
+  std::string name = parsingInfo.name.value();
+
+  checkParsingInfoHas(
+      parsingInfo.type,
+      std::format(
+          "Background set {} did not specify a type (`type:dynamic/static`)",
+          name));
+
+  switch (parsingInfo.type.value()) {
+  case BackgroundSetType::Static: {
+    checkParsingInfoHasEither(
+        parsingInfo.image, parsingInfo.images,
+        std::format("Background set {} does not provide an image to show "
+                    "(key 'image:' or 'images:')",
+                    name));
+
+    checkParsingInfoHas(
+        parsingInfo.dataDirectory,
+        std::format("background set {} does not provide an image directory "
+                    "(key `data_directory:`)",
+                    name));
+
+    assert(parsingInfo.image.has_value() || parsingInfo.images.has_value());
+
+    if (parsingInfo.images.has_value()) {
+      return BackgroundSet(
+          name, StaticBackgroundData(parsingInfo.dataDirectory.value(),
+                                     parsingInfo.mode.value_or(DEFAULT_MODE),
+                                     parsingInfo.images.value()));
+    } else if (parsingInfo.image.has_value()) {
+      return BackgroundSet(
+          name, StaticBackgroundData(parsingInfo.dataDirectory.value(),
+                                     parsingInfo.mode.value_or(DEFAULT_MODE),
+                                     {parsingInfo.image.value()}));
+    } else {
+      throw std::logic_error("Got to end of Static BackgroundSet with both "
+                             "image and images unset");
+    }
+  }
+  case BackgroundSetType::Dynamic: {
+    checkParsingInfoHas(
+        parsingInfo.images,
+        std::format("Background set {} has no images (key `images:`)", name));
+
+    checkParsingInfoHas(
+        parsingInfo.dataDirectory,
+        std::format("Background set {} does not provide an image directory "
+                    "(key `data_directory:`)",
+                    name));
+
+    checkParsingInfoHas(parsingInfo.timeStrings,
+                        std::format("Background set {} does not provide times "
+                                    "(key `times:`)",
+                                    name));
+
+    std::vector<unsigned int> timeOffsets =
+        timeStringsToOffsets(parsingInfo.timeStrings.value());
+
+    return BackgroundSet(
+        name, DynamicBackgroundData(parsingInfo.dataDirectory.value(),
+                                    parsingInfo.mode.value_or(DEFAULT_MODE),
+                                    parsingInfo.transitionLength,
+                                    parsingInfo.order.value_or(DEFAULT_ORDER),
+                                    parsingInfo.images.value(), timeOffsets));
+  }
+  default: {
+    throw std::logic_error("Unhandled background set type");
+  }
   }
 }
 
-std::optional<BackgroundSet> parseFromYAML(YAML::const_iterator yaml) {
+BackgroundSet parseFromYAML(YAML::const_iterator yaml) {
   ParsingInfo parsingInfo;
 
   parsingInfo.name = std::make_optional(yaml->first.as<std::string>());
@@ -133,5 +236,7 @@ std::optional<BackgroundSet> parseFromYAML(YAML::const_iterator yaml) {
        ++it) {
     updateParsingInfoWithYamlNode(it, parsingInfo);
   }
+
+  return createBackgroundSetFromInfo(parsingInfo);
 }
 } // namespace dynamic_paper

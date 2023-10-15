@@ -49,5 +49,6 @@ private:
   std::variant<StaticBackgroundData, DynamicBackgroundData> type;
 };
 
-std::optional<BackgroundSet> parseFromYAML(YAML::Node yaml);
+/** Can raise an exception if unable to parse valid BackgroundSet */
+BackgroundSet parseFromYAML(YAML::Node yaml);
 } // namespace dynamic_paper
