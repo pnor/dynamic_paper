@@ -1,5 +1,7 @@
 #include <iostream>
 
+#include <yaml-cpp/yaml.h>
+
 #include "./lib/argparse.hpp"
 #include "config.hpp"
 
@@ -52,7 +54,7 @@ static bool parseArguements(const int argc, char *argv[],
 
 auto main(int argc, char *argv[]) -> int {
   dynamic_paper::Config config =
-      dynamic_paper::loadConfigFromFile("./files/test.yaml");
+      dynamic_paper::loadConfigFromYAML(YAML::LoadFile("./files/test.yaml"));
   bool result = parseArguements(argc, argv, std::move(config));
 
   return result ? 0 : 1;

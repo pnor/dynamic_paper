@@ -3,6 +3,8 @@
 #include <filesystem>
 #include <optional>
 
+#include <yaml-cpp/yaml.h>
+
 // General Configuration
 
 namespace dynamic_paper {
@@ -31,6 +33,6 @@ public:
          std::optional<std::filesystem::path> hookScript);
 };
 
-Config loadConfigFromFile(std::filesystem::path path);
+Config loadConfigFromYAML(YAML::Node config);
 
 } // namespace dynamic_paper

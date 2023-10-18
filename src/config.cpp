@@ -19,14 +19,7 @@ Config::Config(std::filesystem::path imageDir, BackgroundSetterMethod method,
     : backgroundImageDir(imageDir), backgroundSetterMethod(method),
       hookScript(hookScript) {}
 
-Config loadConfigFromFile(std::filesystem::path path) {
-  if (!std::filesystem::exists(path)) {
-    throw std::invalid_argument("No general config file exists at " +
-                                path.string());
-  }
-
-  YAML::Node config = YAML::LoadFile(path.string());
-
+Config loadConfigFromYAML(YAML::Node config) {
   BackgroundSetterMethod method =
       generalConfigParseOrUseDefault<BackgroundSetterMethod>(
           config, METHOD_KEY, ConfigDefaults::backgroundSetterMethod);
