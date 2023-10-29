@@ -17,7 +17,8 @@ add_executable(
   dynamic_paper_test
   helper.cpp
   test.cpp
-  yaml_parsing_test.cpp
+  general_config_test.cpp
+  background_set_test.cpp
   ${dynamic_paper_SOURCE_DIR}/src/background_set.cpp
   ${dynamic_paper_SOURCE_DIR}/src/config.cpp
 )

@@ -26,13 +26,13 @@ static constexpr BackgroundSetOrder DEFAULT_ORDER = BackgroundSetOrder::Linear;
 // ===== Helper ===============
 
 template <typename T>
-static void insertIntoParsingInfo(const YAML::const_iterator yaml,
+static void insertIntoParsingInfo(const YAML::Node &yaml,
                                   std::optional<T> &field) {
   if constexpr (std::is_same_v<T, std::string>) {
-    T yamlData = yaml->second.as<T>();
+    T yamlData = yaml.as<T>();
     field = std::make_optional(yamlData);
   } else {
-    std::optional<T> optData = stringTo<T>(yaml->second.as<std::string>());
+    std::optional<T> optData = stringTo<T>(yaml.as<std::string>());
     if (optData.has_value()) {
       field = optData;
     }
@@ -41,12 +41,11 @@ static void insertIntoParsingInfo(const YAML::const_iterator yaml,
 
 // Version of Helper function to put lists into ParsingInfo
 template <typename T>
-static void insertIntoParsingInfo(const YAML::const_iterator yaml,
+static void insertIntoParsingInfo(const YAML::Node &yaml,
                                   std::optional<std::vector<T>> &field) {
   std::vector<T> yamlItems;
 
-  for (YAML::const_iterator it = yaml->second.begin(); it != yaml->second.end();
-       ++it) {
+  for (YAML::const_iterator it = yaml.begin(); it != yaml.end(); ++it) {
     if (!it->IsScalar()) {
       continue;
     }
@@ -123,34 +122,29 @@ struct ParsingInfo {
   std::optional<std::vector<std::string>> timeStrings = std::nullopt;
 };
 
-static void updateParsingInfoWithYamlNode(const YAML::const_iterator yaml,
+static void updateParsingInfoWithYamlNode(const std::string &key,
+                                          const YAML::Node &value,
                                           ParsingInfo &parsingInfo) {
-  if (!yaml->IsMap()) {
-    return;
-  }
-
-  const std::string &key = yaml->first.as<std::string>();
-
-  if (key == DATA_DIRECTORY && yaml->second.IsScalar()) {
-    insertIntoParsingInfo<std::filesystem::path>(yaml,
+  if (key == DATA_DIRECTORY && value.IsScalar()) {
+    insertIntoParsingInfo<std::filesystem::path>(value,
                                                  parsingInfo.dataDirectory);
-  } else if (key == IMAGES && yaml->second.IsSequence()) {
-    insertIntoParsingInfo<std::vector<std::string>>(yaml, parsingInfo.images);
+  } else if (key == IMAGES && value.IsSequence()) {
+    insertIntoParsingInfo<std::string>(value, parsingInfo.images);
   } else if (key == IMAGE) {
-    insertIntoParsingInfo<std::string>(yaml, parsingInfo.image);
+    insertIntoParsingInfo<std::string>(value, parsingInfo.image);
   } else if (key == MODE) {
-    insertIntoParsingInfo<BackgroundSetMode>(yaml, parsingInfo.mode);
+    insertIntoParsingInfo<BackgroundSetMode>(value, parsingInfo.mode);
   } else if (key == ORDER) {
-    insertIntoParsingInfo<BackgroundSetOrder>(yaml, parsingInfo.order);
+    insertIntoParsingInfo<BackgroundSetOrder>(value, parsingInfo.order);
   } else if (key == TIMES) {
-    insertIntoParsingInfo<std::vector<std::string>>(yaml,
+    insertIntoParsingInfo<std::vector<std::string>>(value,
                                                     parsingInfo.timeStrings);
   } else if (key == TRANSITION) {
-    insertIntoParsingInfo<bool>(yaml, parsingInfo.transition);
+    insertIntoParsingInfo<bool>(value, parsingInfo.transition);
   } else if (key == TRANSITION_LENGTH) {
-    insertIntoParsingInfo<unsigned int>(yaml, parsingInfo.transitionLength);
+    insertIntoParsingInfo<unsigned int>(value, parsingInfo.transitionLength);
   } else if (key == TYPE) {
-    insertIntoParsingInfo<BackgroundSetType>(yaml, parsingInfo.type);
+    insertIntoParsingInfo<BackgroundSetType>(value, parsingInfo.type);
   }
 }
 
@@ -227,14 +221,16 @@ BackgroundSet createBackgroundSetFromInfo(const ParsingInfo &parsingInfo) {
   }
 }
 
-BackgroundSet parseFromYAML(YAML::const_iterator yaml) {
+BackgroundSet parseFromYAML(const std::string &name, const YAML::Node &yaml) {
   ParsingInfo parsingInfo;
 
-  parsingInfo.name = std::make_optional(yaml->first.as<std::string>());
+  std::unordered_map<std::string, YAML::Node> yamlMap =
+      yaml.as<std::unordered_map<std::string, YAML::Node>>();
 
-  for (YAML::const_iterator it = yaml->second.begin(); it != yaml->second.end();
-       ++it) {
-    updateParsingInfoWithYamlNode(it, parsingInfo);
+  parsingInfo.name = std::make_optional(name);
+
+  for (const auto &kv : yamlMap) {
+    updateParsingInfoWithYamlNode(kv.first, kv.second, parsingInfo);
   }
 
   return createBackgroundSetFromInfo(parsingInfo);

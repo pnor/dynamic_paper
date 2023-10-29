@@ -13,6 +13,7 @@ add_executable(
   main.cpp
   config.cpp
   background_set.cpp
+  time_util.cpp
 )
 
 target_link_libraries(

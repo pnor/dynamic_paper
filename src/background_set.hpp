@@ -41,14 +41,13 @@ struct DynamicBackgroundData {
 
 class BackgroundSet {
 public:
-  BackgroundSet(std::string name, StaticBackgroundData data);
-  BackgroundSet(std::string name, DynamicBackgroundData data);
-
-private:
   std::string name;
   std::variant<StaticBackgroundData, DynamicBackgroundData> type;
+
+  BackgroundSet(std::string name, StaticBackgroundData data);
+  BackgroundSet(std::string name, DynamicBackgroundData data);
 };
 
 /** Can raise an exception if unable to parse valid BackgroundSet */
-BackgroundSet parseFromYAML(YAML::Node yaml);
+BackgroundSet parseFromYAML(const std::string &name, const YAML::Node &yaml);
 } // namespace dynamic_paper

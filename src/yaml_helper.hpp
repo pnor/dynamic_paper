@@ -36,6 +36,15 @@ constexpr std::optional<BackgroundSetterMethod> stringTo(const std::string &s) {
 }
 
 template <>
+constexpr std::optional<SunEventPollerMethod> stringTo(const std::string &s) {
+  if (s == "sunwait") {
+    return std::make_optional(SunEventPollerMethod::Sunwait);
+  } else {
+    return std::nullopt;
+  }
+}
+
+template <>
 constexpr std::optional<BackgroundSetMode> stringTo(const std::string &s) {
   if (s == "center") {
     return std::make_optional(BackgroundSetMode::Center);

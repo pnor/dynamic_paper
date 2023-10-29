@@ -12,6 +12,7 @@ using namespace dynamic_paper;
 
 static const std::string GENERAL_CONFIG_YAML = R""""(
 method: "wallutils"
+sun_poller: "sunwait"
 image_dir: "./an_image_dir"
 hook_script: "./hook_script.sh"
 )"""";
@@ -26,6 +27,7 @@ TEST(AllFilled, GeneralConfig) {
   Config cfg = loadConfigFromYAML(YAML::Load(GENERAL_CONFIG_YAML));
 
   EXPECT_EQ(cfg.backgroundSetterMethod, BackgroundSetterMethod::WallUtils);
+  EXPECT_EQ(cfg.sunEventPollerMethod, SunEventPollerMethod::Sunwait);
   EXPECT_EQ(cfg.backgroundImageDir, std::filesystem::path("./an_image_dir"));
   EXPECT_EQ(cfg.hookScript,
             std::make_optional(std::filesystem::path("./hook_script.sh")));
@@ -35,6 +37,7 @@ TEST(DefaultValues, GeneralConfig) {
   Config cfg = loadConfigFromYAML(YAML::Load(EMPTY_YAML));
 
   EXPECT_EQ(cfg.backgroundSetterMethod, BackgroundSetterMethod::WallUtils);
+  EXPECT_EQ(cfg.sunEventPollerMethod, SunEventPollerMethod::Sunwait);
   EXPECT_EQ(cfg.backgroundImageDir,
             std::filesystem::path("~/.local/share/dynamic_paper/images"));
   EXPECT_EQ(cfg.hookScript, std::nullopt);
@@ -44,6 +47,7 @@ TEST(MethodOnly, GeneralConfig) {
   Config cfg = loadConfigFromYAML(YAML::Load(GENERAL_CONFIG_ONLY_METHOD_YAML));
 
   EXPECT_EQ(cfg.backgroundSetterMethod, BackgroundSetterMethod::Script);
+  EXPECT_EQ(cfg.sunEventPollerMethod, SunEventPollerMethod::Sunwait);
   EXPECT_EQ(cfg.backgroundImageDir,
             std::filesystem::path("~/.local/share/dynamic_paper/images"));
   EXPECT_EQ(cfg.hookScript, std::nullopt);
