@@ -15,11 +15,12 @@ FetchContent_MakeAvailable(yaml-cpp)
 
 add_executable(
   dynamic_paper_test
-  helper.cpp
-  test.cpp
   general_config_test.cpp
   background_set_test.cpp
+  time_conversion_test.cpp
   ${dynamic_paper_SOURCE_DIR}/src/background_set.cpp
+  ${dynamic_paper_SOURCE_DIR}/src/command_executor.cpp
+  ${dynamic_paper_SOURCE_DIR}/src/time_util.cpp
   ${dynamic_paper_SOURCE_DIR}/src/config.cpp
 )
 
@@ -27,6 +28,7 @@ target_link_libraries(
   dynamic_paper_test
   PRIVATE
   gtest_main
+  gmock_main
   yaml-cpp
 )
 

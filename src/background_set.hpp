@@ -1,5 +1,6 @@
 #pragma once
 
+#include <expected>
 #include <filesystem>
 #include <optional>
 #include <variant>
@@ -7,6 +8,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include "background_set_enums.hpp"
+#include "config.hpp"
 
 /** Object that represents a static/dynamic background to be shown */
 namespace dynamic_paper {
@@ -29,14 +31,14 @@ struct DynamicBackgroundData {
   BackgroundSetOrder order;
   std::vector<std::string> imageNames;
   /** each entry represents number seconds after 00:00 to do a transition */
-  std::vector<unsigned int> times;
+  std::vector<time_t> times;
 
   DynamicBackgroundData(std::filesystem::path dataDirectory,
                         BackgroundSetMode mode,
                         std::optional<unsigned int> transitionDuration,
                         BackgroundSetOrder order,
                         std::vector<std::string> imageNames,
-                        std::vector<unsigned int> times);
+                        std::vector<time_t> times);
 };
 
 class BackgroundSet {
@@ -48,6 +50,9 @@ public:
   BackgroundSet(std::string name, DynamicBackgroundData data);
 };
 
-/** Can raise an exception if unable to parse valid BackgroundSet */
-BackgroundSet parseFromYAML(const std::string &name, const YAML::Node &yaml);
+enum class BackgroundSetParseErrors { MissingSunpollInfo, BadTimes };
+
+std::expected<BackgroundSet, BackgroundSetParseErrors>
+parseFromYAML(const std::string &name, const YAML::Node &yaml,
+              const Config &config);
 } // namespace dynamic_paper

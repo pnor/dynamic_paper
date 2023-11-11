@@ -14,6 +14,8 @@ add_executable(
   config.cpp
   background_set.cpp
   time_util.cpp
+  command_executor.cpp
+
 )
 
 target_link_libraries(

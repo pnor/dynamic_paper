@@ -10,7 +10,7 @@
 namespace dynamic_paper {
 
 enum class BackgroundSetterMethod { Script, WallUtils };
-enum class SunEventPollerMethod { Sunwait };
+enum class SunEventPollerMethod { Dummy, Sunwait };
 
 struct ConfigDefaults {
   static constexpr std::string_view backgroundImageDir =

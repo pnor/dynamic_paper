@@ -16,8 +16,29 @@ namespace dynamic_paper {
 // general template
 template <typename T>
 constexpr std::optional<T> stringTo(const std::string &s) {
-  if constexpr (std::is_convertible_v<std::string, T>) {
-    return std::make_optional(static_cast<T>(s));
+  if constexpr (std::is_convertible_v<std::string,
+                                      T>) { // trivial conversion from string
+    return static_cast<T>(s);
+  } else if constexpr (std::is_same_v<T, bool>) { // boolean
+    if (s == "true") {
+      return true;
+    } else if (s == "false") {
+      return false;
+    } else {
+      return std::nullopt;
+    }
+  } else if constexpr (std::is_unsigned_v<T> &&
+                       std::is_integral_v<T>) { // unsigned
+    T val = std::clamp(
+        std::stoul(s),
+        static_cast<long unsigned int>(std::numeric_limits<T>::min()),
+        static_cast<long unsigned int>(std::numeric_limits<T>::max()));
+    return static_cast<T>(val);
+  } else if constexpr (std::is_signed_v<T> && std::is_integral_v<T>) { // signed
+    T val = std::clamp(std::stol(s),
+                       static_cast<long int>(std::numeric_limits<T>::min()),
+                       static_cast<long int>(std::numeric_limits<T>::max()));
+    return static_cast<T>(val);
   } else {
     return std::nullopt;
   }

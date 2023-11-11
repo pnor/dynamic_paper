@@ -23,7 +23,7 @@ static const std::string GENERAL_CONFIG_ONLY_METHOD_YAML = R""""(
 method: "script"
 )"""";
 
-TEST(AllFilled, GeneralConfig) {
+TEST(GeneralConfig, AllFilled) {
   Config cfg = loadConfigFromYAML(YAML::Load(GENERAL_CONFIG_YAML));
 
   EXPECT_EQ(cfg.backgroundSetterMethod, BackgroundSetterMethod::WallUtils);
@@ -33,7 +33,7 @@ TEST(AllFilled, GeneralConfig) {
             std::make_optional(std::filesystem::path("./hook_script.sh")));
 }
 
-TEST(DefaultValues, GeneralConfig) {
+TEST(GeneralConfig, DefaultValues) {
   Config cfg = loadConfigFromYAML(YAML::Load(EMPTY_YAML));
 
   EXPECT_EQ(cfg.backgroundSetterMethod, BackgroundSetterMethod::WallUtils);
@@ -43,7 +43,7 @@ TEST(DefaultValues, GeneralConfig) {
   EXPECT_EQ(cfg.hookScript, std::nullopt);
 }
 
-TEST(MethodOnly, GeneralConfig) {
+TEST(GeneralConfig, MethodOnly) {
   Config cfg = loadConfigFromYAML(YAML::Load(GENERAL_CONFIG_ONLY_METHOD_YAML));
 
   EXPECT_EQ(cfg.backgroundSetterMethod, BackgroundSetterMethod::Script);
