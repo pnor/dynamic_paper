@@ -88,6 +88,62 @@ dynamic_paper:
     - "01:00"
 )"""";
 
+static const std::string DYNAMIC_BACKGROUND_SUNTIMES = R""""(
+suntimes:
+  data_directory: "./backgrounds/dynamic"
+  type: dynamic
+  images:
+    -  1.jpg
+    -  2.jpg
+    -  3.jpg
+    -  4.jpg
+    -  5.jpg
+    -  6.jpg
+    -  7.jpg
+    -  8.jpg
+    -  9.jpg
+    - 10.jpg
+    - 11.jpg
+    - 12.jpg
+  times:
+    - "-5:00 sunrise"
+    - "-04:00 sunrise"
+    - "-03:30 sunrise"
+    - "-1:11 sunrise"
+    - "sunrise"
+    - "+0:00 sunrise"
+    - "+00:00 sunrise"
+    - "+1:00 sunrise"
+    - "+01:01 sunrise"
+    - "-1:00 sunset"
+    - "-00:00 sunset"
+    - "sunset"
+)"""";
+
+static const std::string DYNAMIC_BACKGROUND_STRICT_TIMES = R""""(
+suntimes:
+  data_directory: "./backgrounds/dynamic"
+  type: dynamic
+  images:
+    -  1.jpg
+    -  2.jpg
+    -  3.jpg
+    -  4.jpg
+    -  5.jpg
+    -  6.jpg
+    -  7.jpg
+    -  8.jpg
+  times:
+    - "0:00"
+    - "00:00"
+    - "1:30"
+    - "02:45"
+    - "11:11"
+    - "15:59"
+    - "23:23"
+    - "23:59"
+)"""";
+
 // ===== Helper ===================
 static BackgroundSet getBackgroundSetFrom(const std::string &s,
                                           const Config &config) {
@@ -208,9 +264,73 @@ TEST(BackgroundSetTests, DynamicBackgroundSetEmptyDefaults) {
 }
 
 TEST(BackgroundSetTests, DynamicBackgroundSetSunTimes) {
-  // TODO
+  const BackgroundSet backgroundSet =
+      getBackgroundSetFrom(DYNAMIC_BACKGROUND_SUNTIMES, config);
+
+  EXPECT_EQ(backgroundSet.name, "suntimes");
+
+  const DynamicBackgroundData *dynamicData =
+      std::get_if<DynamicBackgroundData>(&backgroundSet.type);
+
+  EXPECT_EQ(dynamicData->dataDirectory,
+            std::filesystem::path("./backgrounds/dynamic"));
+
+  EXPECT_EQ(dynamicData->mode, BackgroundSetMode::Center);
+
+  EXPECT_EQ(dynamicData->transitionDuration, std::nullopt);
+
+  EXPECT_EQ(dynamicData->order, BackgroundSetOrder::Linear);
+
+  ASSERT_THAT(dynamicData->imageNames,
+              ElementsAre("1.jpg", "2.jpg", "3.jpg", "4.jpg", "5.jpg", "6.jpg",
+                          "7.jpg", "8.jpg", "9.jpg", "10.jpg", "11.jpg",
+                          "12.jpg"));
+
+  ASSERT_THAT(
+      dynamicData->times,
+      ElementsAre(DUMMY_SUNRISE_TIME - ((5 * ONE_HOUR) + (0 * ONE_MINUTE)),
+                  DUMMY_SUNRISE_TIME - ((4 * ONE_HOUR) + (0 * ONE_MINUTE)),
+                  DUMMY_SUNRISE_TIME - ((3 * ONE_HOUR) + (30 * ONE_MINUTE)),
+                  DUMMY_SUNRISE_TIME - ((1 * ONE_HOUR) + (11 * ONE_MINUTE)),
+                  DUMMY_SUNRISE_TIME,
+                  DUMMY_SUNRISE_TIME + ((0 * ONE_HOUR) + (0 * ONE_MINUTE)),
+                  DUMMY_SUNRISE_TIME + ((0 * ONE_HOUR) + (0 * ONE_MINUTE)),
+                  DUMMY_SUNRISE_TIME + ((1 * ONE_HOUR) + (0 * ONE_MINUTE)),
+                  DUMMY_SUNRISE_TIME + ((1 * ONE_HOUR) + (1 * ONE_MINUTE)),
+                  DUMMY_SUNSET_TIME - ((1 * ONE_HOUR) + (0 * ONE_MINUTE)),
+                  DUMMY_SUNSET_TIME - ((0 * ONE_HOUR) + (0 * ONE_MINUTE)),
+                  DUMMY_SUNSET_TIME));
 }
 
 TEST(BackgroundSetTests, DynamicBackgroundSetStrictTimes) {
-  // TODO
+  const BackgroundSet backgroundSet =
+      getBackgroundSetFrom(DYNAMIC_BACKGROUND_STRICT_TIMES, config);
+
+  EXPECT_EQ(backgroundSet.name, "suntimes");
+
+  const DynamicBackgroundData *dynamicData =
+      std::get_if<DynamicBackgroundData>(&backgroundSet.type);
+
+  EXPECT_EQ(dynamicData->dataDirectory,
+            std::filesystem::path("./backgrounds/dynamic"));
+
+  EXPECT_EQ(dynamicData->mode, BackgroundSetMode::Center);
+
+  EXPECT_EQ(dynamicData->transitionDuration, std::nullopt);
+
+  EXPECT_EQ(dynamicData->order, BackgroundSetOrder::Linear);
+
+  ASSERT_THAT(dynamicData->imageNames,
+              ElementsAre("1.jpg", "2.jpg", "3.jpg", "4.jpg", "5.jpg", "6.jpg",
+                          "7.jpg", "8.jpg"));
+
+  ASSERT_THAT(dynamicData->times,
+              ElementsAre(ZERO_TIME + ((0 * ONE_HOUR) + (0 * ONE_MINUTE)),
+                          ZERO_TIME + ((0 * ONE_HOUR) + (0 * ONE_MINUTE)),
+                          ZERO_TIME + ((1 * ONE_HOUR) + (30 * ONE_MINUTE)),
+                          ZERO_TIME + ((2 * ONE_HOUR) + (45 * ONE_MINUTE)),
+                          ZERO_TIME + ((11 * ONE_HOUR) + (11 * ONE_MINUTE)),
+                          ZERO_TIME + ((15 * ONE_HOUR) + (59 * ONE_MINUTE)),
+                          ZERO_TIME + ((23 * ONE_HOUR) + (23 * ONE_MINUTE)),
+                          ZERO_TIME + ((23 * ONE_HOUR) + (59 * ONE_MINUTE))));
 }
