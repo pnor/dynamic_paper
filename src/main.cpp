@@ -14,13 +14,21 @@
  * Parses `BackgroundSet`s from the config file, exiting the program if unable
  * to parse one */
 static std::vector<dynamic_paper::BackgroundSet>
-getBackgroundSetsFromYAML(const YAML::Node backgroundSetYaml,
+getBackgroundSetsFromFile(const std::filesystem::path backgroundSetFile,
                           const dynamic_paper::Config &config) {
-  // TODO catch yaml parse error
+  YAML::Node yaml;
+
+  try {
+    yaml = YAML::LoadFile(backgroundSetFile);
+  } catch (const YAML::ParserException &e) {
+    dynamic_paper::logFatalError("Unable to parse background set file " +
+                                 backgroundSetFile.string());
+    exit(1);
+  }
+
+  auto yamlMap = yaml.as<std::unordered_map<std::string, YAML::Node>>();
 
   std::vector<dynamic_paper::BackgroundSet> backgroundSets;
-  auto yamlMap =
-      backgroundSetYaml.as<std::unordered_map<std::string, YAML::Node>>();
   backgroundSets.reserve(yamlMap.size());
 
   for (const auto &kv : yamlMap) {
@@ -65,8 +73,7 @@ static void handleRandomCommand() { std::cout << "random" << std::endl; }
 
 static void handleListCommand(const dynamic_paper::Config &config) {
   std::vector<dynamic_paper::BackgroundSet> backgroundSets =
-      getBackgroundSetsFromYAML(YAML::LoadFile("./files/background_sets.yaml"),
-                                config);
+      getBackgroundSetsFromFile("./files/background_sets.yaml", config);
   std::cout << "Available Background sets are: "
             << "\n"
             << std::endl;

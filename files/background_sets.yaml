@@ -63,3 +63,22 @@ random:
     - "12:00"
     - "13:00"
     - "18:00"
+
+
+random:
+  data_directory: "./backgrounds/random"
+  type: dynamic
+  mode: center
+  transition: true
+  transition_length: 30
+  order: random
+  images:
+    - 1.jpg
+    - 2.jpg
+    - 3.jpg
+    - 4.jpg
+  times:
+    - "10:00"
+    - "12:00"
+    - "13:00"
+    - "18:00"
