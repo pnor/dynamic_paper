@@ -1,10 +1,61 @@
+#include <format>
 #include <iostream>
 
 #include <yaml-cpp/yaml.h>
 
-#include "./lib/argparse.hpp"
-#include "config.hpp"
+#include "lib/argparse.hpp"
 
+#include "background_set.hpp"
+#include "config.hpp"
+#include "logger.hpp"
+
+// ===== Background Set ==========
+/**
+ * Parses `BackgroundSet`s from the config file, exiting the program if unable
+ * to parse one */
+static std::vector<dynamic_paper::BackgroundSet>
+getBackgroundSetsFromYAML(const YAML::Node backgroundSetYaml,
+                          const dynamic_paper::Config &config) {
+  // TODO catch yaml parse error
+
+  std::vector<dynamic_paper::BackgroundSet> backgroundSets;
+  auto yamlMap =
+      backgroundSetYaml.as<std::unordered_map<std::string, YAML::Node>>();
+  backgroundSets.reserve(yamlMap.size());
+
+  for (const auto &kv : yamlMap) {
+    std::expected<dynamic_paper::BackgroundSet,
+                  dynamic_paper::BackgroundSetParseErrors>
+        expBackgroundSet = parseFromYAML(kv.first, kv.second, config);
+
+    if (expBackgroundSet.has_value()) {
+      const dynamic_paper::BackgroundSet &backgroundSet =
+          expBackgroundSet.value();
+      backgroundSets.push_back(expBackgroundSet.value());
+      dynamic_paper::logInfo("Added background: " + backgroundSet.name);
+    } else {
+      switch (expBackgroundSet.error()) {
+      case dynamic_paper::BackgroundSetParseErrors::MissingSunpollInfo: {
+        dynamic_paper::logFatalError(
+            std::format("Unable to parse background {} due to not being able "
+                        "to determine time of sunrise and sunset",
+                        kv.first));
+        break;
+      }
+      case dynamic_paper::BackgroundSetParseErrors::BadTimes: {
+        dynamic_paper::logFatalError(std::format(
+            "Unable to parse background {} due to bad times", kv.first));
+        break;
+      }
+      }
+      exit(1);
+    }
+  }
+
+  return backgroundSets;
+}
+
+// ===== Command Line Parsing ==========
 static void handleShowCommand(argparse::ArgumentParser &showCommand) {
   std::string wallpaperName = showCommand.get("name");
   std::cout << wallpaperName << std::endl;
@@ -12,7 +63,17 @@ static void handleShowCommand(argparse::ArgumentParser &showCommand) {
 
 static void handleRandomCommand() { std::cout << "random" << std::endl; }
 
-static void handleListCommand() { std::cout << "list " << std::endl; }
+static void handleListCommand(const dynamic_paper::Config &config) {
+  std::vector<dynamic_paper::BackgroundSet> backgroundSets =
+      getBackgroundSetsFromYAML(YAML::LoadFile("./files/background_sets.yaml"),
+                                config);
+  std::cout << "Available Background sets are: "
+            << "\n"
+            << std::endl;
+  for (const auto &b : backgroundSets) {
+    std::cout << b.name << std::endl;
+  }
+}
 
 static bool parseArguements(const int argc, char *argv[],
                             dynamic_paper::Config &&config) {
@@ -44,7 +105,7 @@ static bool parseArguements(const int argc, char *argv[],
   if (program.is_subcommand_used(showCommand)) {
     handleShowCommand(showCommand);
   } else if (program.is_subcommand_used(listCommand)) {
-    handleListCommand();
+    handleListCommand(config);
   } else if (program.is_subcommand_used(randomCommand)) {
     handleRandomCommand();
   }
@@ -55,6 +116,7 @@ static bool parseArguements(const int argc, char *argv[],
 auto main(int argc, char *argv[]) -> int {
   dynamic_paper::Config config =
       dynamic_paper::loadConfigFromYAML(YAML::LoadFile("./files/test.yaml"));
+
   bool result = parseArguements(argc, argv, std::move(config));
 
   return result ? 0 : 1;
