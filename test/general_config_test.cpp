@@ -136,7 +136,7 @@ TEST(GeneralConfig, MethodScript) {
 
 TEST(GeneralConfig, BothMethodAndScript) {
   const std::expected<Config, ConfigError> expectedConfig =
-      loadConfigFromYAML(YAML::Load(METHOD_SCRIPT));
+      loadConfigFromYAML(YAML::Load(BOTH_METHOD_AND_SCRIPT));
 
   EXPECT_TRUE(expectedConfig.has_value());
 
@@ -153,7 +153,7 @@ TEST(GeneralConfig, BothMethodAndScript) {
 
 TEST(GeneralConfig, ScriptWithNoScript) {
   const std::expected<Config, ConfigError> expectedConfig =
-      loadConfigFromYAML(YAML::Load(METHOD_SCRIPT));
+      loadConfigFromYAML(YAML::Load(SCRIPT_WITH_NO_SCRIPT));
 
   EXPECT_FALSE(expectedConfig.has_value());
 

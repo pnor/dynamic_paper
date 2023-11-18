@@ -33,12 +33,21 @@ std::expected<Config, ConfigError> loadConfigFromYAML(YAML::Node config) {
   // if mode is wallutil do that
   // if both script and wallutils, do default to ..?
 
-  const std::expected<BackgroundSetterMethod, BackgroundSetterMethodError>
+  std::expected<BackgroundSetterMethod, BackgroundSetterMethodError>
       expectedMethod =
           parseBackgroundSetterMethod(config, METHOD_KEY, METHOD_SCRIPT_KEY);
 
   if (!expectedMethod.has_value()) {
-    return std::unexpected(ConfigError::MethodParsingError);
+    switch (expectedMethod.error()) {
+    case BackgroundSetterMethodError::NoMethodInYAML: {
+      logInfo("No method in general config so defaulting to Wallutils ");
+      expectedMethod = BackgroundSetterMethodWallUtils();
+      break;
+    }
+    default: {
+      return std::unexpected(ConfigError::MethodParsingError);
+    }
+    }
   }
 
   SunEventPollerMethod sunMethod =

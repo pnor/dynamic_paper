@@ -112,6 +112,16 @@ constexpr std::optional<BackgroundSetType> stringTo(const std::string &s) {
 }
 
 // ===== Parsing BackgroundSetterMethod Strings ===============
+
+/**
+ *  Attempt to parse the Method of setting the background from the YAML.
+ *
+ *  If the yaml specifies the method to be 'script', will also read the
+ * 'method_script' field to determine the script to use to set the background.
+ *  If no method script is specified returns an unexpected error.
+ *
+ *  If no method is specified, defaults to 'Wallutils'
+ */
 std::expected<BackgroundSetterMethod, BackgroundSetterMethodError>
 parseBackgroundSetterMethod(YAML::Node config, const std::string &methodKey,
                             const std::string &scriptKey);
@@ -124,6 +134,10 @@ T generalConfigParseOrUseDefault(const YAML::Node &config,
   const YAML::Node node = config[key];
 
   if constexpr (is_optional<T>) {
+    if (!node.IsDefined()) {
+      return std::nullopt;
+    }
+
     T nodeConverted = stringTo<typename T::value_type>(node.as<std::string>());
     T val = nodeConverted.has_value() ? nodeConverted.value() : defaultValue;
     return val;
