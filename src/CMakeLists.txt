@@ -11,11 +11,14 @@ FetchContent_MakeAvailable(yaml-cpp)
 add_executable(
   dynamic_paper
   main.cpp
-  config.cpp
   background_set.cpp
-  time_util.cpp
+  background_setter.cpp
   command_executor.cpp
-
+  config.cpp
+  dynamic_background_set.cpp
+  static_background_set.cpp
+  time_util.cpp
+  yaml_helper.cpp
 )
 
 target_link_libraries(

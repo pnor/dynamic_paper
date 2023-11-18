@@ -5,12 +5,17 @@ static_paper:
   mode: center
   images:
     - 1.jpg
-static_paper:
+static_paper_one_image:
   data_directory: "./backgrounds/static"
   type: static
   mode: center
   image: 1.jpg
-
+static_paper_script_setter:
+  data_directory: "./backgrounds/static"
+  type: static
+  mode: center
+  method_script: "./setter.sh"
+  image: 1.jpg
 # dynamic: change wallpaper as the sun moves
 dynamic_paper:
   data_directory: "./backgrounds/dynamic"

@@ -9,37 +9,11 @@
 
 #include "background_set_enums.hpp"
 #include "config.hpp"
+#include "dynamic_background_set.hpp"
+#include "static_background_set.hpp"
 
 /** Object that represents a static/dynamic background to be shown */
 namespace dynamic_paper {
-
-struct StaticBackgroundData {
-  std::filesystem::path dataDirectory;
-  BackgroundSetMode mode;
-  std::vector<std::string> imageNames;
-
-  StaticBackgroundData(std::filesystem::path dataDirectory,
-                       BackgroundSetMode mode,
-                       std::vector<std::string> imageNames);
-};
-
-struct DynamicBackgroundData {
-  std::filesystem::path dataDirectory;
-  BackgroundSetMode mode;
-  /** nullopt if does not transition. # seconds otherwise. */
-  std::optional<unsigned int> transitionDuration;
-  BackgroundSetOrder order;
-  std::vector<std::string> imageNames;
-  /** each entry represents number seconds after 00:00 to do a transition */
-  std::vector<time_t> times;
-
-  DynamicBackgroundData(std::filesystem::path dataDirectory,
-                        BackgroundSetMode mode,
-                        std::optional<unsigned int> transitionDuration,
-                        BackgroundSetOrder order,
-                        std::vector<std::string> imageNames,
-                        std::vector<time_t> times);
-};
 
 class BackgroundSet {
 public:

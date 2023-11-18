@@ -22,34 +22,47 @@ void inline logInfo(const std::string &msg, const bool flush = true) {
 
 void inline logWarning(const std::string &msg, const bool flush = true) {
   if (flush) {
-    std::cout << ANSI_COLOR_YELLOW << "[WARN] " << msg << ANSI_COLOR_RESET
+    std::cerr << ANSI_COLOR_YELLOW << "[WARN] " << msg << ANSI_COLOR_RESET
               << std::endl;
   } else {
-    std::cout << ANSI_COLOR_YELLOW << "[WARN] " << msg << "\n"
+    std::cerr << ANSI_COLOR_YELLOW << "[WARN] " << msg << "\n"
               << ANSI_COLOR_RESET;
   }
 }
 
 void inline logError(const std::string &msg, const bool flush = true) {
   if (flush) {
-    std::cout << "[ERROR] " << msg << std::endl;
     std::cerr << "[ERROR] " << msg << std::endl;
   } else {
-    std::cout << "[ERROR] " << msg << "\n";
     std::cerr << "[ERROR] " << msg << "\n";
   }
 }
 
 void inline logFatalError(const std::string &msg, const bool flush = true) {
   if (flush) {
-    std::cout << ANSI_COLOR_RED << "[ERROR] " << msg << std::endl
+    std::cerr << ANSI_COLOR_RED << "[ERROR] " << msg << std::endl
               << ANSI_COLOR_RESET;
-    std::cerr << "[ERROR] " << msg << std::endl;
   } else {
-    std::cout << ANSI_COLOR_RED << "[ERROR] " << msg << "\n"
+    std::cerr << ANSI_COLOR_RED << "[ERROR] " << msg << "\n"
               << ANSI_COLOR_RESET;
-    std::cerr << "[ERROR] " << msg << "\n";
   }
+}
+
+void inline logAssert(const bool condition, const std::string &msg,
+                      const bool flush = true) {
+  if (!condition) {
+    return;
+  }
+
+  if (flush) {
+    std::cerr << ANSI_COLOR_RED << "[ASSERT FAILURE] " << msg
+              << ANSI_COLOR_RESET << std::endl;
+  } else {
+    std::cerr << ANSI_COLOR_RED << "[ASSERT FAILURE] " << msg
+              << ANSI_COLOR_RESET << "\n";
+  }
+
+  throw std::logic_error("Assertion failed");
 }
 
 } // namespace dynamic_paper

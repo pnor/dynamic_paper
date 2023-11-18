@@ -19,9 +19,13 @@ add_executable(
   background_set_test.cpp
   time_conversion_test.cpp
   ${dynamic_paper_SOURCE_DIR}/src/background_set.cpp
+  ${dynamic_paper_SOURCE_DIR}/src/background_setter.cpp
   ${dynamic_paper_SOURCE_DIR}/src/command_executor.cpp
-  ${dynamic_paper_SOURCE_DIR}/src/time_util.cpp
   ${dynamic_paper_SOURCE_DIR}/src/config.cpp
+  ${dynamic_paper_SOURCE_DIR}/src/dynamic_background_set.cpp
+  ${dynamic_paper_SOURCE_DIR}/src/static_background_set.cpp
+  ${dynamic_paper_SOURCE_DIR}/src/time_util.cpp
+  ${dynamic_paper_SOURCE_DIR}/src/yaml_helper.cpp
 )
 
 target_link_libraries(

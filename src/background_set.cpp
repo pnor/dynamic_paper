@@ -66,19 +66,6 @@ static void checkParsingInfoHasEither(const T &field1, const U &field2,
 
 // ===== Constructor ===============
 
-StaticBackgroundData::StaticBackgroundData(std::filesystem::path dataDirectory,
-                                           BackgroundSetMode mode,
-                                           std::vector<std::string> imageNames)
-    : dataDirectory(dataDirectory), mode(mode), imageNames(imageNames) {}
-
-DynamicBackgroundData::DynamicBackgroundData(
-    std::filesystem::path dataDirectory, BackgroundSetMode mode,
-    std::optional<unsigned int> transitionDuration, BackgroundSetOrder order,
-    std::vector<std::string> imageNames, std::vector<time_t> times)
-    : dataDirectory(dataDirectory), mode(mode),
-      transitionDuration(transitionDuration), order(order),
-      imageNames(imageNames), times(times) {}
-
 BackgroundSet::BackgroundSet(std::string name, StaticBackgroundData data)
     : name(name),
       type(std::variant<StaticBackgroundData, DynamicBackgroundData>(data)) {}
@@ -126,8 +113,7 @@ static void updateParsingInfoWithYamlNode(const std::string &key,
 }
 
 static std::expected<BackgroundSet, BackgroundSetParseErrors>
-createStaticBackgroundSetFromInfo(const ParsingInfo &parsingInfo,
-                                  const Config &config) {
+createStaticBackgroundSetFromInfo(const ParsingInfo &parsingInfo) {
   assert((void("Parsing info should have name by time this helper function "
                "is called"),
           parsingInfo.name.has_value()));
@@ -224,7 +210,7 @@ createBackgroundSetFromInfo(const ParsingInfo &parsingInfo,
 
   switch (parsingInfo.type.value()) {
   case BackgroundSetType::Static: {
-    return createStaticBackgroundSetFromInfo(parsingInfo, config);
+    return createStaticBackgroundSetFromInfo(parsingInfo);
   }
   case BackgroundSetType::Dynamic: {
     return createDynamicBackgroundSetFromInfo(parsingInfo, config);

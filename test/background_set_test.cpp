@@ -17,7 +17,7 @@ using namespace dynamic_paper_test;
 using namespace testing;
 
 // Static
-static const Config config("./images", BackgroundSetterMethod::WallUtils,
+static const Config config("./images", BackgroundSetterMethodWallUtils(),
                            SunEventPollerMethod::Dummy, std::nullopt);
 
 static const std::string STATIC_BACKGROUND_SET = R""""(

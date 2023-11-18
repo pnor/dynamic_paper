@@ -10,6 +10,9 @@
 
 using namespace dynamic_paper;
 
+static constexpr std::string_view DEFAULT_IMAGE_DIR =
+    "~/.local/share/dynamic_paper/images";
+
 static const std::string GENERAL_CONFIG_YAML = R""""(
 method: "wallutils"
 sun_poller: "sunwait"
@@ -20,13 +23,46 @@ hook_script: "./hook_script.sh"
 static const std::string EMPTY_YAML = "";
 
 static const std::string GENERAL_CONFIG_ONLY_METHOD_YAML = R""""(
+method: "wallutils"
+)"""";
+
+static const std::string METHOD_WALLUTILS = R""""(
+method: "wallutils"
+sun_poller: "sunwait"
+image_dir: "./image"
+)"""";
+
+static const std::string METHOD_SCRIPT = R""""(
 method: "script"
+method_script: "./script.sh"
+sun_poller: "sunwait"
+image_dir: "./image"
+)"""";
+
+static const std::string BOTH_METHOD_AND_SCRIPT = R""""(
+method: "wallutils"
+method_script: "./script.sh"
+sun_poller: "sunwait"
+image_dir: "./image"
+)"""";
+
+static const std::string SCRIPT_WITH_NO_SCRIPT = R""""(
+method: "script"
+sun_poller: "sunwait"
+image_dir: "./image"
 )"""";
 
 TEST(GeneralConfig, AllFilled) {
-  Config cfg = loadConfigFromYAML(YAML::Load(GENERAL_CONFIG_YAML));
+  const std::expected<Config, ConfigError> expectedConfig =
+      loadConfigFromYAML(YAML::Load(GENERAL_CONFIG_YAML));
 
-  EXPECT_EQ(cfg.backgroundSetterMethod, BackgroundSetterMethod::WallUtils);
+  EXPECT_TRUE(expectedConfig.has_value());
+
+  const Config &cfg = expectedConfig.value();
+
+  EXPECT_EQ(
+      std::get<BackgroundSetterMethodWallUtils>(cfg.backgroundSetterMethod),
+      BackgroundSetterMethodWallUtils());
   EXPECT_EQ(cfg.sunEventPollerMethod, SunEventPollerMethod::Sunwait);
   EXPECT_EQ(cfg.backgroundImageDir, std::filesystem::path("./an_image_dir"));
   EXPECT_EQ(cfg.hookScript,
@@ -34,21 +70,92 @@ TEST(GeneralConfig, AllFilled) {
 }
 
 TEST(GeneralConfig, DefaultValues) {
-  Config cfg = loadConfigFromYAML(YAML::Load(EMPTY_YAML));
+  const std::expected<Config, ConfigError> expectedConfig =
+      loadConfigFromYAML(YAML::Load(EMPTY_YAML));
 
-  EXPECT_EQ(cfg.backgroundSetterMethod, BackgroundSetterMethod::WallUtils);
+  EXPECT_TRUE(expectedConfig.has_value());
+
+  const Config &cfg = expectedConfig.value();
+
+  EXPECT_EQ(
+      std::get<BackgroundSetterMethodWallUtils>(cfg.backgroundSetterMethod),
+      BackgroundSetterMethodWallUtils());
   EXPECT_EQ(cfg.sunEventPollerMethod, SunEventPollerMethod::Sunwait);
-  EXPECT_EQ(cfg.backgroundImageDir,
-            std::filesystem::path("~/.local/share/dynamic_paper/images"));
+  EXPECT_EQ(cfg.backgroundImageDir, std::filesystem::path(DEFAULT_IMAGE_DIR));
   EXPECT_EQ(cfg.hookScript, std::nullopt);
 }
 
 TEST(GeneralConfig, MethodOnly) {
-  Config cfg = loadConfigFromYAML(YAML::Load(GENERAL_CONFIG_ONLY_METHOD_YAML));
+  const std::expected<Config, ConfigError> expectedConfig =
+      loadConfigFromYAML(YAML::Load(GENERAL_CONFIG_ONLY_METHOD_YAML));
 
-  EXPECT_EQ(cfg.backgroundSetterMethod, BackgroundSetterMethod::Script);
+  EXPECT_TRUE(expectedConfig.has_value());
+
+  const Config &cfg = expectedConfig.value();
+
+  EXPECT_EQ(
+      std::get<BackgroundSetterMethodWallUtils>(cfg.backgroundSetterMethod),
+      BackgroundSetterMethodWallUtils());
   EXPECT_EQ(cfg.sunEventPollerMethod, SunEventPollerMethod::Sunwait);
-  EXPECT_EQ(cfg.backgroundImageDir,
-            std::filesystem::path("~/.local/share/dynamic_paper/images"));
+  EXPECT_EQ(cfg.backgroundImageDir, std::filesystem::path(DEFAULT_IMAGE_DIR));
   EXPECT_EQ(cfg.hookScript, std::nullopt);
+}
+
+TEST(GeneralConfig, MethodWallUtils) {
+  const std::expected<Config, ConfigError> expectedConfig =
+      loadConfigFromYAML(YAML::Load(METHOD_WALLUTILS));
+
+  EXPECT_TRUE(expectedConfig.has_value());
+
+  const Config &cfg = expectedConfig.value();
+
+  EXPECT_EQ(
+      std::get<BackgroundSetterMethodWallUtils>(cfg.backgroundSetterMethod),
+      BackgroundSetterMethodWallUtils());
+
+  EXPECT_EQ(cfg.sunEventPollerMethod, SunEventPollerMethod::Sunwait);
+  EXPECT_EQ(cfg.backgroundImageDir, std::filesystem::path("./image"));
+  EXPECT_EQ(cfg.hookScript, std::nullopt);
+}
+
+TEST(GeneralConfig, MethodScript) {
+  const std::expected<Config, ConfigError> expectedConfig =
+      loadConfigFromYAML(YAML::Load(METHOD_SCRIPT));
+
+  EXPECT_TRUE(expectedConfig.has_value());
+
+  const Config &cfg = expectedConfig.value();
+
+  EXPECT_EQ(std::get<BackgroundSetterMethodScript>(cfg.backgroundSetterMethod),
+            BackgroundSetterMethodScript(std::filesystem::path("./script.sh")));
+
+  EXPECT_EQ(cfg.sunEventPollerMethod, SunEventPollerMethod::Sunwait);
+  EXPECT_EQ(cfg.backgroundImageDir, std::filesystem::path("./image"));
+  EXPECT_EQ(cfg.hookScript, std::nullopt);
+}
+
+TEST(GeneralConfig, BothMethodAndScript) {
+  const std::expected<Config, ConfigError> expectedConfig =
+      loadConfigFromYAML(YAML::Load(METHOD_SCRIPT));
+
+  EXPECT_TRUE(expectedConfig.has_value());
+
+  const Config &cfg = expectedConfig.value();
+
+  EXPECT_EQ(
+      std::get<BackgroundSetterMethodWallUtils>(cfg.backgroundSetterMethod),
+      BackgroundSetterMethodWallUtils());
+
+  EXPECT_EQ(cfg.sunEventPollerMethod, SunEventPollerMethod::Sunwait);
+  EXPECT_EQ(cfg.backgroundImageDir, std::filesystem::path("./image"));
+  EXPECT_EQ(cfg.hookScript, std::nullopt);
+}
+
+TEST(GeneralConfig, ScriptWithNoScript) {
+  const std::expected<Config, ConfigError> expectedConfig =
+      loadConfigFromYAML(YAML::Load(METHOD_SCRIPT));
+
+  EXPECT_FALSE(expectedConfig.has_value());
+
+  EXPECT_EQ(expectedConfig.error(), ConfigError::MethodParsingError);
 }

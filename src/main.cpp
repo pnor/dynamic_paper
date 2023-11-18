@@ -122,7 +122,8 @@ static bool parseArguements(const int argc, char *argv[],
 
 auto main(int argc, char *argv[]) -> int {
   dynamic_paper::Config config =
-      dynamic_paper::loadConfigFromYAML(YAML::LoadFile("./files/test.yaml"));
+      dynamic_paper::loadConfigFromYAML(YAML::LoadFile("./files/test.yaml"))
+          .value();
 
   bool result = parseArguements(argc, argv, std::move(config));
 
