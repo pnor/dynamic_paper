@@ -60,7 +60,7 @@ static std::tm hourMinuteStringToTM(const std::string &hourMinutes) {
 static std::expected<SunriseAndSunsetTimes, SunriseAndSetErrors>
 getSunriseAndSetUsingSunwait() {
   const std::expected<std::string, CommandExecError> sunwaitExpectation =
-      runCommand("sunwait list");
+      runCommandStdout("sunwait list");
 
   if (!sunwaitExpectation.has_value()) {
     logWarning(

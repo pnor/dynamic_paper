@@ -1,17 +1,42 @@
 #include "static_background_set.hpp"
 
+#include <cstdlib>
+#include <format>
+
+#include "config.hpp"
+#include "logger.hpp"
+#include "variant_visitor_templ.hpp"
+
 namespace dynamic_paper {
+
+static void printDebugInfo(const StaticBackgroundData *data,
+                           const std::string &imageName,
+                           const BackgroundSetterMethod &method) {
+  std::string modeString = backgroundSetModeString(data->mode);
+  std::string methodString = backgroundSetterMethodString(method);
+  std::visit logWarning(std::format(
+      "Encountered error in attempting to set the background for static "
+      "background set. Image name was {} with mode {} using method {}",
+      imageName, modeString, methodString));
+}
 
 StaticBackgroundData::StaticBackgroundData(std::filesystem::path dataDirectory,
                                            BackgroundSetMode mode,
                                            std::vector<std::string> imageNames)
     : dataDirectory(dataDirectory), mode(mode), imageNames(imageNames) {}
 
-void StaticBackgroundData::show() const {
-  // TODO
-  // choose random image to load
-  // load the file
-  // set it using wallpaper thing and the background set mode
+void StaticBackgroundData::show(const BackgroundSetterMethod &method) const {
+  logAssert(imageNames.size() > 0, "Static background");
+
+  const std::string imageName = imageNames[std::rand() % imageNames.size()];
+  const std::filesystem::path imagePath = dataDirectory / imageName;
+
+  std::expected<void, BackgroundError> result =
+      setBackgroundToImage(imagePath, mode, method);
+
+  if (!result.has_value()) {
+    printDebugInfo(this, imageName, method);
+  }
 }
 
 } // namespace dynamic_paper

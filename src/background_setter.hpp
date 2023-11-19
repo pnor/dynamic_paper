@@ -10,11 +10,15 @@
 
 namespace dynamic_paper {
 
-enum class BackgroundError { CommandError, NoHookScriptFound };
+enum class BackgroundError { CommandError };
 
-std::expected<bool, BackgroundError>
+/**
+ * Using a program specified by `method`, sets the background to the image in
+ * `imagePath` using a display mode of `mode`
+ */
+std::expected<void, BackgroundError>
 setBackgroundToImage(const std::filesystem::path &imagePath,
                      const BackgroundSetMode mode,
-                     const BackgroundSetterMethod method);
+                     const BackgroundSetterMethod &method);
 
 } // namespace dynamic_paper

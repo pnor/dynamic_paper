@@ -8,6 +8,8 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include "variant_visitor_templ.hpp"
+
 // General Configuration
 
 namespace dynamic_paper {
@@ -18,10 +20,10 @@ enum class SunEventPollerMethod { Dummy, Sunwait };
 // ===== Background Setter Method ===============
 struct BackgroundSetterMethodBase {};
 struct BackgroundSetterMethodScript : BackgroundSetterMethodBase {
-  const std::filesystem::path hookScript;
-  explicit BackgroundSetterMethodScript(const std::filesystem::path scriptPath);
+  const std::filesystem::path script;
+  explicit BackgroundSetterMethodScript(const std::filesystem::path script);
   bool operator==(const BackgroundSetterMethodScript &other) const {
-    return hookScript == other.hookScript;
+    return script == other.script;
   };
 };
 struct BackgroundSetterMethodWallUtils : BackgroundSetterMethodBase {
@@ -31,6 +33,21 @@ struct BackgroundSetterMethodWallUtils : BackgroundSetterMethodBase {
 };
 using BackgroundSetterMethod =
     std::variant<BackgroundSetterMethodScript, BackgroundSetterMethodWallUtils>;
+
+constexpr std::string
+backgroundSetterMethodString(const BackgroundSetterMethod &method) {
+  std::string returnString;
+
+  std::visit(overloaded{[&returnString](const BackgroundSetterMethodScript &) {
+                          returnString = "script";
+                        },
+                        [&returnString](const BackgroundSetterMethodWallUtils) {
+                          returnString = "wallutils";
+                        }},
+             method);
+
+  return returnString;
+}
 
 // ===== Config ===============
 

@@ -18,7 +18,7 @@ static constexpr std::string HOOK_SCRIPT_KEY = "hook_script";
 
 BackgroundSetterMethodScript::BackgroundSetterMethodScript(
     const std::filesystem::path scriptPath)
-    : hookScript(scriptPath) {}
+    : script(scriptPath) {}
 
 Config::Config(std::filesystem::path imageDir, BackgroundSetterMethod setMethod,
                SunEventPollerMethod sunMethod,
@@ -27,12 +27,6 @@ Config::Config(std::filesystem::path imageDir, BackgroundSetterMethod setMethod,
       sunEventPollerMethod(sunMethod), hookScript(hookScript) {}
 
 std::expected<Config, ConfigError> loadConfigFromYAML(YAML::Node config) {
-  // TODO hook script is NOT script...
-  // make it so that
-  // if script is set, default to
-  // if mode is wallutil do that
-  // if both script and wallutils, do default to ..?
-
   std::expected<BackgroundSetterMethod, BackgroundSetterMethodError>
       expectedMethod =
           parseBackgroundSetterMethod(config, METHOD_KEY, METHOD_SCRIPT_KEY);

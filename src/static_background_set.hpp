@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "background_set_enums.hpp"
+#include "background_setter.hpp"
 
 /** Static Background Sets show a wallpaper once and exit */
 
@@ -21,6 +22,6 @@ public:
                        BackgroundSetMode mode,
                        std::vector<std::string> imageNames);
 
-  void show() const;
+  void show(const BackgroundSetterMethod &method) const;
 };
 } // namespace dynamic_paper

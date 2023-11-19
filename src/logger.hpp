@@ -50,7 +50,7 @@ void inline logFatalError(const std::string &msg, const bool flush = true) {
 
 void inline logAssert(const bool condition, const std::string &msg,
                       const bool flush = true) {
-  if (!condition) {
+  if (condition) {
     return;
   }
 

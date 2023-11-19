@@ -11,7 +11,7 @@
 namespace dynamic_paper {
 
 std::expected<std::string, CommandExecError>
-runCommand(const std::string &cmd) {
+runCommandStdout(const std::string &cmd) {
   std::array<char, 128> buffer;
   std::string result;
   std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"),
@@ -25,4 +25,14 @@ runCommand(const std::string &cmd) {
   }
   return result;
 }
+
+int runCommandExitCode(const std::string &cmd) {
+  int ret = system(cmd.c_str());
+  if (WEXITSTATUS(ret) == 0x10) {
+    return 0;
+  } else {
+    return 1;
+  }
+}
+
 } // namespace dynamic_paper
