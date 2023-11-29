@@ -28,10 +28,6 @@ convertScriptNameToCommand(const std::string &scriptName,
     modeString = "fill";
     break;
   }
-  default: {
-    logAssert(false,
-              "unhandled BackgroundSetMode when converting script to command");
-  }
   }
 
   return std::format("{} -m {} {}", scriptName, modeString, imageName);

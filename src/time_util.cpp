@@ -83,38 +83,6 @@ getSunriseAndSetUsingSunwait() {
   return SunriseAndSunsetTimes(mktime(&sunriseTm), mktime(&sunsetTm));
 }
 
-/**
- *  Convert string formatted HH:MM to number of seconds
- *  Example:
- *  01:00 -> 3600
- *  02:00 -> 7200
- *  10:00 -> 36000
- */
-static inline std::optional<time_t>
-convertRawTimeStringToTimeOffset(const std::string_view timeString) {
-  size_t colonPos = timeString.find(':');
-  if (colonPos == std::string::npos) {
-    return std::nullopt;
-  }
-
-  std::string hoursSubstr(timeString.substr(0, colonPos));
-  std::string minutesSubstr(timeString.substr(colonPos + 1));
-
-  // make sure minutes is in format MM
-  if (!(minutesSubstr.size() == 2)) {
-    return std::nullopt;
-  }
-
-  int hours = std::stoi(hoursSubstr);
-  int minutes = std::stoi(minutesSubstr);
-
-  if ((hours < 0) || (minutes < 0 || minutes > 59)) {
-    return std::nullopt;
-  }
-
-  return 60 * (minutes + (60 * hours));
-}
-
 template <typename... Ts>
 static inline bool tryRegexes(const std::string &s, std::smatch &groupMatches,
                               const std::regex regex, Ts... otherRegexes) {
@@ -189,6 +157,31 @@ sunOffsetStringToTimeOffset(const SunriseAndSunsetTimes &sunriseAndSunsetTimes,
 
 // ===== header ====================
 
+std::optional<time_t>
+convertRawTimeStringToTimeOffset(const std::string_view timeString) {
+  size_t colonPos = timeString.find(':');
+  if (colonPos == std::string::npos) {
+    return std::nullopt;
+  }
+
+  std::string hoursSubstr(timeString.substr(0, colonPos));
+  std::string minutesSubstr(timeString.substr(colonPos + 1));
+
+  // make sure minutes is in format MM
+  if (!(minutesSubstr.size() == 2)) {
+    return std::nullopt;
+  }
+
+  int hours = std::stoi(hoursSubstr);
+  int minutes = std::stoi(minutesSubstr);
+
+  if ((hours < 0) || (minutes < 0 || minutes > 59)) {
+    return std::nullopt;
+  }
+
+  return 60 * (minutes + (60 * hours));
+}
+
 std::optional<SunriseAndSunsetTimes>
 getSunriseAndSetString(const Config &config) {
   switch (config.sunEventPollerMethod) {
@@ -237,19 +230,20 @@ timeStringToTime(const std::string &s,
                             std::regex_constants::icase);
   const std::regex sunOffsetRegex("^(\\+|-)(\\d\\d:\\d\\d)\\s(sunrise|sunset)",
                                   std::regex_constants::icase);
-  const std::regex sunOffsetOneDigitRegex(
+  const std::regex sunOffsetHourDigitsRegex(
       "^(\\+|-)(\\d+:\\d\\d)\\s(sunrise|sunset)", std::regex_constants::icase);
   const std::regex timeRegex("^(\\d+\\d:\\d\\d)", std::regex_constants::icase);
-  const std::regex timeRegexOneDigit("^(\\d+:\\d\\d)",
-                                     std::regex_constants::icase);
+  const std::regex timeRegexHoursDigitsRegex("^(\\d+:\\d\\d)",
+                                             std::regex_constants::icase);
   std::smatch groupMatches;
 
   if (tryRegexes(s, groupMatches, sunRegex)) {
     return sunsetOrRiseStringToTimeOffset(sunriseAndSunsetTimes, groupMatches);
   } else if (tryRegexes(s, groupMatches, sunOffsetRegex,
-                        sunOffsetOneDigitRegex)) {
+                        sunOffsetHourDigitsRegex)) {
     return sunOffsetStringToTimeOffset(sunriseAndSunsetTimes, groupMatches);
-  } else if (tryRegexes(s, groupMatches, timeRegex, timeRegexOneDigit)) {
+  } else if (tryRegexes(s, groupMatches, timeRegex,
+                        timeRegexHoursDigitsRegex)) {
     const std::string &offsetStr = groupMatches[0].str();
     return convertRawTimeStringToTimeOffset(offsetStr);
   } else {

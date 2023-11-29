@@ -42,6 +42,16 @@ std::optional<SunriseAndSunsetTimes>
 getSunriseAndSetString(const Config &config);
 
 /**
+ *  Convert string formatted HH:MM to number of seconds
+ *  Example:
+ *  01:00 -> 3600
+ *  02:00 -> 7200
+ *  10:00 -> 36000
+ */
+std::optional<time_t>
+convertRawTimeStringToTimeOffset(const std::string_view timeString);
+
+/**
  * Converts a string formatted either a raw time
  * "11:00"
  * Or offset from sunrise or sunset:
