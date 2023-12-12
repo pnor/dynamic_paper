@@ -55,6 +55,19 @@ getBackgroundSetsFromFile(const std::filesystem::path backgroundSetFile,
             "Unable to parse background {} due to bad times", kv.first));
         break;
       }
+      case dynamic_paper::BackgroundSetParseErrors::NoTimes: {
+        dynamic_paper::logFatalError(
+            std::format("Unable to parse background {} due to no times to "
+                        "transition being provided",
+                        kv.first));
+        break;
+      }
+      case dynamic_paper::BackgroundSetParseErrors::NoImages: {
+        dynamic_paper::logFatalError(std::format(
+            "Unable to parse background {} due to no images being provided",
+            kv.first));
+        break;
+      }
       }
       exit(1);
     }

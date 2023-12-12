@@ -24,7 +24,12 @@ public:
   BackgroundSet(std::string name, DynamicBackgroundData data);
 };
 
-enum class BackgroundSetParseErrors { MissingSunpollInfo, BadTimes };
+enum class BackgroundSetParseErrors {
+  MissingSunpollInfo,
+  BadTimes,
+  NoImages,
+  NoTimes
+};
 
 std::expected<BackgroundSet, BackgroundSetParseErrors>
 parseFromYAML(const std::string &name, const YAML::Node &yaml,

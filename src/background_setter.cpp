@@ -35,7 +35,7 @@ convertScriptNameToCommand(const std::string &scriptName,
 
 static std::expected<void, BackgroundError>
 runCommandHandleError(const std::string &command) {
-  const int result = runCommandStdout(command);
+  const int result = runCommandExitCode(command);
 
   if (result != 0) {
     logError("Command ''" + command + "' did not run succesfully");
@@ -49,11 +49,11 @@ setBackgroundToImage(const std::filesystem::path &imagePath,
                      const BackgroundSetterMethod &method) {
   const std::string imageName = imagePath.string();
 
-  std::visit(
+  return std::visit(
       overloaded{
           [mode, &imageName](const BackgroundSetterMethodScript &method) {
             return runCommandHandleError(
-                convertScriptNameToCommand(method.script, mode, imageName))
+                convertScriptNameToCommand(method.script, mode, imageName));
           },
           [mode, &imageName](const BackgroundSetterMethodWallUtils) {
             switch (mode) {

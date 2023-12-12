@@ -144,12 +144,21 @@ suntimes:
     - "23:59"
 )"""";
 
+static const std::string DYNAMIC_BACKGROUND_NO_IMAGES_OR_TIMES = R""""(
+suntimes:
+  data_directory: "./backgrounds/dynamic"
+  type: dynamic
+  images:
+  times:
+)"""";
+
 // ===== Helper ===================
 static BackgroundSet getBackgroundSetFrom(const std::string &s,
                                           const Config &config) {
   YAML::Node yaml = YAML::Load(s);
   auto yamlMap = yaml.as<std::unordered_map<std::string, YAML::Node>>();
 
+  // yamlMap only has 1 entry; mapping the name to all the yaml info
   for (const auto &kv : yamlMap) {
     std::expected<BackgroundSet, BackgroundSetParseErrors> expBackgroundSet =
         parseFromYAML(kv.first, kv.second, config);
@@ -333,4 +342,16 @@ TEST(BackgroundSetTests, DynamicBackgroundSetStrictTimes) {
                           ZERO_TIME + ((15 * ONE_HOUR) + (59 * ONE_MINUTE)),
                           ZERO_TIME + ((23 * ONE_HOUR) + (23 * ONE_MINUTE)),
                           ZERO_TIME + ((23 * ONE_HOUR) + (59 * ONE_MINUTE))));
+}
+
+TEST(BackgroundSetTests, DynamicBackgroundSetNoImagesOrTimes) {
+  YAML::Node yaml = YAML::Load(DYNAMIC_BACKGROUND_NO_IMAGES_OR_TIMES);
+  auto yamlMap = yaml.as<std::unordered_map<std::string, YAML::Node>>();
+
+  for (const auto &kv : yamlMap) {
+    std::expected<BackgroundSet, BackgroundSetParseErrors> expBackgroundSet =
+        parseFromYAML(kv.first, kv.second, config);
+    EXPECT_FALSE(expBackgroundSet.has_value());
+    EXPECT_EQ(expBackgroundSet.error(), BackgroundSetParseErrors::NoImages);
+  }
 }

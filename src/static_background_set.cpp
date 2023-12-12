@@ -2,6 +2,7 @@
 
 #include <cstdlib>
 #include <format>
+#include <random>
 
 #include "config.hpp"
 #include "logger.hpp"
@@ -14,10 +15,18 @@ static void printDebugInfo(const StaticBackgroundData *data,
                            const BackgroundSetterMethod &method) {
   std::string modeString = backgroundSetModeString(data->mode);
   std::string methodString = backgroundSetterMethodString(method);
-  std::visit logWarning(std::format(
+  logWarning(std::format(
       "Encountered error in attempting to set the background for static "
       "background set. Image name was {} with mode {} using method {}",
       imageName, modeString, methodString));
+}
+
+/** Returns a random number in range [0..max)*/
+static int randomNumber(const int max) {
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_int_distribution<> distrib(0, max - 1);
+  return distrib(gen);
 }
 
 StaticBackgroundData::StaticBackgroundData(std::filesystem::path dataDirectory,
@@ -28,7 +37,7 @@ StaticBackgroundData::StaticBackgroundData(std::filesystem::path dataDirectory,
 void StaticBackgroundData::show(const BackgroundSetterMethod &method) const {
   logAssert(imageNames.size() > 0, "Static background");
 
-  const std::string imageName = imageNames[std::rand() % imageNames.size()];
+  const std::string imageName = imageNames[randomNumber(imageName.size())];
   const std::filesystem::path imagePath = dataDirectory / imageName;
 
   std::expected<void, BackgroundError> result =
