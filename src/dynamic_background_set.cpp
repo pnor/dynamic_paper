@@ -118,21 +118,20 @@ static std::vector<std::pair<time_t, std::string>>
 timesAndRandomNamesSortedByTime(const DynamicBackgroundData *dynamicData) {
   std::vector<std::pair<time_t, std::string>> timesAndNames;
 
-  std::random_device rd;
-  std::mt19937 g(rd());
-  std::uniform_int_distribution<int> randomIndexGenerator(
-      0, dynamicData->imageNames.size() - 1);
+  std::vector<std::string> names = dynamicData->imageNames;
+  shuffleVector(names);
 
-  for (const time_t &time : dynamicData->times) {
-    const std::string randomImageName =
+  for (size_t i = 0; i < dynamicData->times.size(); i++) {
+    timesAndNames.emplace_back(dynamicData->times[i], names[i % names.size()]);
   }
+
+  return timesAndNames;
 }
 
-static EventList getLinearEventList(const DynamicBackgroundData *dynamicData) {
+static EventList createEventListFromTimesAndNames(
+    const DynamicBackgroundData *dynamicData,
+    const std::vector<std::pair<time_t, std::string>> &timesAndNames) {
   EventList eventList;
-
-  std::vector<std::pair<time_t, std::string>> timesAndNames =
-      timesAndNamesSortedByTime(dynamicData);
 
   logAssert(timesAndNames.size() >= 1, "Times and names cannot be empty");
 
@@ -166,73 +165,20 @@ static EventList getLinearEventList(const DynamicBackgroundData *dynamicData) {
   return eventList;
 }
 
-static EventList getRandomEventList(const DynamicBackgroundData *dynamicData) {
-  EventList eventList;
-
-  std::vector<std::string> imageNames(dynamicData->imageNames);
-  shuffleVector(imageNames);
-}
-
-static void
-insertRandomSetBackgroundEvents(EventList &eventList,
-                                const DynamicBackgroundData *dynamicData) {
-  std::vector<std::string> imageNamesCopy(dynamicData->imageNames);
-  shuffleVector(imageNamesCopy);
-
-  for (size_t i = 0; i < dynamicData->times.size(); i++) {
-    const Event event = SetBackgroundEvent(
-        dynamicData->dataDirectory / imageNamesCopy[i % imageNamesCopy.size()]);
-    eventList.emplace_back(dynamicData->times[i], event);
-  }
-}
-
-static void insertTransitionEvents(EventList &eventList,
-                                   const DynamicBackgroundData *dynamicData) {
-  logAssert(dynamicData->transitionDuration.has_value(),
-            "Need a transition duration to insert transition events");
-
-  const unsigned int transitionDuration =
-
-      dynamicData->transitionDuration.value();
-
-  for (EventList::size_type i = 0; i < eventList.size() - 1; i += 2) {
-    const SetBackgroundEvent *beforeEvent =
-        getBackgroundEventFromVariant(eventList[0].second);
-    const SetBackgroundEvent *afterEvent =
-        getBackgroundEventFromVariant(eventList[1].second);
-
-    const time_t afterEventTime = eventList[1].first;
-
-    const LerpBackgroundEvent lerpEvent(
-        beforeEvent->imagePath, afterEvent->imagePath, transitionDuration,
-        NUM_TRANSITION_STEPS);
-
-    const time_t lerpEventTime = calculateLerpEventTime(
-        transitionDuration, afterEventTime, NUM_TRANSITION_STEPS);
-    const Event lerpEventVariant(lerpEvent);
-
-    const std::pair<time_t, Event> timeEvent =
-        std::make_pair(lerpEventTime, lerpEventVariant);
-    eventList.insert(eventList.begin() + i + 1, timeEvent);
-  }
-}
-
 static EventList getEventList(const DynamicBackgroundData *dynamicData) {
   EventList eventList;
 
   switch (dynamicData->order) {
   case BackgroundSetOrder::Linear: {
-    insertLinearSetBackgroundEvents(eventList, dynamicData);
+    eventList = createEventListFromTimesAndNames(
+        dynamicData, timesAndNamesSortedByTime(dynamicData));
     break;
   }
   case BackgroundSetOrder::Random: {
-    insertRandomSetBackgroundEvents(eventList, dynamicData);
+    eventList = createEventListFromTimesAndNames(
+        dynamicData, timesAndRandomNamesSortedByTime(dynamicData));
     break;
   }
-  }
-
-  if (dynamicData->transitionDuration.has_value()) {
-    insertTransitionEvents(eventList, dynamicData);
   }
 
   return eventList;
@@ -241,7 +187,7 @@ static EventList getEventList(const DynamicBackgroundData *dynamicData) {
 static std::pair<TimeAndEvent, TimeAndEvent> &
 getCurrentAndNextTimeAndEvent(const EventList &eventList, const time_t time) {
   logAssert(eventList.size() >= 1, "Event list is empty");
-  throw std::logic_error("");
+  throw std::logic_error("TODO");
 }
 
 // ===== Main Loop Logic ===============
