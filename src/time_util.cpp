@@ -188,6 +188,7 @@ getSunriseAndSetString(const Config &config) {
   case SunEventPollerMethod::Sunwait: {
     std::expected<SunriseAndSunsetTimes, SunriseAndSetErrors> expectation =
         getSunriseAndSetUsingSunwait();
+
     if (expectation.has_value()) {
       return std::make_optional(expectation.value());
     } else {

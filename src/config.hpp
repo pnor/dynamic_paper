@@ -19,6 +19,7 @@ enum class SunEventPollerMethod { Dummy, Sunwait };
 
 // ===== Background Setter Method ===============
 struct BackgroundSetterMethodBase {};
+
 struct BackgroundSetterMethodScript : BackgroundSetterMethodBase {
   const std::filesystem::path script;
   explicit BackgroundSetterMethodScript(const std::filesystem::path script);
@@ -31,6 +32,7 @@ struct BackgroundSetterMethodWallUtils : BackgroundSetterMethodBase {
     return true;
   }
 };
+
 using BackgroundSetterMethod =
     std::variant<BackgroundSetterMethodScript, BackgroundSetterMethodWallUtils>;
 
@@ -60,6 +62,8 @@ struct ConfigDefaults {
       BackgroundSetterMethodWallUtils();
   static constexpr SunEventPollerMethod sunEventPollerMethod =
       SunEventPollerMethod::Sunwait;
+  static constexpr std::string_view imageCacheDirectory =
+      "~/.cache/dynamic_paper";
 
   ConfigDefaults() = delete;
   ConfigDefaults(ConfigDefaults &other) = delete;
@@ -73,10 +77,12 @@ public:
   BackgroundSetterMethod backgroundSetterMethod;
   SunEventPollerMethod sunEventPollerMethod;
   std::optional<std::filesystem::path> hookScript;
+  std::filesystem::path imageCacheDirectory;
 
   Config(std::filesystem::path imageDir, BackgroundSetterMethod setMethod,
          SunEventPollerMethod sunMethod,
-         std::optional<std::filesystem::path> hookScript);
+         std::optional<std::filesystem::path> hookScript,
+         std::filesystem::path imageCacheDirectory);
 };
 
 std::expected<Config, ConfigError> loadConfigFromYAML(YAML::Node config);

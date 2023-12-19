@@ -7,9 +7,9 @@
 #include <ranges>
 
 #include "time_util.hpp"
+#include "variant_visitor_templ.hpp"
 
 namespace dynamic_paper {
-using std::move;
 
 struct SetBackgroundEvent;
 struct LerpBackgroundEvent;
@@ -17,7 +17,7 @@ using Event = std::variant<SetBackgroundEvent, LerpBackgroundEvent>;
 using TimeAndEvent = std::pair<time_t, Event>;
 using EventList = std::vector<TimeAndEvent>;
 
-// TODO move this into config?
+// TODO move this into config? (per background)
 const int NUM_TRANSITION_STEPS = 10;
 
 // ===== Helper Objects ===============
@@ -184,27 +184,58 @@ static EventList getEventList(const DynamicBackgroundData *dynamicData) {
   return eventList;
 }
 
-static std::pair<TimeAndEvent, TimeAndEvent> &
+static std::pair<TimeAndEvent, TimeAndEvent>
 getCurrentAndNextTimeAndEvent(const EventList &eventList, const time_t time) {
   logAssert(eventList.size() >= 1, "Event list is empty");
-  throw std::logic_error("TODO");
+
+  auto firstAfterTime =
+      std::ranges::find_if(eventList, [time](const TimeAndEvent &timeAndEvent) {
+        return timeAndEvent.first > time;
+      });
+
+  if (firstAfterTime == eventList.begin() ||
+      firstAfterTime == eventList.end()) {
+    TimeAndEvent current = eventList.back();
+    TimeAndEvent next = eventList.front();
+
+    return std::make_pair(current, next);
+  } else {
+    TimeAndEvent current = *(firstAfterTime - 1);
+    TimeAndEvent next = *firstAfterTime;
+
+    return std::make_pair(current, next);
+  }
 }
 
 // ===== Main Loop Logic ===============
 
 void doBackgroundLoop(const DynamicBackgroundData *backgroundData,
                       const Config &config) {
-  // TODO
-  // 1. get current time
   const time_t currentTime = getCurrentTime();
-  // 2. do the last thing before current time
-  // - its either (set background to X) or (lerp between X and Y for z seconds)
+
+  // TODO this random order gotta be consistent for the interpolation one
   EventList eventList = getEventList(backgroundData);
   logAssert(eventLsitIsSortedByTime(eventList),
             "Event list is not sorted by time from earliest to latest");
+
   std::pair<TimeAndEvent, TimeAndEvent> currentAndNextTimeAndEvent =
       getCurrentAndNextTimeAndEvent(eventList, currentTime);
-  // 3. wait until next time
+
+  const Event &currentEvent = currentAndNextTimeAndEvent.first.second;
+  std::expected<void, BackgroundError> result = std::visit(
+      overloaded{[&config, backgroundData](const SetBackgroundEvent &event) {
+                   return setBackgroundToImage(event.imagePath,
+                                               backgroundData->mode,
+                                               config.backgroundSetterMethod);
+                 },
+                 [](const LerpBackgroundEvent &event) {
+                   return std::expected<void, BackgroundError>(); // TODO
+                 }},
+      currentEvent);
+
+  const Event &nextEvent = currentAndNextTimeAndEvent.second.second;
+
+  // 3. TODO wait until next time
 }
 
 // ===== Header ===============

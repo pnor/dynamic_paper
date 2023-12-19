@@ -10,9 +10,64 @@
 #include "logger.hpp"
 
 // ===== Background Set ==========
+
+/**
+ * Prints a relevant error message for `error` caused from parsing `name`
+ * */
+[[noreturn]] static void
+exitAndPrintFatalError(const std::string &name,
+                       const dynamic_paper::BackgroundSetParseErrors error) {
+  switch (error) {
+  case dynamic_paper::BackgroundSetParseErrors::MissingSunpollInfo: {
+    dynamic_paper::logFatalError(
+        std::format("Unable to parse background {} due to not being able "
+                    "to determine time of sunrise and sunset",
+                    name));
+    break;
+  }
+  case dynamic_paper::BackgroundSetParseErrors::BadTimes: {
+    dynamic_paper::logFatalError(
+        std::format("Unable to parse background {} due to bad times", name));
+    break;
+  }
+  case dynamic_paper::BackgroundSetParseErrors::NoTimes: {
+    dynamic_paper::logFatalError(
+        std::format("Unable to parse background {} due to no times to "
+                    "transition being provided",
+                    name));
+    break;
+  }
+  case dynamic_paper::BackgroundSetParseErrors::NoImages: {
+    dynamic_paper::logFatalError(std::format(
+        "Unable to parse background {} due to no images being provided", name));
+    break;
+  }
+  case dynamic_paper::BackgroundSetParseErrors::NoImageDirectory: {
+    dynamic_paper::logFatalError(
+        std::format("Unable to parse background {} due to no image data "
+                    "directory provided",
+                    name));
+    break;
+  }
+  case dynamic_paper::BackgroundSetParseErrors::NoName: {
+    dynamic_paper::logFatalError(std::format(
+        "Unable to parse background {} due to no name provided", name));
+    break;
+  }
+  case dynamic_paper::BackgroundSetParseErrors::NoType: {
+    dynamic_paper::logFatalError(std::format(
+        "Unable to parse background {} due to no type provided", name));
+    break;
+  }
+  }
+
+  exit(1);
+}
+
 /**
  * Parses `BackgroundSet`s from the config file, exiting the program if unable
- * to parse one */
+ * to parse one
+ */
 static std::vector<dynamic_paper::BackgroundSet>
 getBackgroundSetsFromFile(const std::filesystem::path backgroundSetFile,
                           const dynamic_paper::Config &config) {
@@ -39,37 +94,10 @@ getBackgroundSetsFromFile(const std::filesystem::path backgroundSetFile,
     if (expBackgroundSet.has_value()) {
       const dynamic_paper::BackgroundSet &backgroundSet =
           expBackgroundSet.value();
-      backgroundSets.push_back(expBackgroundSet.value());
+      backgroundSets.push_back(backgroundSet);
       dynamic_paper::logInfo("Added background: " + backgroundSet.name);
     } else {
-      switch (expBackgroundSet.error()) {
-      case dynamic_paper::BackgroundSetParseErrors::MissingSunpollInfo: {
-        dynamic_paper::logFatalError(
-            std::format("Unable to parse background {} due to not being able "
-                        "to determine time of sunrise and sunset",
-                        kv.first));
-        break;
-      }
-      case dynamic_paper::BackgroundSetParseErrors::BadTimes: {
-        dynamic_paper::logFatalError(std::format(
-            "Unable to parse background {} due to bad times", kv.first));
-        break;
-      }
-      case dynamic_paper::BackgroundSetParseErrors::NoTimes: {
-        dynamic_paper::logFatalError(
-            std::format("Unable to parse background {} due to no times to "
-                        "transition being provided",
-                        kv.first));
-        break;
-      }
-      case dynamic_paper::BackgroundSetParseErrors::NoImages: {
-        dynamic_paper::logFatalError(std::format(
-            "Unable to parse background {} due to no images being provided",
-            kv.first));
-        break;
-      }
-      }
-      exit(1);
+      exitAndPrintFatalError(kv.first, expBackgroundSet.error());
     }
   }
 

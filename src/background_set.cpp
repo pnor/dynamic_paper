@@ -49,21 +49,6 @@ static void insertIntoParsingInfo(const YAML::Node &yaml,
   }
 }
 
-template <typename T>
-static void checkParsingInfoHas(const T &field, const std::string &errorMsg) {
-  if (!field.has_value()) {
-    throw std::runtime_error(errorMsg);
-  }
-}
-
-template <typename T, typename U>
-static void checkParsingInfoHasEither(const T &field1, const U &field2,
-                                      const std::string &errorMsg) {
-  if (field1.has_value() && field2.has_value()) {
-    throw std::runtime_error(errorMsg);
-  }
-}
-
 // ===== Constructor ===============
 
 BackgroundSet::BackgroundSet(std::string name, StaticBackgroundData data)
@@ -120,20 +105,20 @@ createStaticBackgroundSetFromInfo(const ParsingInfo &parsingInfo) {
 
   const std::string &name = parsingInfo.name.value();
 
-  checkParsingInfoHasEither(
-      parsingInfo.image, parsingInfo.images,
-      std::format("Background set {} does not provide an image to show "
-                  "(key 'image:' or 'images:')",
-                  name));
+  if (!(parsingInfo.image.has_value() || parsingInfo.images.has_value())) {
+    if (parsingInfo.images.has_value() && parsingInfo.images->empty()) {
+      return std::unexpected(BackgroundSetParseErrors::NoImages);
+    } else if (!parsingInfo.image.has_value()) {
+      return std::unexpected(BackgroundSetParseErrors::NoImages);
+    }
+  }
 
-  checkParsingInfoHas(
-      parsingInfo.dataDirectory,
-      std::format("background set {} does not provide an image directory "
-                  "(key `data_directory:`)",
-                  name));
+  if (!parsingInfo.dataDirectory.has_value()) {
+    return std::unexpected(BackgroundSetParseErrors::NoImageDirectory);
+  }
 
-  assert((void("Parsing info must have an image"),
-          parsingInfo.image.has_value() || parsingInfo.images.has_value()));
+  logAssert(parsingInfo.image.has_value() || parsingInfo.images.has_value(),
+            "Parsing info must have an image");
 
   if (parsingInfo.images.has_value()) {
     return BackgroundSet(
@@ -160,20 +145,18 @@ createDynamicBackgroundSetFromInfo(const ParsingInfo &parsingInfo,
 
   const std::string &name = parsingInfo.name.value();
 
-  checkParsingInfoHas(
-      parsingInfo.images,
-      std::format("Background set {} has no images (key `images:`)", name));
+  if (!parsingInfo.images.has_value() || parsingInfo.images->empty()) {
+    return std::unexpected(BackgroundSetParseErrors::NoImages);
+  }
 
-  checkParsingInfoHas(
-      parsingInfo.dataDirectory,
-      std::format("Background set {} does not provide an image directory "
-                  "(key `data_directory:`)",
-                  name));
+  if (!parsingInfo.dataDirectory.has_value()) {
+    return std::unexpected(BackgroundSetParseErrors::NoImageDirectory);
+  }
 
-  checkParsingInfoHas(parsingInfo.timeStrings,
-                      std::format("Background set {} does not provide times "
-                                  "(key `times:`)",
-                                  name));
+  if (!parsingInfo.timeStrings.has_value() ||
+      parsingInfo.timeStrings->empty()) {
+    return std::unexpected(BackgroundSetParseErrors::NoTimes);
+  }
 
   std::optional<SunriseAndSunsetTimes> optSunriseAndSunsetTimes =
       getSunriseAndSetString(config);
@@ -199,14 +182,13 @@ createDynamicBackgroundSetFromInfo(const ParsingInfo &parsingInfo,
 static std::expected<BackgroundSet, BackgroundSetParseErrors>
 createBackgroundSetFromInfo(const ParsingInfo &parsingInfo,
                             const Config &config) {
-  checkParsingInfoHas(parsingInfo.name, "Background set did not have a name");
-  std::string name = parsingInfo.name.value();
+  if (!parsingInfo.name.has_value()) {
+    return std::unexpected(BackgroundSetParseErrors::NoName);
+  }
 
-  checkParsingInfoHas(
-      parsingInfo.type,
-      std::format(
-          "Background set {} did not specify a type (`type:dynamic/static`)",
-          name));
+  if (!parsingInfo.type.has_value()) {
+    return std::unexpected(BackgroundSetParseErrors::NoType);
+  }
 
   switch (parsingInfo.type.value()) {
   case BackgroundSetType::Static: {

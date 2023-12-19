@@ -25,7 +25,10 @@ public:
 };
 
 enum class BackgroundSetParseErrors {
+  NoName,
+  NoType,
   MissingSunpollInfo,
+  NoImageDirectory,
   BadTimes,
   NoImages,
   NoTimes

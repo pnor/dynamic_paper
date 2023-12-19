@@ -15,6 +15,7 @@ static constexpr std::string SUN_POLL_METHOD_KEY = "sun_poller";
 static constexpr std::string BACKGROUND_IMAGE_DIR_KEY = "image_dir";
 static constexpr std::string METHOD_SCRIPT_KEY = "method_script";
 static constexpr std::string HOOK_SCRIPT_KEY = "hook_script";
+static constexpr std::string IMAGE_CACHE_DIR_KEY = "cache_dir";
 
 BackgroundSetterMethodScript::BackgroundSetterMethodScript(
     const std::filesystem::path scriptPath)
@@ -22,9 +23,11 @@ BackgroundSetterMethodScript::BackgroundSetterMethodScript(
 
 Config::Config(std::filesystem::path imageDir, BackgroundSetterMethod setMethod,
                SunEventPollerMethod sunMethod,
-               std::optional<std::filesystem::path> hookScript)
+               std::optional<std::filesystem::path> hookScript,
+               std::filesystem::path imageCacheDirectory)
     : backgroundImageDir(imageDir), backgroundSetterMethod(setMethod),
-      sunEventPollerMethod(sunMethod), hookScript(hookScript) {}
+      sunEventPollerMethod(sunMethod), hookScript(hookScript),
+      imageCacheDirectory(imageCacheDirectory) {}
 
 std::expected<Config, ConfigError> loadConfigFromYAML(YAML::Node config) {
   std::expected<BackgroundSetterMethod, BackgroundSetterMethodError>
@@ -56,8 +59,13 @@ std::expected<Config, ConfigError> loadConfigFromYAML(YAML::Node config) {
       generalConfigParseOrUseDefault<std::optional<std::filesystem::path>>(
           config, HOOK_SCRIPT_KEY, std::nullopt);
 
+  std::filesystem::path imageCacheDir =
+      generalConfigParseOrUseDefault<std::filesystem::path>(
+          config, IMAGE_CACHE_DIR_KEY, ConfigDefaults::imageCacheDirectory);
+  // TODO add test case for this
+
   return Config(backgroundImageDir, expectedMethod.value(), sunMethod,
-                hookScript);
+                hookScript, imageCacheDir);
 };
 
 } // namespace dynamic_paper

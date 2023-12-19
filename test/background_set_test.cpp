@@ -18,7 +18,8 @@ using namespace testing;
 
 // Static
 static const Config config("./images", BackgroundSetterMethodWallUtils(),
-                           SunEventPollerMethod::Dummy, std::nullopt);
+                           SunEventPollerMethod::Dummy, std::nullopt,
+                           "~/.cache/backgrounds");
 
 static const std::string STATIC_BACKGROUND_SET = R""""(
 static_paper:

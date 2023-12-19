@@ -12,12 +12,15 @@ using namespace dynamic_paper;
 
 static constexpr std::string_view DEFAULT_IMAGE_DIR =
     "~/.local/share/dynamic_paper/images";
+static constexpr std::string_view DEFAULT_CACHE_IMAGE_DIR =
+    "~/.cache/dynamic_paper";
 
 static const std::string GENERAL_CONFIG_YAML = R""""(
 method: "wallutils"
 sun_poller: "sunwait"
 image_dir: "./an_image_dir"
 hook_script: "./hook_script.sh"
+cache_dir: "~/.cache/backgrounds"
 )"""";
 
 static const std::string EMPTY_YAML = "";
@@ -67,6 +70,8 @@ TEST(GeneralConfig, AllFilled) {
   EXPECT_EQ(cfg.backgroundImageDir, std::filesystem::path("./an_image_dir"));
   EXPECT_EQ(cfg.hookScript,
             std::make_optional(std::filesystem::path("./hook_script.sh")));
+  EXPECT_EQ(cfg.imageCacheDirectory,
+            std::filesystem::path("~/.cache/backgrounds"));
 }
 
 TEST(GeneralConfig, DefaultValues) {
@@ -83,6 +88,8 @@ TEST(GeneralConfig, DefaultValues) {
   EXPECT_EQ(cfg.sunEventPollerMethod, SunEventPollerMethod::Sunwait);
   EXPECT_EQ(cfg.backgroundImageDir, std::filesystem::path(DEFAULT_IMAGE_DIR));
   EXPECT_EQ(cfg.hookScript, std::nullopt);
+  EXPECT_EQ(cfg.imageCacheDirectory,
+            std::filesystem::path(DEFAULT_CACHE_IMAGE_DIR));
 }
 
 TEST(GeneralConfig, MethodOnly) {
