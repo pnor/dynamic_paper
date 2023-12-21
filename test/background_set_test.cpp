@@ -154,8 +154,7 @@ suntimes:
 )"""";
 
 // ===== Helper ===================
-static BackgroundSet getBackgroundSetFrom(const std::string &s,
-                                          const Config &config) {
+static BackgroundSet getBackgroundSetFrom(const std::string &s) {
   YAML::Node yaml = YAML::Load(s);
   auto yamlMap = yaml.as<std::unordered_map<std::string, YAML::Node>>();
 
@@ -175,7 +174,7 @@ static BackgroundSet getBackgroundSetFrom(const std::string &s,
 
 TEST(BackgroundSetTests, StaticBackgroundSetOneImage) {
   const BackgroundSet backgroundSet =
-      getBackgroundSetFrom(STATIC_BACKGROUND_SET, config);
+      getBackgroundSetFrom(STATIC_BACKGROUND_SET);
   EXPECT_EQ(backgroundSet.name, "static_paper");
 
   const StaticBackgroundData *staticData =
@@ -187,7 +186,7 @@ TEST(BackgroundSetTests, StaticBackgroundSetOneImage) {
 
 TEST(BackgroundSetTests, StaticBackgroundSetImageList) {
   const BackgroundSet backgroundSet =
-      getBackgroundSetFrom(STATIC_BACKGROUND_IMAGE_LIST_SET, config);
+      getBackgroundSetFrom(STATIC_BACKGROUND_IMAGE_LIST_SET);
   EXPECT_EQ(backgroundSet.name, "static_paper");
 
   const StaticBackgroundData *staticData =
@@ -200,7 +199,7 @@ TEST(BackgroundSetTests, StaticBackgroundSetImageList) {
 
 TEST(BackgroundSetTests, DynamicBackgroundSet) {
   const BackgroundSet backgroundSet =
-      getBackgroundSetFrom(DYNAMIC_BACKGROUND_SET, config);
+      getBackgroundSetFrom(DYNAMIC_BACKGROUND_SET);
 
   EXPECT_EQ(backgroundSet.name, "dynamic_paper");
 
@@ -226,7 +225,7 @@ TEST(BackgroundSetTests, DynamicBackgroundSet) {
 
 TEST(BackgroundSetTests, DynamicBackgroundSetRandom) {
   const BackgroundSet backgroundSet =
-      getBackgroundSetFrom(DYNAMIC_BACKGROUND_SET_RANDOM, config);
+      getBackgroundSetFrom(DYNAMIC_BACKGROUND_SET_RANDOM);
 
   EXPECT_EQ(backgroundSet.name, "dynamic_paper");
 
@@ -252,7 +251,7 @@ TEST(BackgroundSetTests, DynamicBackgroundSetRandom) {
 
 TEST(BackgroundSetTests, DynamicBackgroundSetEmptyDefaults) {
   const BackgroundSet backgroundSet =
-      getBackgroundSetFrom(DYNAMIC_BACKGROUND_SET_EMPTY, config);
+      getBackgroundSetFrom(DYNAMIC_BACKGROUND_SET_EMPTY);
 
   EXPECT_EQ(backgroundSet.name, "dynamic_paper");
 
@@ -275,7 +274,7 @@ TEST(BackgroundSetTests, DynamicBackgroundSetEmptyDefaults) {
 
 TEST(BackgroundSetTests, DynamicBackgroundSetSunTimes) {
   const BackgroundSet backgroundSet =
-      getBackgroundSetFrom(DYNAMIC_BACKGROUND_SUNTIMES, config);
+      getBackgroundSetFrom(DYNAMIC_BACKGROUND_SUNTIMES);
 
   EXPECT_EQ(backgroundSet.name, "suntimes");
 
@@ -314,7 +313,7 @@ TEST(BackgroundSetTests, DynamicBackgroundSetSunTimes) {
 
 TEST(BackgroundSetTests, DynamicBackgroundSetStrictTimes) {
   const BackgroundSet backgroundSet =
-      getBackgroundSetFrom(DYNAMIC_BACKGROUND_STRICT_TIMES, config);
+      getBackgroundSetFrom(DYNAMIC_BACKGROUND_STRICT_TIMES);
 
   EXPECT_EQ(backgroundSet.name, "suntimes");
 

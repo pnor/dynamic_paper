@@ -157,31 +157,6 @@ sunOffsetStringToTimeOffset(const SunriseAndSunsetTimes &sunriseAndSunsetTimes,
 
 // ===== header ====================
 
-std::optional<time_t>
-convertRawTimeStringToTimeOffset(const std::string_view timeString) {
-  size_t colonPos = timeString.find(':');
-  if (colonPos == std::string::npos) {
-    return std::nullopt;
-  }
-
-  std::string hoursSubstr(timeString.substr(0, colonPos));
-  std::string minutesSubstr(timeString.substr(colonPos + 1));
-
-  // make sure minutes is in format MM
-  if (!(minutesSubstr.size() == 2)) {
-    return std::nullopt;
-  }
-
-  int hours = std::stoi(hoursSubstr);
-  int minutes = std::stoi(minutesSubstr);
-
-  if ((hours < 0) || (minutes < 0 || minutes > 59)) {
-    return std::nullopt;
-  }
-
-  return 60 * (minutes + (60 * hours));
-}
-
 std::optional<SunriseAndSunsetTimes>
 getSunriseAndSetString(const Config &config) {
   switch (config.sunEventPollerMethod) {

@@ -5,7 +5,9 @@
 #include <format>
 #include <random>
 #include <ranges>
+#include <thread>
 
+#include "background_setter.hpp"
 #include "time_util.hpp"
 #include "variant_visitor_templ.hpp"
 
@@ -184,8 +186,8 @@ static EventList getEventList(const DynamicBackgroundData *dynamicData) {
   return eventList;
 }
 
-static std::pair<TimeAndEvent, TimeAndEvent>
-getCurrentAndNextTimeAndEvent(const EventList &eventList, const time_t time) {
+static std::pair<TimeAndEvent, time_t>
+getCurrentEventAndNextTime(const EventList &eventList, const time_t time) {
   logAssert(eventList.size() >= 1, "Event list is empty");
 
   auto firstAfterTime =
@@ -196,14 +198,52 @@ getCurrentAndNextTimeAndEvent(const EventList &eventList, const time_t time) {
   if (firstAfterTime == eventList.begin() ||
       firstAfterTime == eventList.end()) {
     TimeAndEvent current = eventList.back();
-    TimeAndEvent next = eventList.front();
+    time_t next = eventList.front().first;
 
     return std::make_pair(current, next);
   } else {
     TimeAndEvent current = *(firstAfterTime - 1);
-    TimeAndEvent next = *firstAfterTime;
+    time_t next = firstAfterTime->first;
 
     return std::make_pair(current, next);
+  }
+}
+
+void doEvent(const Event &event, const DynamicBackgroundData *backgroundData,
+             const Config &config) {
+  std::visit(
+      overloaded{
+          [&config, backgroundData](const SetBackgroundEvent &event) {
+            std::expected<void, BackgroundError> result =
+                setBackgroundToImage(event.imagePath, backgroundData->mode,
+                                     config.backgroundSetterMethod);
+
+            if (!result.has_value()) {
+              logError("Error occured when trying to set background");
+            }
+          },
+          [&config, backgroundData](const LerpBackgroundEvent &event) {
+            std::expected<void, BackgroundError> result =
+                lerpBackgroundBetweenImages(
+                    event.startImagePath, event.endImagePath, event.duration,
+                    event.numSteps, backgroundData->mode,
+                    config.backgroundSetterMethod);
+
+            if (!result.has_value()) {
+              logError(
+                  "Error occured when trying to interpolate the background");
+            }
+          }},
+      event);
+}
+
+static void sleepUntilNextTime(const time_t &now, const time_t &later) {
+  if (now < later) {
+    std::this_thread::sleep_for(std::chrono::seconds(later - now));
+  } else { // Sleep past a day boundary / now <= later
+    constexpr time_t second_before_midnight =
+        convertRawTimeStringToTimeOffset("23:59").value();
+    // TODO
   }
 }
 
@@ -218,24 +258,17 @@ void doBackgroundLoop(const DynamicBackgroundData *backgroundData,
   logAssert(eventLsitIsSortedByTime(eventList),
             "Event list is not sorted by time from earliest to latest");
 
-  std::pair<TimeAndEvent, TimeAndEvent> currentAndNextTimeAndEvent =
-      getCurrentAndNextTimeAndEvent(eventList, currentTime);
+  std::pair<TimeAndEvent, time_t> currentAndNextTimeAndEvent =
+      getCurrentEventAndNextTime(eventList, currentTime);
 
   const Event &currentEvent = currentAndNextTimeAndEvent.first.second;
-  std::expected<void, BackgroundError> result = std::visit(
-      overloaded{[&config, backgroundData](const SetBackgroundEvent &event) {
-                   return setBackgroundToImage(event.imagePath,
-                                               backgroundData->mode,
-                                               config.backgroundSetterMethod);
-                 },
-                 [](const LerpBackgroundEvent &event) {
-                   return std::expected<void, BackgroundError>(); // TODO
-                 }},
-      currentEvent);
 
-  const Event &nextEvent = currentAndNextTimeAndEvent.second.second;
+  doEvent(currentEvent, backgroundData, config);
+
+  const time_t &nextTime = currentAndNextTimeAndEvent.second;
 
   // 3. TODO wait until next time
+  sleepUntilNextTime(currentTime, nextTime);
 }
 
 // ===== Header ===============

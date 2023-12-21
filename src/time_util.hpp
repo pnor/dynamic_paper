@@ -42,13 +42,14 @@ std::optional<SunriseAndSunsetTimes>
 getSunriseAndSetString(const Config &config);
 
 /**
- *  Convert string formatted HH:MM to number of seconds
+ *  Convert string formatted HH:MM or HH:MM:SS to number of seconds
  *  Example:
  *  01:00 -> 3600
  *  02:00 -> 7200
  *  10:00 -> 36000
+ *  10:00:01 -> 36001
  */
-std::optional<time_t>
+constexpr std::optional<time_t>
 convertRawTimeStringToTimeOffset(const std::string_view timeString);
 
 /**
@@ -79,4 +80,77 @@ std::optional<std::vector<time_t>>
 timeStringsToTimes(const std::vector<std::string> &strings,
                    const SunriseAndSunsetTimes &sunriseAndSunsetTimes);
 
+// ===== constexpr definition =====
+
+/**
+ * Returns a positive integer contained in `s` or `nullopt` if unable to parse.
+ * `s` should contain strictly numbers, no (+/-) or decimals.
+ */
+constexpr std::optional<unsigned int>
+stringViewToInt(const std::string_view s) {
+  int res = 0;
+  for (std::string_view::size_type i = 0; i < s.size(); i++) {
+    res *= 10;
+    if (std::isdigit(s[i])) {
+      res += (s[i] - '0');
+    } else {
+      return std::nullopt;
+    }
+  }
+  return res;
+}
+
+constexpr std::optional<time_t>
+convertRawTimeStringToTimeOffset(const std::string_view timeString) {
+  size_t colonPos = timeString.find(':');
+  if (colonPos == std::string::npos) {
+    return std::nullopt;
+  }
+
+  size_t secondColonPos = timeString.find(':', colonPos + 1);
+  if (secondColonPos == std::string::npos) {
+    secondColonPos = timeString.size();
+  }
+
+  const std::string_view hoursSubstr(timeString.substr(0, colonPos));
+  const std::string_view minutesSubstr(
+      timeString.substr(colonPos + 1, secondColonPos - colonPos - 1));
+  const std::string_view secondsSubstr =
+      secondColonPos >= timeString.size() - 1
+          ? ""
+          : (timeString.substr(secondColonPos + 1));
+
+  // make sure minutes is in format MM
+  if (minutesSubstr.size() != 2) {
+    return std::nullopt;
+  }
+  // make sure seconds is in format ss or is empty
+  if (secondsSubstr.size() == 1 || secondsSubstr.size() > 2) {
+    return std::nullopt;
+  }
+
+  std::optional<unsigned int> parsedHours = stringViewToInt(hoursSubstr);
+  if (!parsedHours.has_value()) {
+    return std::nullopt;
+  }
+  std::optional<unsigned int> parsedMinutes = stringViewToInt(minutesSubstr);
+  if (!parsedMinutes.has_value()) {
+    return std::nullopt;
+  }
+  std::optional<unsigned int> parsedSeconds = stringViewToInt(secondsSubstr);
+  if (!parsedSeconds.has_value()) {
+    return std::nullopt;
+  }
+
+  std::chrono::hours hours(parsedHours.value());
+  std::chrono::minutes minutes(parsedMinutes.value());
+  std::chrono::seconds seconds(parsedSeconds.value());
+
+  if ((hours.count() < 0) || (minutes.count() < 0 || minutes.count() > 59) ||
+      (seconds.count() < 0 || seconds.count() > 59)) {
+    return std::nullopt;
+  }
+
+  return std::chrono::seconds(hours + seconds + minutes).count();
+}
 } // namespace dynamic_paper

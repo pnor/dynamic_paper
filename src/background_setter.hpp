@@ -21,9 +21,9 @@ setBackgroundToImage(const std::filesystem::path &imagePath,
                      const BackgroundSetMode mode,
                      const BackgroundSetterMethod &method);
 
-std::expected<void, BackgroundError>
-lerpBackgroundBetweenImages(const std::filesystem::path &beforePath,
-                            const std::filesystem::path &afterPath,
-                            const BackgroundSetMode mode,
-                            const BackgroundSetterMethod &method);
+std::expected<void, BackgroundError> lerpBackgroundBetweenImages(
+    const std::filesystem::path &beforePath,
+    const std::filesystem::path &afterPath, const unsigned int duration,
+    const unsigned int numSteps, const BackgroundSetMode mode,
+    const BackgroundSetterMethod &method);
 } // namespace dynamic_paper
