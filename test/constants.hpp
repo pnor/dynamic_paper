@@ -5,7 +5,8 @@
 
 namespace dynamic_paper_test {
 
-constexpr time_t ONE_MINUTE = 1 * 60;
+constexpr time_t ONE_SECOND = 1;
+constexpr time_t ONE_MINUTE = ONE_SECOND * 60;
 constexpr time_t ONE_HOUR = ONE_MINUTE * 60;
 
 const dynamic_paper::SunriseAndSunsetTimes

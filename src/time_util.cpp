@@ -202,24 +202,36 @@ timeStringToTime(const std::string &s,
 
   std::string timeString = trim_copy(s);
 
+  // "sunrise" or "sunset"
   const std::regex sunRegex("\\s*(sunrise|sunset)\\s*",
                             std::regex_constants::icase);
-  const std::regex sunOffsetRegex("^(\\+|-)(\\d\\d:\\d\\d)\\s(sunrise|sunset)",
-                                  std::regex_constants::icase);
-  const std::regex sunOffsetHourDigitsRegex(
-      "^(\\+|-)(\\d+:\\d\\d)\\s(sunrise|sunset)", std::regex_constants::icase);
-  const std::regex timeRegex("^(\\d+\\d:\\d\\d)", std::regex_constants::icase);
-  const std::regex timeRegexHoursDigitsRegex("^(\\d+:\\d\\d)",
-                                             std::regex_constants::icase);
+
+  // (+/-) xx:xx (sunrise/sunset)
+  const std::regex sunOffsetRegex(
+      "^(\\+|-)\\s*(\\d+:\\d\\d)\\s*(sunrise|sunset)",
+      std::regex_constants::icase);
+
+  // (+/-) xx:xx:xx (sunrise/sunset)
+  const std::regex sunOffsetSecondsRegex(
+      "^(\\+|-)\\s*(\\d+:\\d\\d:\\d\\d)\\s*(sunrise|sunset)",
+      std::regex_constants::icase);
+
+  // xx:xx
+  const std::regex timeRegex("^(\\d+:\\d\\d)", std::regex_constants::icase);
+
+  // xx:xx:xx
+  const std::regex timeWithSecondsRegex("^(\\d+:\\d\\d:\\d\\d)",
+                                        std::regex_constants::icase);
+
   std::smatch groupMatches;
 
-  if (tryRegexes(s, groupMatches, sunRegex)) {
+  if (tryRegexes(timeString, groupMatches, sunRegex)) {
     return sunsetOrRiseStringToTimeOffset(sunriseAndSunsetTimes, groupMatches);
-  } else if (tryRegexes(s, groupMatches, sunOffsetRegex,
-                        sunOffsetHourDigitsRegex)) {
+  } else if (tryRegexes(timeString, groupMatches, sunOffsetRegex,
+                        sunOffsetSecondsRegex)) {
     return sunOffsetStringToTimeOffset(sunriseAndSunsetTimes, groupMatches);
-  } else if (tryRegexes(s, groupMatches, timeRegex,
-                        timeRegexHoursDigitsRegex)) {
+  } else if (tryRegexes(timeString, groupMatches, timeRegex,
+                        timeWithSecondsRegex)) {
     const std::string &offsetStr = groupMatches[0].str();
     return convertRawTimeStringToTimeOffset(offsetStr);
   } else {

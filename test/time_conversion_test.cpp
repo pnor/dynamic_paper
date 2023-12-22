@@ -87,6 +87,47 @@ TEST(TimeStringConversion, RawTimeTest5) {
   EXPECT_EQ(times[1] - times[0], ONE_HOUR);
 }
 
+TEST(TimeStringConversion, RawTimeTestSeconds) {
+  std::optional<std::vector<time_t>> timesOpt =
+      dynamic_paper::timeStringsToTimes({"00:00:00", "01:00:00", "01:00:01"},
+                                        testSunriseAndSunsetTimes);
+
+  EXPECT_TRUE(timesOpt.has_value());
+
+  std::vector<time_t> times = timesOpt.value();
+
+  EXPECT_EQ(times[0], ZERO_TIME);
+  EXPECT_EQ(times[2] - times[1], ONE_SECOND);
+}
+
+TEST(TimeStringConversion, RawTimeTestSeconds2) {
+  std::optional<std::vector<time_t>> timesOpt =
+      dynamic_paper::timeStringsToTimes({"01:00:12", "10:12:24"},
+                                        testSunriseAndSunsetTimes);
+
+  EXPECT_TRUE(timesOpt.has_value());
+
+  std::vector<time_t> times = timesOpt.value();
+
+  EXPECT_EQ(times[1] - times[0],
+            (ONE_HOUR * 9) + (ONE_MINUTE * 12) + (ONE_SECOND * 12));
+}
+
+TEST(TimeStringConversion, RawTimeTestSpaces) {
+  std::optional<std::vector<time_t>> timesOpt =
+      dynamic_paper::timeStringsToTimes(
+          {"   01:01:01    ", "    01:01:01", "01:01:01    "},
+          testSunriseAndSunsetTimes);
+
+  EXPECT_TRUE(timesOpt.has_value());
+
+  std::vector<time_t> times = timesOpt.value();
+
+  EXPECT_EQ(times[0], ONE_HOUR + ONE_MINUTE + ONE_SECOND);
+  EXPECT_EQ(times[1], ONE_HOUR + ONE_MINUTE + ONE_SECOND);
+  EXPECT_EQ(times[2], ONE_HOUR + ONE_MINUTE + ONE_SECOND);
+}
+
 TEST(TimeStringConversion, BadRawTimeTestTooManyMinutes) {
   std::optional<std::vector<time_t>> timesOpt =
       dynamic_paper::timeStringsToTimes({"01:90", "03:00"},
@@ -116,6 +157,28 @@ TEST(TimeStringConversion, BadRawTimeTestAtLeastOneIsBad) {
       dynamic_paper::timeStringsToTimes(
           {"00:00", "01:00", "2:00", "0003:00000", "4:00"},
           testSunriseAndSunsetTimes);
+
+  EXPECT_FALSE(timesOpt.has_value());
+}
+
+TEST(TimeStringConversion, BadRawTimeSecondsTooShort) {
+  std::optional<std::vector<time_t>> timesOpt =
+      dynamic_paper::timeStringsToTimes({"00:00:0"}, testSunriseAndSunsetTimes);
+
+  EXPECT_FALSE(timesOpt.has_value());
+}
+
+TEST(TimeStringConversion, BadRawTimeSecondsTooLong) {
+  std::optional<std::vector<time_t>> timesOpt =
+      dynamic_paper::timeStringsToTimes({"00:00:000"},
+                                        testSunriseAndSunsetTimes);
+
+  EXPECT_FALSE(timesOpt.has_value());
+}
+
+TEST(TimeStringConversion, BadRawTimeNoSeconds) {
+  std::optional<std::vector<time_t>> timesOpt =
+      dynamic_paper::timeStringsToTimes({"00:00:"}, testSunriseAndSunsetTimes);
 
   EXPECT_FALSE(timesOpt.has_value());
 }
@@ -406,6 +469,40 @@ TEST(TimeStringConversion, SunoffsetTimeTestLongHour2) {
   std::vector<time_t> times = timesOpt.value();
 
   EXPECT_EQ(times[1] - times[0], ONE_HOUR * 100);
+}
+
+TEST(TimeStringConversion, SunoffsetSeconds) {
+  std::optional<std::vector<time_t>> timesOpt =
+      dynamic_paper::timeStringsToTimes({"+00:00:01 sunrise",
+                                         "-00:00:01 sunset",
+                                         "+00:00:00 sunrise", "sunrise"},
+                                        testSunriseAndSunsetTimes);
+
+  EXPECT_TRUE(timesOpt.has_value());
+
+  std::vector<time_t> times = timesOpt.value();
+
+  EXPECT_EQ(times[0] - DUMMY_SUNRISE_TIME, ONE_SECOND);
+  EXPECT_EQ(times[1] - DUMMY_SUNSET_TIME, -ONE_SECOND);
+  EXPECT_EQ(times[2], DUMMY_SUNRISE_TIME);
+  EXPECT_EQ(times[2], times[3]);
+}
+
+TEST(TimeStringConversion, SunoffsetSpaces) {
+  std::optional<std::vector<time_t>> timesOpt =
+      dynamic_paper::timeStringsToTimes(
+          {"    +00:00:01 sunrise", "-00:00:01     sunset",
+           "+00:00:00 sunrise     ", "  sunrise  "},
+          testSunriseAndSunsetTimes);
+
+  EXPECT_TRUE(timesOpt.has_value());
+
+  std::vector<time_t> times = timesOpt.value();
+
+  EXPECT_EQ(times[0] - DUMMY_SUNRISE_TIME, ONE_SECOND);
+  EXPECT_EQ(times[1] - DUMMY_SUNSET_TIME, -ONE_SECOND);
+  EXPECT_EQ(times[2], DUMMY_SUNRISE_TIME);
+  EXPECT_EQ(times[2], times[3]);
 }
 
 TEST(TimeStringConversion, BadSunriseSunsetStringsSymbol) {
