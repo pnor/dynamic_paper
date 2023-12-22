@@ -7,6 +7,7 @@
 
 #include "time_util.hpp"
 #include "type_helper.hpp"
+#include "variant_visitor_templ.hpp"
 #include "yaml_helper.hpp"
 
 namespace dynamic_paper {
@@ -49,17 +50,7 @@ static void insertIntoParsingInfo(const YAML::Node &yaml,
   }
 }
 
-// ===== Constructor ===============
-
-BackgroundSet::BackgroundSet(std::string name, StaticBackgroundData data)
-    : name(name),
-      type(std::variant<StaticBackgroundData, DynamicBackgroundData>(data)) {}
-
-BackgroundSet::BackgroundSet(std::string name, DynamicBackgroundData data)
-    : name(name),
-      type(std::variant<StaticBackgroundData, DynamicBackgroundData>(data)) {}
-
-// ===== Parsing ==================
+// ===== Parsing Helper ==================
 /** Information parsed from the body of the yaml as it reads */
 struct ParsingInfo {
   std::optional<std::string> name = std::nullopt;
@@ -201,6 +192,27 @@ createBackgroundSetFromInfo(const ParsingInfo &parsingInfo,
     throw std::logic_error("Unhandled background set type");
   }
   }
+}
+
+// ===== Header ===============
+BackgroundSet::BackgroundSet(std::string name, StaticBackgroundData data)
+    : name(name),
+      type(std::variant<StaticBackgroundData, DynamicBackgroundData>(data)) {}
+
+BackgroundSet::BackgroundSet(std::string name, DynamicBackgroundData data)
+    : name(name),
+      type(std::variant<StaticBackgroundData, DynamicBackgroundData>(data)) {}
+
+void BackgroundSet::show(const BackgroundSetterMethod &method,
+                         const Config &config) const {
+  std::visit(
+      overloaded{
+          [method](const StaticBackgroundData &data) { data.show(method); },
+          [method, &config](const DynamicBackgroundData &data) {
+            data.show(method, config);
+          },
+      },
+      this->type);
 }
 
 std::expected<BackgroundSet, BackgroundSetParseErrors>

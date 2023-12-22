@@ -22,6 +22,8 @@ public:
 
   BackgroundSet(std::string name, StaticBackgroundData data);
   BackgroundSet(std::string name, DynamicBackgroundData data);
+
+  void show(const BackgroundSetterMethod &method, const Config &config) const;
 };
 
 enum class BackgroundSetParseErrors {

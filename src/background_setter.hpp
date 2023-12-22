@@ -21,6 +21,14 @@ setBackgroundToImage(const std::filesystem::path &imagePath,
                      const BackgroundSetMode mode,
                      const BackgroundSetterMethod &method);
 
+/**
+ * Using a program specified by `method`, changes the background from
+ * `beforePath` to `afterPath`. This effect occurs for `duration` seconds and
+ * happens in `numSteps` steps. Sets the background using a program specified by
+ * `method`, with a display mode of `mode`.
+ *
+ * Uses the external program imagemagick to create interpolated images.
+ */
 std::expected<void, BackgroundError> lerpBackgroundBetweenImages(
     const std::filesystem::path &beforePath,
     const std::filesystem::path &afterPath, const unsigned int duration,

@@ -3,11 +3,13 @@
 #include <algorithm>
 #include <chrono>
 #include <format>
+#include <limits>
 #include <random>
 #include <ranges>
 #include <thread>
 
 #include "background_setter.hpp"
+#include "globals.hpp"
 #include "time_util.hpp"
 #include "variant_visitor_templ.hpp"
 
@@ -48,10 +50,21 @@ struct LerpBackgroundEvent {
 
 // ===== Helper ===============
 
-template <typename T> static void shuffleVector(std::vector<T> &vec) {
+inline unsigned int chooseRandomSeed() {
   std::random_device rd;
   std::mt19937 g(rd());
-  std::shuffle(vec.begin(), vec.end(), g);
+
+  using limit = std::numeric_limits<unsigned int>;
+  std::uniform_int_distribution<unsigned int> uniformDist(limit::min(),
+                                                          limit::max());
+  return uniformDist(g);
+}
+
+/**
+ * Shuffles a vector using `std::srand()` as the source of randomness
+ */
+template <typename T> static void shuffleVector(std::vector<T> &vec) {
+  std::shuffle(vec.begin(), vec.end(), []() { return std::rand(); });
 }
 
 static inline bool eventLsitIsSortedByTime(const EventList &eventList) {
@@ -238,37 +251,53 @@ void doEvent(const Event &event, const DynamicBackgroundData *backgroundData,
 }
 
 static void sleepUntilNextTime(const time_t &now, const time_t &later) {
+  std::chrono::seconds sleepTime;
+
   if (now < later) {
-    std::this_thread::sleep_for(std::chrono::seconds(later - now));
-  } else { // Sleep past a day boundary / now <= later
+    sleepTime = std::chrono::seconds(later - now);
+  } else { // Sleep past a day boundary / now >= later
     constexpr time_t second_before_midnight =
-        convertRawTimeStringToTimeOffset("23:59").value();
-    // TODO
+        convertRawTimeStringToTimeOffset("23:59:59").value();
+    constexpr time_t midnight =
+        convertRawTimeStringToTimeOffset("00:00:00").value();
+
+    sleepTime = std::chrono::seconds((second_before_midnight - now) + 1 +
+                                     (later - midnight));
   }
+
+  std::this_thread::sleep_for(std::chrono::seconds(sleepTime));
 }
 
 // ===== Main Loop Logic ===============
 
 void doBackgroundLoop(const DynamicBackgroundData *backgroundData,
                       const Config &config) {
-  const time_t currentTime = getCurrentTime();
+  const unsigned int seed = chooseRandomSeed();
 
-  // TODO this random order gotta be consistent for the interpolation one
-  EventList eventList = getEventList(backgroundData);
-  logAssert(eventLsitIsSortedByTime(eventList),
-            "Event list is not sorted by time from earliest to latest");
+  while (keepRunningBackgroundLoop) {
 
-  std::pair<TimeAndEvent, time_t> currentAndNextTimeAndEvent =
-      getCurrentEventAndNextTime(eventList, currentTime);
+    // Reset the random seed on each iteration of the loop to ensure the order
+    // of `random` dynamic backgrounds is consistent between each reconstruction
+    // of the event list.
+    std::srand(seed);
 
-  const Event &currentEvent = currentAndNextTimeAndEvent.first.second;
+    const time_t currentTime = getCurrentTime();
 
-  doEvent(currentEvent, backgroundData, config);
+    EventList eventList = getEventList(backgroundData);
+    logAssert(eventLsitIsSortedByTime(eventList),
+              "Event list is not sorted by time from earliest to latest");
 
-  const time_t &nextTime = currentAndNextTimeAndEvent.second;
+    std::pair<TimeAndEvent, time_t> currentEventAndNextTime =
+        getCurrentEventAndNextTime(eventList, currentTime);
 
-  // 3. TODO wait until next time
-  sleepUntilNextTime(currentTime, nextTime);
+    const Event &currentEvent = currentEventAndNextTime.first.second;
+
+    doEvent(currentEvent, backgroundData, config);
+
+    const time_t &nextTime = currentEventAndNextTime.second;
+
+    sleepUntilNextTime(currentTime, nextTime);
+  }
 }
 
 // ===== Header ===============
@@ -283,9 +312,7 @@ DynamicBackgroundData::DynamicBackgroundData(
 
 void DynamicBackgroundData::show(const BackgroundSetterMethod &method,
                                  const Config &config) const {
-  while (true) {
-    doBackgroundLoop(this, config);
-  }
+  doBackgroundLoop(this, config);
 }
 
 } // namespace dynamic_paper
