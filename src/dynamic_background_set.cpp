@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cstdlib>
 #include <format>
 #include <limits>
 #include <random>
@@ -17,6 +18,9 @@ namespace dynamic_paper {
 
 struct SetBackgroundEvent;
 struct LerpBackgroundEvent;
+
+using random_limits = std::numeric_limits<unsigned int>;
+
 using Event = std::variant<SetBackgroundEvent, LerpBackgroundEvent>;
 using TimeAndEvent = std::pair<time_t, Event>;
 using EventList = std::vector<TimeAndEvent>;
@@ -48,15 +52,29 @@ struct LerpBackgroundEvent {
         numSteps(numSteps) {}
 };
 
+/**
+ * Class to be used by `std::shuffle` that uses `std::rand`.
+ * Mainly for the ability to control the random order by calling `std::srand`
+ */
+class RandUniformRandomBitGenerator {
+public:
+  using result_type = unsigned int;
+
+  static constexpr result_type min() { return 0; }
+  static constexpr result_type max() { return RAND_MAX; }
+  static result_type g() { return std::rand(); }
+
+  result_type operator()() { return g(); }
+};
+
 // ===== Helper ===============
 
 inline unsigned int chooseRandomSeed() {
   std::random_device rd;
   std::mt19937 g(rd());
 
-  using limit = std::numeric_limits<unsigned int>;
-  std::uniform_int_distribution<unsigned int> uniformDist(limit::min(),
-                                                          limit::max());
+  std::uniform_int_distribution<unsigned int> uniformDist(random_limits::min(),
+                                                          random_limits::max());
   return uniformDist(g);
 }
 
@@ -64,7 +82,7 @@ inline unsigned int chooseRandomSeed() {
  * Shuffles a vector using `std::srand()` as the source of randomness
  */
 template <typename T> static void shuffleVector(std::vector<T> &vec) {
-  std::shuffle(vec.begin(), vec.end(), []() { return std::rand(); });
+  std::shuffle(vec.begin(), vec.end(), RandUniformRandomBitGenerator());
 }
 
 static inline bool eventLsitIsSortedByTime(const EventList &eventList) {
