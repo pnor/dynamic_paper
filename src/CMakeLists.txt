@@ -17,6 +17,7 @@ add_executable(
   config.cpp
   dynamic_background_set.cpp
   static_background_set.cpp
+  image_compositor.cpp
   time_util.cpp
   yaml_helper.cpp
 )

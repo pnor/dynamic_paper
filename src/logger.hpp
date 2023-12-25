@@ -20,6 +20,14 @@ void inline logInfo(const std::string &msg, const bool flush = true) {
   }
 }
 
+void inline logDebug(const std::string &msg, const bool flush = true) {
+  if (flush) {
+    std::cout << "[DEBUG] " << msg << std::endl;
+  } else {
+    std::cout << "[DEBUG] " << msg << std::endl;
+  }
+}
+
 void inline logWarning(const std::string &msg, const bool flush = true) {
   if (flush) {
     std::cerr << ANSI_COLOR_YELLOW << "[WARN] " << msg << ANSI_COLOR_RESET

@@ -4,6 +4,7 @@
 #include <format>
 #include <random>
 
+#include "background_setter.hpp"
 #include "config.hpp"
 #include "logger.hpp"
 #include "variant_visitor_templ.hpp"
@@ -34,7 +35,9 @@ StaticBackgroundData::StaticBackgroundData(std::filesystem::path dataDirectory,
                                            std::vector<std::string> imageNames)
     : dataDirectory(dataDirectory), mode(mode), imageNames(imageNames) {}
 
-void StaticBackgroundData::show(const BackgroundSetterMethod &method) const {
+void StaticBackgroundData::show(const BackgroundSetterMethod &method,
+                                const Config &config) const {
+  logInfo("Showing static background");
   logAssert(imageNames.size() > 0, "Static background");
 
   const std::string imageName = imageNames[randomNumber(imageName.size())];
@@ -45,6 +48,10 @@ void StaticBackgroundData::show(const BackgroundSetterMethod &method) const {
 
   if (!result.has_value()) {
     printDebugInfo(this, imageName, method);
+  }
+
+  if (config.hookScript.has_value()) {
+    runHookCommand(config.hookScript.value(), imagePath);
   }
 }
 

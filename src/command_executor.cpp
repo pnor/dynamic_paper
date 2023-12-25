@@ -29,9 +29,9 @@ runCommandStdout(const std::string &cmd) {
 int runCommandExitCode(const std::string &cmd) {
   int ret = system(cmd.c_str());
   if (WEXITSTATUS(ret) == 0x10) {
-    return 0;
+    return EXIT_SUCCESS;
   } else {
-    return 1;
+    return EXIT_FAILURE;
   }
 }
 

@@ -205,14 +205,15 @@ BackgroundSet::BackgroundSet(std::string name, DynamicBackgroundData data)
 
 void BackgroundSet::show(const BackgroundSetterMethod &method,
                          const Config &config) const {
-  std::visit(
-      overloaded{
-          [method](const StaticBackgroundData &data) { data.show(method); },
-          [method, &config](const DynamicBackgroundData &data) {
-            data.show(method, config);
-          },
-      },
-      this->type);
+  std::visit(overloaded{
+                 [method, &config](const StaticBackgroundData &data) {
+                   data.show(method, config);
+                 },
+                 [method, &config](const DynamicBackgroundData &data) {
+                   data.show(method, config);
+                 },
+             },
+             this->type);
 }
 
 std::expected<BackgroundSet, BackgroundSetParseErrors>

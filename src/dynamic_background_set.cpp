@@ -19,8 +19,6 @@ namespace dynamic_paper {
 struct SetBackgroundEvent;
 struct LerpBackgroundEvent;
 
-using random_limits = std::numeric_limits<unsigned int>;
-
 using Event = std::variant<SetBackgroundEvent, LerpBackgroundEvent>;
 using TimeAndEvent = std::pair<time_t, Event>;
 using EventList = std::vector<TimeAndEvent>;
@@ -40,16 +38,19 @@ struct SetBackgroundEvent {
 /** Information needed for the event to gradually interpolate between one image
  * and the next */
 struct LerpBackgroundEvent {
-  const std::filesystem::path startImagePath;
-  const std::filesystem::path endImagePath;
+  const std::filesystem::path commonImageDirectory;
+  const std::string startImageName;
+  const std::string endImageName;
   const unsigned int duration;
   const unsigned int numSteps;
 
-  LerpBackgroundEvent(const std::filesystem::path &start,
-                      const std::filesystem::path &end,
+  LerpBackgroundEvent(const std::filesystem::path &commonImageDirectory,
+                      const std::string &startImageName,
+                      const std::string &endImageName,
                       const unsigned int duration, const unsigned int numSteps)
-      : startImagePath(start), endImagePath(end), duration(duration),
-        numSteps(numSteps) {}
+      : commonImageDirectory(commonImageDirectory),
+        startImageName(startImageName), endImageName(endImageName),
+        duration(duration), numSteps(numSteps) {}
 };
 
 /**
@@ -73,13 +74,15 @@ inline unsigned int chooseRandomSeed() {
   std::random_device rd;
   std::mt19937 g(rd());
 
-  std::uniform_int_distribution<unsigned int> uniformDist(random_limits::min(),
-                                                          random_limits::max());
+  using limits = std::numeric_limits<unsigned int>;
+
+  std::uniform_int_distribution<unsigned int> uniformDist(limits::min(),
+                                                          limits::max());
   return uniformDist(g);
 }
 
 /**
- * Shuffles a vector using `std::srand()` as the source of randomness
+ * Shuffles a vector using `std::rand()` as the source of randomness
  */
 template <typename T> static void shuffleVector(std::vector<T> &vec) {
   std::shuffle(vec.begin(), vec.end(), RandUniformRandomBitGenerator());
@@ -175,13 +178,9 @@ static EventList createEventListFromTimesAndNames(
   for (EventList::size_type i = 1; i < eventList.size(); i++) {
     // transition event
     if (dynamicData->transitionDuration.has_value()) {
-      const std::filesystem::path beforePath =
-          dynamicData->dataDirectory / timesAndNames[i - 1].second;
-      const std::filesystem::path afterPath =
-          dynamicData->dataDirectory / timesAndNames[i].second;
-
       const LerpBackgroundEvent lerpEvent(
-          beforePath, afterPath, dynamicData->transitionDuration.value(),
+          dynamicData->dataDirectory, timesAndNames[i - 1].second,
+          timesAndNames[i].second, dynamicData->transitionDuration.value(),
           NUM_TRANSITION_STEPS);
 
       const time_t transitionTime =
@@ -240,8 +239,9 @@ getCurrentEventAndNextTime(const EventList &eventList, const time_t time) {
   }
 }
 
-void doEvent(const Event &event, const DynamicBackgroundData *backgroundData,
-             const Config &config) {
+static void doEvent(const Event &event,
+                    const DynamicBackgroundData *backgroundData,
+                    const Config &config) {
   std::visit(
       overloaded{
           [&config, backgroundData](const SetBackgroundEvent &event) {
@@ -252,13 +252,17 @@ void doEvent(const Event &event, const DynamicBackgroundData *backgroundData,
             if (!result.has_value()) {
               logError("Error occured when trying to set background");
             }
+
+            if (config.hookScript.has_value()) {
+              runHookCommand(config.hookScript.value(), event.imagePath);
+            }
           },
           [&config, backgroundData](const LerpBackgroundEvent &event) {
             std::expected<void, BackgroundError> result =
                 lerpBackgroundBetweenImages(
-                    event.startImagePath, event.endImagePath, event.duration,
-                    event.numSteps, backgroundData->mode,
-                    config.backgroundSetterMethod);
+                    event.commonImageDirectory, event.startImageName,
+                    event.endImageName, event.duration, event.numSteps,
+                    backgroundData->mode, config.backgroundSetterMethod);
 
             if (!result.has_value()) {
               logError(
@@ -283,6 +287,7 @@ static void sleepUntilNextTime(const time_t &now, const time_t &later) {
                                      (later - midnight));
   }
 
+  logDebug(std::format("Sleeping for {} seconds ...", sleepTime));
   std::this_thread::sleep_for(std::chrono::seconds(sleepTime));
 }
 
@@ -330,6 +335,8 @@ DynamicBackgroundData::DynamicBackgroundData(
 
 void DynamicBackgroundData::show(const BackgroundSetterMethod &method,
                                  const Config &config) const {
+  logInfo("Show dynamic background");
+
   doBackgroundLoop(this, config);
 }
 

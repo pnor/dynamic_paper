@@ -11,6 +11,7 @@
 namespace dynamic_paper {
 
 enum class BackgroundError { CommandError };
+enum class HookCommandError { CommandError };
 
 /**
  * Using a program specified by `method`, sets the background to the image in
@@ -23,15 +24,26 @@ setBackgroundToImage(const std::filesystem::path &imagePath,
 
 /**
  * Using a program specified by `method`, changes the background from
- * `beforePath` to `afterPath`. This effect occurs for `duration` seconds and
- * happens in `numSteps` steps. Sets the background using a program specified by
- * `method`, with a display mode of `mode`.
+ * `commonImageDirectory / beforeImageName` to `commonImageDirectory /
+ * afterImageName`. This effect occurs for `duration` seconds and happens in
+ * `numSteps` steps. Sets the background using a program specified by `method`,
+ * with a display mode of `mode`.
  *
  * Uses the external program imagemagick to create interpolated images.
  */
 std::expected<void, BackgroundError> lerpBackgroundBetweenImages(
-    const std::filesystem::path &beforePath,
-    const std::filesystem::path &afterPath, const unsigned int duration,
+    const std::filesystem::path &commonImageDirectory,
+    const std::filesystem::path &beforeImageName,
+    const std::filesystem::path &afterImageName, const unsigned int duration,
     const unsigned int numSteps, const BackgroundSetMode mode,
     const BackgroundSetterMethod &method);
+/**
+ * Runs the script at `hookScriptPath` on the image at `imagePath`.
+ *
+ * Used to run user defined hooks after the background changes.
+ */
+std::expected<void, HookCommandError>
+runHookCommand(const std::filesystem::path hookScriptPath,
+               const std::filesystem::path imagePath);
+
 } // namespace dynamic_paper

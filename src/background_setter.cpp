@@ -1,8 +1,10 @@
 #include "background_setter.hpp"
 
+#include <expected>
 #include <format>
 
 #include "command_executor.hpp"
+#include "image_compositor.hpp"
 #include "logger.hpp"
 #include "variant_visitor_templ.hpp"
 
@@ -75,11 +77,33 @@ setBackgroundToImage(const std::filesystem::path &imagePath,
 }
 
 std::expected<void, BackgroundError> lerpBackgroundBetweenImages(
-    const std::filesystem::path &beforePath,
-    const std::filesystem::path &afterPath, const unsigned int duration,
+    const std::filesystem::path &commonImageDirectory,
+    const std::filesystem::path &beforeImageName,
+    const std::filesystem::path &afterImageName, const unsigned int duration,
     const unsigned int numSteps, const BackgroundSetMode mode,
     const BackgroundSetterMethod &method) {
   // TODO
+  //
+  // for each step [x] of the process [total_steps]
+  //
+  // get/create an image that's [x / total_steps] % betwto `afterPath`
+  // set the background to that
+  // wait [(x / total_steps) * duration] seconds
+  //
+  // on final image set, call hook script
+
   return std::unexpected(BackgroundError::CommandError);
+}
+
+std::expected<void, HookCommandError>
+runHookCommand(const std::filesystem::path hookScriptPath,
+               const std::filesystem::path imagePath) {
+  const std::string commandStr =
+      std::format("{} {}", hookScriptPath.string(), imagePath.string());
+  const int result = runCommandExitCode(commandStr);
+
+  if (result != EXIT_SUCCESS) {
+    return std::unexpected(HookCommandError::CommandError);
+  }
 }
 } // namespace dynamic_paper
