@@ -10,7 +10,11 @@
 
 namespace dynamic_paper {
 
-enum class BackgroundError { CommandError };
+enum class BackgroundError {
+  CommandError,
+  CompositeImageError,
+  SetBackgroundError
+};
 enum class HookCommandError { CommandError };
 
 /**
@@ -27,16 +31,18 @@ setBackgroundToImage(const std::filesystem::path &imagePath,
  * `commonImageDirectory / beforeImageName` to `commonImageDirectory /
  * afterImageName`. This effect occurs for `duration` seconds and happens in
  * `numSteps` steps. Sets the background using a program specified by `method`,
- * with a display mode of `mode`.
+ * with a display mode of `mode`. Uses `cacheDirectory` to store and get
+ * composited images.
  *
  * Uses the external program imagemagick to create interpolated images.
  */
 std::expected<void, BackgroundError> lerpBackgroundBetweenImages(
     const std::filesystem::path &commonImageDirectory,
-    const std::filesystem::path &beforeImageName,
-    const std::filesystem::path &afterImageName, const unsigned int duration,
+    const std::string &beforeImageName, const std::string &afterImageName,
+    const std::filesystem::path &cacheDirectory, const unsigned int duration,
     const unsigned int numSteps, const BackgroundSetMode mode,
     const BackgroundSetterMethod &method);
+
 /**
  * Runs the script at `hookScriptPath` on the image at `imagePath`.
  *

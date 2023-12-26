@@ -26,6 +26,7 @@ add_executable(
   ${dynamic_paper_SOURCE_DIR}/src/static_background_set.cpp
   ${dynamic_paper_SOURCE_DIR}/src/time_util.cpp
   ${dynamic_paper_SOURCE_DIR}/src/yaml_helper.cpp
+  ${dynamic_paper_SOURCE_DIR}/src/image_compositor.cpp
 )
 
 target_link_libraries(

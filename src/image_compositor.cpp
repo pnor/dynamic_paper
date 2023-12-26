@@ -2,6 +2,7 @@
 
 #include <format>
 
+#include "command_executor.hpp"
 #include "logger.hpp"
 
 namespace dynamic_paper {
@@ -90,11 +91,14 @@ createCompositeImage(const std::filesystem::path &startImagePath,
   }
 }
 
+// ===== Header ===============
+
 std::expected<std::filesystem::path, CompositeImageError>
 getCompositedImage(const std::filesystem::path &commonImageDirectory,
                    const std::string &startImageName,
                    const std::string &endImageName,
-                   const unsigned int percentage, const Config &config) {
+                   const std::filesystem::path &cacheDirectory,
+                   const unsigned int percentage) {
   logAssert(percentage <= 100, "percentage must be in range [0..100] but was " +
                                    std::to_string(percentage));
 
@@ -108,11 +112,10 @@ getCompositedImage(const std::filesystem::path &commonImageDirectory,
   const std::expected<std::filesystem::path, CompositeImageError>
       compositeImagePath =
           pathForCompositeImage(commonImageDirectory, startImageName,
-                                endImageName, percentage,
-                                config.imageCacheDirectory);
+                                endImageName, percentage, cacheDirectory);
 
   if (!compositeImagePath.has_value()) {
-    return std::unexpected(expCompositeImagePath.error());
+    return std::unexpected(compositeImagePath.error());
   }
 
   if (std::filesystem::exists(compositeImagePath.value())) {
@@ -122,30 +125,6 @@ getCompositedImage(const std::filesystem::path &commonImageDirectory,
   return createCompositeImage(commonImageDirectory / startImageName,
                               commonImageDirectory / endImageName,
                               compositeImagePath.value(), percentage);
-
-  // TODO
-  // *** create the unique path for the interpolated image:
-  // - (remove the background image dir)
-  // - combine dataDir and imageName into a string
-  // - (example: [place]-[image])
-  //
-  // combine 2 image paths name to get unique name for interpolation from
-  // + add percentage to name
-  // (example: [place1]-[image1]-[place2]-[image2]-[percentage].jpg)
-  //
-  // *** startImage to endImage try and get it from the cache dir
-  // ~/.cache/dynamic_paper/[unique_name]
-  //
-  // *** if it exists, return it (return [unique name])
-  //
-  // *** if it doesn't, create it:
-  // run `magick -gravity center -blend [percentage]% [path to image1] [path to
-  // image 2] [unqiue name]`
-  //
-  // *** return [unique name]
-
-  // TODO does this work if u merge a png and jpg?
-  // should alert the user if filetypes don't match ...
 }
 
 } // namespace dynamic_paper

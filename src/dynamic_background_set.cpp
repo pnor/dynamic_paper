@@ -70,6 +70,26 @@ public:
 
 // ===== Helper ===============
 
+static void describeError(const BackgroundError error) {
+  switch (error) {
+  case BackgroundError::CommandError: {
+    logError("Error occured when trying to interpolate the background: eror "
+             "when running a command");
+    break;
+  }
+  case BackgroundError::CompositeImageError: {
+    logError("Error occured when trying to interpolate the background: unable "
+             "to create composite image");
+    break;
+  }
+  case BackgroundError::SetBackgroundError: {
+    logError("Ero occured when trying to interpolate the background: unable to "
+             "set the background");
+    break;
+  }
+  }
+}
+
 inline unsigned int chooseRandomSeed() {
   std::random_device rd;
   std::mt19937 g(rd());
@@ -243,32 +263,32 @@ static void doEvent(const Event &event,
                     const DynamicBackgroundData *backgroundData,
                     const Config &config) {
   std::visit(
-      overloaded{
-          [&config, backgroundData](const SetBackgroundEvent &event) {
-            std::expected<void, BackgroundError> result =
-                setBackgroundToImage(event.imagePath, backgroundData->mode,
-                                     config.backgroundSetterMethod);
+      overloaded{[&config, backgroundData](const SetBackgroundEvent &event) {
+                   std::expected<void, BackgroundError> result =
+                       setBackgroundToImage(event.imagePath,
+                                            backgroundData->mode,
+                                            config.backgroundSetterMethod);
 
-            if (!result.has_value()) {
-              logError("Error occured when trying to set background");
-            }
+                   if (!result.has_value()) {
+                     describeError(result.error());
+                   }
 
-            if (config.hookScript.has_value()) {
-              runHookCommand(config.hookScript.value(), event.imagePath);
-            }
-          },
-          [&config, backgroundData](const LerpBackgroundEvent &event) {
-            std::expected<void, BackgroundError> result =
-                lerpBackgroundBetweenImages(
-                    event.commonImageDirectory, event.startImageName,
-                    event.endImageName, event.duration, event.numSteps,
-                    backgroundData->mode, config.backgroundSetterMethod);
+                   if (config.hookScript.has_value()) {
+                     runHookCommand(config.hookScript.value(), event.imagePath);
+                   }
+                 },
+                 [&config, backgroundData](const LerpBackgroundEvent &event) {
+                   std::expected<void, BackgroundError> result =
+                       lerpBackgroundBetweenImages(
+                           event.commonImageDirectory, event.startImageName,
+                           event.endImageName, config.imageCacheDirectory,
+                           event.duration, event.numSteps, backgroundData->mode,
+                           config.backgroundSetterMethod);
 
-            if (!result.has_value()) {
-              logError(
-                  "Error occured when trying to interpolate the background");
-            }
-          }},
+                   if (!result.has_value()) {
+                     describeError(result.error());
+                   }
+                 }},
       event);
 }
 

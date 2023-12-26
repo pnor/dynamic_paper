@@ -1,12 +1,15 @@
 #pragma once
 
-#include "config.hpp"
+#include <expected>
+#include <filesystem>
+#include <string>
 
 namespace dynamic_paper {
 
 /** Logic of creating and caching composited backgrounds */
 
 enum class CompositeImageError { UnableToCreatePath, CommandError };
+
 /**
  * Returns the path to an image that is interpolated between
  * `commonImageDirectory /startImageName` and `commonImageDirectory /
@@ -15,10 +18,8 @@ enum class CompositeImageError { UnableToCreatePath, CommandError };
  *
  * `percentage` should be in the range [0..100]
  */
-std::expected<std::filesystem::path, CompositeImageError>
-getCompositedImage(const std::filesystem::path &commonImageDirectory,
-                   const std::string &startImageName,
-                   const std::string &endImageName,
-                   const unsigned int percentage, const Config &config);
-
+std::expected<std::filesystem::path, CompositeImageError> getCompositedImage(
+    const std::filesystem::path &commonImageDirectory,
+    const std::string &startImageName, const std::string &endImageName,
+    const std::filesystem::path &cacheDirectory, const unsigned int percentage);
 } // namespace dynamic_paper

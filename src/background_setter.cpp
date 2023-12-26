@@ -1,7 +1,9 @@
 #include "background_setter.hpp"
 
+#include <algorithm>
 #include <expected>
 #include <format>
+#include <thread>
 
 #include "command_executor.hpp"
 #include "image_compositor.hpp"
@@ -78,21 +80,35 @@ setBackgroundToImage(const std::filesystem::path &imagePath,
 
 std::expected<void, BackgroundError> lerpBackgroundBetweenImages(
     const std::filesystem::path &commonImageDirectory,
-    const std::filesystem::path &beforeImageName,
-    const std::filesystem::path &afterImageName, const unsigned int duration,
+    const std::string &beforeImageName, const std::string &afterImageName,
+    const std::filesystem::path &cacheDirectory, const unsigned int duration,
     const unsigned int numSteps, const BackgroundSetMode mode,
     const BackgroundSetterMethod &method) {
-  // TODO
-  //
-  // for each step [x] of the process [total_steps]
-  //
-  // get/create an image that's [x / total_steps] % betwto `afterPath`
-  // set the background to that
-  // wait [(x / total_steps) * duration] seconds
-  //
-  // on final image set, call hook script
 
-  return std::unexpected(BackgroundError::CommandError);
+  for (unsigned int i = 0; i < numSteps; i++) {
+    const float percentageFloat = i / static_cast<float>(numSteps);
+    const unsigned int percentage = std::clamp(
+        static_cast<unsigned int>(percentageFloat * 100.0), 0u, 100u);
+
+    std::expected<std::filesystem::path, CompositeImageError>
+        expectedCompositedImage =
+            getCompositedImage(commonImageDirectory, beforeImageName,
+                               afterImageName, cacheDirectory, percentage);
+
+    if (!expectedCompositedImage.has_value()) {
+      return std::unexpected(BackgroundError::CompositeImageError);
+    }
+
+    std::expected<void, BackgroundError> backgroundResult =
+        setBackgroundToImage(expectedCompositedImage.value(), mode, method);
+
+    if (!backgroundResult.has_value()) {
+      return std::unexpected(BackgroundError::SetBackgroundError);
+    }
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(
+        static_cast<unsigned int>(1000 * (1.0f / numSteps) * duration)));
+  }
 }
 
 std::expected<void, HookCommandError>

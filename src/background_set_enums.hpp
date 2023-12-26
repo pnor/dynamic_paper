@@ -18,10 +18,10 @@ constexpr std::string backgroundSetModeString(const BackgroundSetMode mode) {
   case BackgroundSetMode::Fill: {
     return "fill";
   }
-  default: {
-    logAssert(false, "Unable to convert background set mode to string");
   }
-  }
+
+  logAssert(false, "Unable to construct mode sring from passed mode");
+  return "";
 }
 
 enum class BackgroundSetOrder { Linear, Random };
