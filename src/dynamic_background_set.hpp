@@ -32,7 +32,7 @@ public:
                         std::vector<std::string> imageNames,
                         std::vector<time_t> times);
 
-  void show(const BackgroundSetterMethod &method, const Config &config) const;
+  void show(const Config &config) const;
 };
 
 } // namespace dynamic_paper

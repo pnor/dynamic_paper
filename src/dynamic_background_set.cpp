@@ -130,22 +130,6 @@ static time_t getCurrentTime() {
   return optTime.value();
 }
 
-static SetBackgroundEvent *getBackgroundEventFromVariant(Event &event) {
-  std::optional<SetBackgroundEvent *> optEvent =
-      std::get_if<SetBackgroundEvent>(&event);
-  logAssert(optEvent.has_value(),
-            "event variant must have SetBackgroundEvent to use this function");
-  return optEvent.value();
-}
-
-static time_t calculateLerpEventTime(const unsigned int transitionDuration,
-                                     const time_t nextEventTime,
-                                     const int numberSteps) {
-  const unsigned int offset =
-      std::max(1u, transitionDuration / static_cast<unsigned int>(numberSteps));
-  return nextEventTime - offset;
-}
-
 /**
  * Returns the times and names in `dynamicData` sorted by time.
  * Preserves the pair relation between the names and times.
@@ -353,8 +337,7 @@ DynamicBackgroundData::DynamicBackgroundData(
       transitionDuration(transitionDuration), order(order),
       imageNames(imageNames), times(times) {}
 
-void DynamicBackgroundData::show(const BackgroundSetterMethod &method,
-                                 const Config &config) const {
+void DynamicBackgroundData::show(const Config &config) const {
   logInfo("Show dynamic background");
 
   doBackgroundLoop(this, config);

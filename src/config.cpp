@@ -10,12 +10,13 @@
 
 namespace dynamic_paper {
 
-static constexpr std::string METHOD_KEY = "method";
-static constexpr std::string SUN_POLL_METHOD_KEY = "sun_poller";
-static constexpr std::string BACKGROUND_IMAGE_DIR_KEY = "image_dir";
-static constexpr std::string METHOD_SCRIPT_KEY = "method_script";
-static constexpr std::string HOOK_SCRIPT_KEY = "hook_script";
-static constexpr std::string IMAGE_CACHE_DIR_KEY = "cache_dir";
+static constexpr std::string_view METHOD_KEY = "method";
+static constexpr std::string_view SUN_POLL_METHOD_KEY = "sun_poller";
+static constexpr std::string_view BACKGROUND_IMAGE_DIR_KEY = "image_dir";
+static constexpr std::string_view METHOD_SCRIPT_KEY = "method_script";
+static constexpr std::string_view HOOK_SCRIPT_KEY = "hook_script";
+static constexpr std::string_view IMAGE_CACHE_DIR_KEY = "cache_dir";
+static constexpr std::string_view LOGGING_KEY = "logging";
 
 BackgroundSetterMethodScript::BackgroundSetterMethodScript(
     const std::filesystem::path scriptPath)
@@ -62,7 +63,8 @@ std::expected<Config, ConfigError> loadConfigFromYAML(YAML::Node config) {
   std::filesystem::path imageCacheDir =
       generalConfigParseOrUseDefault<std::filesystem::path>(
           config, IMAGE_CACHE_DIR_KEY, ConfigDefaults::imageCacheDirectory);
-  // TODO add test case for this
+
+  // TODO logging
 
   return Config(backgroundImageDir, expectedMethod.value(), sunMethod,
                 hookScript, imageCacheDir);

@@ -203,17 +203,13 @@ BackgroundSet::BackgroundSet(std::string name, DynamicBackgroundData data)
     : name(name),
       type(std::variant<StaticBackgroundData, DynamicBackgroundData>(data)) {}
 
-void BackgroundSet::show(const BackgroundSetterMethod &method,
-                         const Config &config) const {
-  std::visit(overloaded{
-                 [method, &config](const StaticBackgroundData &data) {
-                   data.show(method, config);
-                 },
-                 [method, &config](const DynamicBackgroundData &data) {
-                   data.show(method, config);
-                 },
-             },
-             this->type);
+void BackgroundSet::show(const Config &config) const {
+  std::visit(
+      overloaded{
+          [&config](const StaticBackgroundData &data) { data.show(config); },
+          [&config](const DynamicBackgroundData &data) { data.show(config); },
+      },
+      this->type);
 }
 
 std::expected<BackgroundSet, BackgroundSetParseErrors>

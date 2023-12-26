@@ -35,8 +35,7 @@ StaticBackgroundData::StaticBackgroundData(std::filesystem::path dataDirectory,
                                            std::vector<std::string> imageNames)
     : dataDirectory(dataDirectory), mode(mode), imageNames(imageNames) {}
 
-void StaticBackgroundData::show(const BackgroundSetterMethod &method,
-                                const Config &config) const {
+void StaticBackgroundData::show(const Config &config) const {
   logInfo("Showing static background");
   logAssert(imageNames.size() > 0, "Static background");
 
@@ -44,10 +43,10 @@ void StaticBackgroundData::show(const BackgroundSetterMethod &method,
   const std::filesystem::path imagePath = dataDirectory / imageName;
 
   std::expected<void, BackgroundError> result =
-      setBackgroundToImage(imagePath, mode, method);
+      setBackgroundToImage(imagePath, mode, config.backgroundSetterMethod);
 
   if (!result.has_value()) {
-    printDebugInfo(this, imageName, method);
+    printDebugInfo(this, imageName, config.backgroundSetterMethod);
   }
 
   if (config.hookScript.has_value()) {

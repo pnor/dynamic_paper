@@ -45,6 +45,8 @@ runCommandHandleError(const std::string &command) {
     logError("Command ''" + command + "' did not run succesfully");
     return std::unexpected(BackgroundError::CommandError);
   }
+
+  return std::expected<void, BackgroundError>();
 }
 
 std::expected<void, BackgroundError>
@@ -74,6 +76,10 @@ setBackgroundToImage(const std::filesystem::path &imagePath,
               return runCommandHandleError(command);
             }
             }
+
+            logAssert(false, "Unhandled background set mode case when setting "
+                             "background to image!");
+            return std::expected<void, BackgroundError>();
           }},
       method);
 }
@@ -109,6 +115,8 @@ std::expected<void, BackgroundError> lerpBackgroundBetweenImages(
     std::this_thread::sleep_for(std::chrono::milliseconds(
         static_cast<unsigned int>(1000 * (1.0f / numSteps) * duration)));
   }
+
+  return std::expected<void, BackgroundError>();
 }
 
 std::expected<void, HookCommandError>
@@ -121,5 +129,7 @@ runHookCommand(const std::filesystem::path hookScriptPath,
   if (result != EXIT_SUCCESS) {
     return std::unexpected(HookCommandError::CommandError);
   }
+
+  return std::expected<void, HookCommandError>();
 }
 } // namespace dynamic_paper

@@ -22,6 +22,6 @@ public:
                        BackgroundSetMode mode,
                        std::vector<std::string> imageNames);
 
-  void show(const BackgroundSetterMethod &method, const Config &config) const;
+  void show(const Config &config) const;
 };
 } // namespace dynamic_paper

@@ -4,6 +4,16 @@
 
 namespace dynamic_paper {
 
+enum class LogLevel : std::underlying_type_t<std::byte> {
+  ASSERT = 0,
+  ERROR = 1,
+  WARNING = 2,
+  INFO = 3,
+  DEBUG = 4,
+};
+
+std::byte loggingLevel = static_cast<std::byte>(LogLevel::DEBUG);
+
 constexpr std::string_view ANSI_COLOR_RED = "\x1b[31m";
 constexpr std::string_view ANSI_COLOR_GREEN = "\x1b[32m";
 constexpr std::string_view ANSI_COLOR_YELLOW = "\x1b[33m";
