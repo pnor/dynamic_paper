@@ -1,86 +1,36 @@
 #pragma once
 
-#include <iostream>
+#include <cstddef>
+#include <string_view>
 
 namespace dynamic_paper {
 
-enum class LogLevel : std::underlying_type_t<std::byte> {
-  ASSERT = 0,
-  ERROR = 1,
-  WARNING = 2,
-  INFO = 3,
-  DEBUG = 4,
-};
+/** Helper functions for logging */
 
-std::byte loggingLevel = static_cast<std::byte>(LogLevel::DEBUG);
+/** To determine which log messages should be shown */
+enum class LogLevel { INFO, WARNING, ERROR, DEBUG, CRITICAL, TRACE, OFF };
 
-constexpr std::string_view ANSI_COLOR_RED = "\x1b[31m";
-constexpr std::string_view ANSI_COLOR_GREEN = "\x1b[32m";
-constexpr std::string_view ANSI_COLOR_YELLOW = "\x1b[33m";
-constexpr std::string_view ANSI_COLOR_BLUE = "\x1b[34m";
-constexpr std::string_view ANSI_COLOR_MAGENTA = "\x1b[35m";
-constexpr std::string_view ANSI_COLOR_CYAN = "\x1b[36m";
-constexpr std::string_view ANSI_COLOR_RESET = "\x1b[0m";
+/** Sets up logging library, by setting the format and pattern of logs, and what
+ * logs should be shown. */
+void setupLogging(const LogLevel logLevel);
 
-void inline logInfo(const std::string &msg, const bool flush = true) {
-  if (flush) {
-    std::cout << "[INFO] " << msg << std::endl;
-  } else {
-    std::cout << "[INFO] " << msg << std::endl;
-  }
-}
+/** Prints a debug log message saying `msg`. */
+void logDebug(const std::string_view msg);
 
-void inline logDebug(const std::string &msg, const bool flush = true) {
-  if (flush) {
-    std::cout << "[DEBUG] " << msg << std::endl;
-  } else {
-    std::cout << "[DEBUG] " << msg << std::endl;
-  }
-}
+/** Prints an informational log message saying `msg`. */
+void logInfo(const std::string_view msg);
 
-void inline logWarning(const std::string &msg, const bool flush = true) {
-  if (flush) {
-    std::cerr << ANSI_COLOR_YELLOW << "[WARN] " << msg << ANSI_COLOR_RESET
-              << std::endl;
-  } else {
-    std::cerr << ANSI_COLOR_YELLOW << "[WARN] " << msg << "\n"
-              << ANSI_COLOR_RESET;
-  }
-}
+/** Prints a warning log message saying `msg`.*/
+void logWarning(const std::string_view msg);
 
-void inline logError(const std::string &msg, const bool flush = true) {
-  if (flush) {
-    std::cerr << "[ERROR] " << msg << std::endl;
-  } else {
-    std::cerr << "[ERROR] " << msg << "\n";
-  }
-}
+/** Prints an error log message saying `msg`. */
+void logError(const std::string_view msg);
 
-void inline logFatalError(const std::string &msg, const bool flush = true) {
-  if (flush) {
-    std::cerr << ANSI_COLOR_RED << "[ERROR] " << msg << std::endl
-              << ANSI_COLOR_RESET;
-  } else {
-    std::cerr << ANSI_COLOR_RED << "[ERROR] " << msg << "\n"
-              << ANSI_COLOR_RESET;
-  }
-}
+/** Prints a fatal error log message saying `msg`. */
+void logFatalError(const std::string_view msg);
 
-void inline logAssert(const bool condition, const std::string &msg,
-                      const bool flush = true) {
-  if (condition) {
-    return;
-  }
-
-  if (flush) {
-    std::cerr << ANSI_COLOR_RED << "[ASSERT FAILURE] " << msg
-              << ANSI_COLOR_RESET << std::endl;
-  } else {
-    std::cerr << ANSI_COLOR_RED << "[ASSERT FAILURE] " << msg
-              << ANSI_COLOR_RESET << "\n";
-  }
-
-  throw std::logic_error("Assertion failed");
-}
+/** Asserts `condition`, printing a message if it fails and throwing an
+ * exception. Otherwise, does nothing */
+void logAssert(const bool condition, const std::string_view msg);
 
 } // namespace dynamic_paper

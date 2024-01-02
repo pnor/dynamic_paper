@@ -3,8 +3,8 @@
 namespace dynamic_paper {
 
 std::expected<BackgroundSetterMethod, BackgroundSetterMethodError>
-parseBackgroundSetterMethod(YAML::Node config, const std::string &methodKey,
-                            const std::string &scriptKey) {
+parseBackgroundSetterMethod(YAML::Node config, const std::string_view methodKey,
+                            const std::string_view scriptKey) {
   YAML::Node node = config[methodKey];
 
   if (!node.IsDefined()) {

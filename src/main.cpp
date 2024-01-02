@@ -1,9 +1,9 @@
 #include <format>
 #include <iostream>
 
+#include <argparse/argparse.hpp>
+#include <spdlog/spdlog.h>
 #include <yaml-cpp/yaml.h>
-
-#include "lib/argparse.hpp"
 
 #include "background_set.hpp"
 #include "config.hpp"
@@ -62,6 +62,12 @@ exitAndPrintFatalError(const std::string &name,
   }
 
   exit(1);
+}
+
+void setupLogging(const YAML::Node &config) {
+  dynamic_paper::LogLevel logLevel =
+      dynamic_paper::loadLoggingLevelFromYAML(config);
+  setupLogging(logLevel);
 }
 
 /**
@@ -124,7 +130,7 @@ static void handleListCommand(const dynamic_paper::Config &config) {
 }
 
 static bool parseArguements(const int argc, char *argv[],
-                            dynamic_paper::Config &&config) {
+                            const dynamic_paper::Config &config) {
   argparse::ArgumentParser program("dynamic paper");
 
   argparse::ArgumentParser showCommand("show");
@@ -166,7 +172,7 @@ auto main(int argc, char *argv[]) -> int {
       dynamic_paper::loadConfigFromYAML(YAML::LoadFile("./files/test.yaml"))
           .value();
 
-  bool result = parseArguements(argc, argv, std::move(config));
+  bool result = parseArguements(argc, argv, config);
 
   return result ? 0 : 1;
 }

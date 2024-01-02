@@ -301,7 +301,7 @@ void doBackgroundLoop(const DynamicBackgroundData *backgroundData,
                       const Config &config) {
   const unsigned int seed = chooseRandomSeed();
 
-  while (keepRunningBackgroundLoop) {
+  while (true) {
 
     // Reset the random seed on each iteration of the loop to ensure the order
     // of `random` dynamic backgrounds is consistent between each reconstruction
