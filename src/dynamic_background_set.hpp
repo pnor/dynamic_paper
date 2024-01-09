@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include <filesystem>
 #include <optional>
 #include <vector>
@@ -14,12 +15,21 @@
 
 namespace dynamic_paper {
 
+struct TransitionInfo {
+  std::chrono::seconds duration;
+  unsigned int steps;
+
+  explicit TransitionInfo(const unsigned int duration, const unsigned int steps)
+      : duration(duration), steps(steps) {}
+};
+
 class DynamicBackgroundData {
 public:
   std::filesystem::path dataDirectory;
   BackgroundSetMode mode;
-  /** nullopt if does not transition. # seconds otherwise. */
-  std::optional<unsigned int> transitionDuration;
+  /** nullopt if does not transition. */
+  std::optional<TransitionInfo> transition;
+
   BackgroundSetOrder order;
   std::vector<std::string> imageNames;
   /** each entry represents number seconds after 00:00 to do a transition */
@@ -27,7 +37,7 @@ public:
 
   DynamicBackgroundData(std::filesystem::path dataDirectory,
                         BackgroundSetMode mode,
-                        std::optional<unsigned int> transitionDuration,
+                        std::optional<TransitionInfo> transition,
                         BackgroundSetOrder order,
                         std::vector<std::string> imageNames,
                         std::vector<time_t> times);

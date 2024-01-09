@@ -21,9 +21,13 @@ static constexpr std::string_view ORDER = "order";
 static constexpr std::string_view TIMES = "times";
 static constexpr std::string_view TRANSITION_LENGTH = "transition_length";
 static constexpr std::string_view TYPE = "type";
+static constexpr std::string_view NUM_TRANSITION_STEPS =
+    "number_transition_steps";
+
 // Default value
 static constexpr BackgroundSetMode DEFAULT_MODE = BackgroundSetMode::Center;
 static constexpr BackgroundSetOrder DEFAULT_ORDER = BackgroundSetOrder::Linear;
+static constexpr unsigned int DEFAULT_TRANSITION_STEPS = 5;
 
 // ===== Helper ===============
 
@@ -62,6 +66,7 @@ struct ParsingInfo {
   std::optional<std::vector<std::string>> images = std::nullopt;
   std::optional<std::string> image = std::nullopt;
   std::optional<std::vector<std::string>> timeStrings = std::nullopt;
+  std::optional<unsigned int> numberTransitionSteps = std::nullopt;
 };
 
 static void updateParsingInfoWithYamlNode(const std::string &key,
@@ -85,7 +90,34 @@ static void updateParsingInfoWithYamlNode(const std::string &key,
     insertIntoParsingInfo<unsigned int>(value, parsingInfo.transitionLength);
   } else if (key == TYPE) {
     insertIntoParsingInfo<BackgroundSetType>(value, parsingInfo.type);
+  } else if (key == NUM_TRANSITION_STEPS) {
+    insertIntoParsingInfo<unsigned int>(value,
+                                        parsingInfo.numberTransitionSteps);
   }
+}
+
+static std::optional<TransitionInfo>
+tryCreateTransitionInfoFrom(const ParsingInfo &parsingInfo) {
+  if (parsingInfo.transitionLength.has_value() &&
+      parsingInfo.numberTransitionSteps.has_value()) {
+    return TransitionInfo(parsingInfo.transitionLength.value(),
+                          parsingInfo.numberTransitionSteps.value());
+  }
+
+  if (!parsingInfo.numberTransitionSteps.has_value() &&
+      parsingInfo.transitionLength.has_value()) {
+    logWarning(
+        "No number of transition steps was provided so using default steps");
+    return TransitionInfo(parsingInfo.transitionLength.value(),
+                          DEFAULT_TRANSITION_STEPS);
+  }
+  if (parsingInfo.numberTransitionSteps.has_value() &&
+      !parsingInfo.transitionLength.has_value()) {
+    logError("Cannot make transition with only number transition steps and no "
+             "transition length");
+  }
+
+  return std::nullopt;
 }
 
 static std::expected<BackgroundSet, BackgroundSetParseErrors>
@@ -161,13 +193,15 @@ createDynamicBackgroundSetFromInfo(const ParsingInfo &parsingInfo,
     return std::unexpected(BackgroundSetParseErrors::BadTimes);
   }
 
-  return BackgroundSet(
-      name, DynamicBackgroundData(parsingInfo.dataDirectory.value(),
-                                  parsingInfo.mode.value_or(DEFAULT_MODE),
-                                  parsingInfo.transitionLength,
-                                  parsingInfo.order.value_or(DEFAULT_ORDER),
-                                  parsingInfo.images.value(),
-                                  optTimeOffsets.value()));
+  std::optional<TransitionInfo> transition =
+      tryCreateTransitionInfoFrom(parsingInfo);
+
+  return BackgroundSet(name,
+                       DynamicBackgroundData(
+                           parsingInfo.dataDirectory.value(),
+                           parsingInfo.mode.value_or(DEFAULT_MODE), transition,
+                           parsingInfo.order.value_or(DEFAULT_ORDER),
+                           parsingInfo.images.value(), optTimeOffsets.value()));
 }
 
 static std::expected<BackgroundSet, BackgroundSetParseErrors>
@@ -188,10 +222,9 @@ createBackgroundSetFromInfo(const ParsingInfo &parsingInfo,
   case BackgroundSetType::Dynamic: {
     return createDynamicBackgroundSetFromInfo(parsingInfo, config);
   }
-  default: {
-    throw std::logic_error("Unhandled background set type");
   }
-  }
+
+  throw std::logic_error("Unhandled background set type");
 }
 
 // ===== Header ===============

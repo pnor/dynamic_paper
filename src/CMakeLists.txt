@@ -40,6 +40,7 @@ add_executable(
   static_background_set.cpp
   time_util.cpp
   yaml_helper.cpp
+  cmdline_helper.cpp
 )
 
 target_link_libraries(

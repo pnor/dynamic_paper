@@ -39,9 +39,9 @@ setBackgroundToImage(const std::filesystem::path &imagePath,
 std::expected<void, BackgroundError> lerpBackgroundBetweenImages(
     const std::filesystem::path &commonImageDirectory,
     const std::string &beforeImageName, const std::string &afterImageName,
-    const std::filesystem::path &cacheDirectory, const unsigned int duration,
-    const unsigned int numSteps, const BackgroundSetMode mode,
-    const BackgroundSetterMethod &method);
+    const std::filesystem::path &cacheDirectory,
+    const std::chrono::seconds duration, const unsigned int numSteps,
+    const BackgroundSetMode mode, const BackgroundSetterMethod &method);
 
 /**
  * Runs the script at `hookScriptPath` on the image at `imagePath`.

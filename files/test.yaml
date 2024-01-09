@@ -1,3 +1,4 @@
 method: "wallutils"
 image_dir: "./files"
 hook_script: "./test.sh"
+logging_level: debug

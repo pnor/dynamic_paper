@@ -65,6 +65,25 @@ dynamic_paper:
   type: dynamic
   mode: center
   transition_length: 55
+  number_transition_steps: 10
+  order: random
+  images:
+    - 1.jpg
+    - 2.jpg
+    - 3.jpg
+  times:
+    - "00:00"
+    - "04:00"
+    - "10:00"
+    - "16:00"
+)"""";
+
+static const std::string DYNAMIC_BACKGROUND_SET_STEPS_NO_LENGTH = R""""(
+dynamic_paper:
+  data_directory: "./backgrounds/dynamic"
+  type: dynamic
+  mode: center
+  number_transition_steps: 10
   order: random
   images:
     - 1.jpg
@@ -211,7 +230,7 @@ TEST(BackgroundSetTests, DynamicBackgroundSet) {
 
   EXPECT_EQ(dynamicData->mode, BackgroundSetMode::Center);
 
-  EXPECT_EQ(dynamicData->transitionDuration, std::make_optional(55));
+  EXPECT_EQ(dynamicData->transition->duration, std::chrono::seconds(55));
 
   EXPECT_EQ(dynamicData->order, BackgroundSetOrder::Linear);
 
@@ -237,7 +256,8 @@ TEST(BackgroundSetTests, DynamicBackgroundSetRandom) {
 
   EXPECT_EQ(dynamicData->mode, BackgroundSetMode::Center);
 
-  EXPECT_EQ(dynamicData->transitionDuration, std::make_optional(55));
+  EXPECT_EQ(dynamicData->transition->duration, std::chrono::seconds(55));
+  EXPECT_EQ(dynamicData->transition->steps, 10);
 
   EXPECT_EQ(dynamicData->order, BackgroundSetOrder::Random);
 
@@ -263,7 +283,7 @@ TEST(BackgroundSetTests, DynamicBackgroundSetEmptyDefaults) {
 
   EXPECT_EQ(dynamicData->mode, BackgroundSetMode::Center);
 
-  EXPECT_EQ(dynamicData->transitionDuration, std::nullopt);
+  EXPECT_EQ(dynamicData->transition, std::nullopt);
 
   EXPECT_EQ(dynamicData->order, BackgroundSetOrder::Linear);
 
@@ -286,7 +306,7 @@ TEST(BackgroundSetTests, DynamicBackgroundSetSunTimes) {
 
   EXPECT_EQ(dynamicData->mode, BackgroundSetMode::Center);
 
-  EXPECT_EQ(dynamicData->transitionDuration, std::nullopt);
+  EXPECT_EQ(dynamicData->transition, std::nullopt);
 
   EXPECT_EQ(dynamicData->order, BackgroundSetOrder::Linear);
 
@@ -325,7 +345,7 @@ TEST(BackgroundSetTests, DynamicBackgroundSetStrictTimes) {
 
   EXPECT_EQ(dynamicData->mode, BackgroundSetMode::Center);
 
-  EXPECT_EQ(dynamicData->transitionDuration, std::nullopt);
+  EXPECT_EQ(dynamicData->transition, std::nullopt);
 
   EXPECT_EQ(dynamicData->order, BackgroundSetOrder::Linear);
 
@@ -354,4 +374,16 @@ TEST(BackgroundSetTests, DynamicBackgroundSetNoImagesOrTimes) {
     EXPECT_FALSE(expBackgroundSet.has_value());
     EXPECT_EQ(expBackgroundSet.error(), BackgroundSetParseErrors::NoImages);
   }
+}
+
+TEST(BackgroundSetTests, DynamicBackgroundSetTransitionStepsNoLength) {
+  const BackgroundSet backgroundSet =
+      getBackgroundSetFrom(DYNAMIC_BACKGROUND_SET_STEPS_NO_LENGTH);
+
+  EXPECT_EQ(backgroundSet.name, "dynamic_paper");
+
+  const DynamicBackgroundData *dynamicData =
+      std::get_if<DynamicBackgroundData>(&backgroundSet.type);
+
+  EXPECT_EQ(dynamicData->transition, std::nullopt);
 }

@@ -87,9 +87,9 @@ setBackgroundToImage(const std::filesystem::path &imagePath,
 std::expected<void, BackgroundError> lerpBackgroundBetweenImages(
     const std::filesystem::path &commonImageDirectory,
     const std::string &beforeImageName, const std::string &afterImageName,
-    const std::filesystem::path &cacheDirectory, const unsigned int duration,
-    const unsigned int numSteps, const BackgroundSetMode mode,
-    const BackgroundSetterMethod &method) {
+    const std::filesystem::path &cacheDirectory,
+    const std::chrono::seconds duration, const unsigned int numSteps,
+    const BackgroundSetMode mode, const BackgroundSetterMethod &method) {
 
   for (unsigned int i = 0; i < numSteps; i++) {
     const float percentageFloat = i / static_cast<float>(numSteps);
@@ -112,8 +112,7 @@ std::expected<void, BackgroundError> lerpBackgroundBetweenImages(
       return std::unexpected(BackgroundError::SetBackgroundError);
     }
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(
-        static_cast<unsigned int>(1000 * (1.0f / numSteps) * duration)));
+    std::this_thread::sleep_for(std::chrono::milliseconds(duration) / numSteps);
   }
 
   return std::expected<void, BackgroundError>();

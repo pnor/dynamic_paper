@@ -23,9 +23,6 @@ using Event = std::variant<SetBackgroundEvent, LerpBackgroundEvent>;
 using TimeAndEvent = std::pair<time_t, Event>;
 using EventList = std::vector<TimeAndEvent>;
 
-// TODO move this into config? (per background)
-const int NUM_TRANSITION_STEPS = 10;
-
 // ===== Helper Objects ===============
 /** Information needed for the event to change the background to an image */
 struct SetBackgroundEvent {
@@ -41,13 +38,14 @@ struct LerpBackgroundEvent {
   const std::filesystem::path commonImageDirectory;
   const std::string startImageName;
   const std::string endImageName;
-  const unsigned int duration;
+  const std::chrono::seconds duration;
   const unsigned int numSteps;
 
   LerpBackgroundEvent(const std::filesystem::path &commonImageDirectory,
                       const std::string &startImageName,
                       const std::string &endImageName,
-                      const unsigned int duration, const unsigned int numSteps)
+                      const std::chrono::seconds duration,
+                      const unsigned int numSteps)
       : commonImageDirectory(commonImageDirectory),
         startImageName(startImageName), endImageName(endImageName),
         duration(duration), numSteps(numSteps) {}
@@ -181,14 +179,14 @@ static EventList createEventListFromTimesAndNames(
 
   for (EventList::size_type i = 1; i < eventList.size(); i++) {
     // transition event
-    if (dynamicData->transitionDuration.has_value()) {
+    if (dynamicData->transition.has_value()) {
       const LerpBackgroundEvent lerpEvent(
           dynamicData->dataDirectory, timesAndNames[i - 1].second,
-          timesAndNames[i].second, dynamicData->transitionDuration.value(),
-          NUM_TRANSITION_STEPS);
+          timesAndNames[i].second, dynamicData->transition->duration,
+          dynamicData->transition->steps);
 
       const time_t transitionTime =
-          timesAndNames[i].first - dynamicData->transitionDuration.value();
+          timesAndNames[i].first - dynamicData->transition->duration.count();
 
       eventList.emplace_back(transitionTime, lerpEvent);
     }
@@ -331,11 +329,10 @@ void doBackgroundLoop(const DynamicBackgroundData *backgroundData,
 
 DynamicBackgroundData::DynamicBackgroundData(
     std::filesystem::path dataDirectory, BackgroundSetMode mode,
-    std::optional<unsigned int> transitionDuration, BackgroundSetOrder order,
+    std::optional<TransitionInfo> transition, BackgroundSetOrder order,
     std::vector<std::string> imageNames, std::vector<time_t> times)
-    : dataDirectory(dataDirectory), mode(mode),
-      transitionDuration(transitionDuration), order(order),
-      imageNames(imageNames), times(times) {}
+    : dataDirectory(dataDirectory), mode(mode), transition(transition),
+      order(order), imageNames(imageNames), times(times) {}
 
 void DynamicBackgroundData::show(const Config &config) const {
   logInfo("Show dynamic background");
