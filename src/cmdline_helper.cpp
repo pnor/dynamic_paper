@@ -90,8 +90,8 @@ static void printParsingError(const std::string &name,
  * Parses `BackgroundSet`s from the config file, exiting the program if unable
  * to parse one
  */
-static std::vector<BackgroundSet>
-getBackgroundSetsFromFile(const std::filesystem::path backgroundSetFile,
+std::vector<BackgroundSet>
+getBackgroundSetsFromFile(const std::filesystem::path &backgroundSetFile,
                           const Config &config) {
   std::unordered_map<std::string, YAML::Node> yamlMap =
       nameAndYAMLInfoFromFile(backgroundSetFile);
@@ -117,7 +117,7 @@ getBackgroundSetsFromFile(const std::filesystem::path backgroundSetFile,
 
 std::optional<BackgroundSet>
 getBackgroundSetWithNameFromFile(const std::string_view name,
-                                 const std::filesystem::path backgroundSetFile,
+                                 const std::filesystem::path &backgroundSetFile,
                                  const Config &config) {
   std::unordered_map<std::string, YAML::Node> yamlMap =
       nameAndYAMLInfoFromFile(backgroundSetFile);
@@ -139,7 +139,7 @@ getBackgroundSetWithNameFromFile(const std::string_view name,
 }
 
 std::optional<BackgroundSet>
-getRandomBackgroundSet(const std::filesystem::path backgroundSetFile,
+getRandomBackgroundSet(const std::filesystem::path &backgroundSetFile,
                        const Config &config) {
   std::unordered_map<std::string, YAML::Node> yamlMap =
       nameAndYAMLInfoFromFile(backgroundSetFile);
@@ -159,7 +159,7 @@ getRandomBackgroundSet(const std::filesystem::path backgroundSetFile,
     if (expBackgroundSet.has_value()) {
       return expBackgroundSet.value();
     } else {
-      printParsingError(nameYaml.first, expBackgroundSet.error()) :
+      printParsingError(nameYaml.first, expBackgroundSet.error());
     }
   }
 

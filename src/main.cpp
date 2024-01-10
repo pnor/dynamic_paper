@@ -52,7 +52,7 @@ static void handleRandomCommand(const Config &config) {
 
 static void handleListCommand(const Config &config) {
   std::vector<BackgroundSet> backgroundSets =
-      getBackgroundSetsFromFile("./files/background_sets.yaml", config);
+      getBackgroundSetsFromFile(BACKGROUND_SET_CONFIG, config);
   std::cout << "Available Background sets are: "
             << "\n"
             << std::endl;
@@ -93,7 +93,7 @@ static bool parseArguements(const int argc, char *argv[],
   } else if (program.is_subcommand_used(listCommand)) {
     handleListCommand(config);
   } else if (program.is_subcommand_used(randomCommand)) {
-    handleRandomCommand();
+    handleRandomCommand(config);
   }
 
   return true;
@@ -106,6 +106,7 @@ auto main(int argc, char *argv[]) -> int {
 
   setupLogging(configYaml);
   Config config = loadConfigFromYAML(configYaml).value();
+  // TODO create cache dir if not existing  already
 
   bool result = parseArguements(argc, argv, config);
 

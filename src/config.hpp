@@ -75,6 +75,7 @@ enum class ConfigError { MethodParsingError };
 /** Default values used if a config option is not specified in the user config
  */
 struct ConfigDefaults {
+  // TODO delete background image dir in general config
   static constexpr std::string_view backgroundImageDir =
       "~/.local/share/dynamic_paper/images";
   static constexpr BackgroundSetterMethodWallUtils backgroundSetterMethod =
@@ -95,6 +96,7 @@ struct ConfigDefaults {
  * they are shown*/
 class Config {
 public:
+  // TODO delete background image dir in general config
   std::filesystem::path backgroundImageDir;
   BackgroundSetterMethod backgroundSetterMethod;
   SunEventPollerMethod sunEventPollerMethod;
