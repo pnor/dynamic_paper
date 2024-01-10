@@ -61,6 +61,10 @@ static void handleListCommand(const Config &config) {
   }
 }
 
+static void showHelp(const argparse::ArgumentParser &program) {
+  std::cout << program.help().str();
+}
+
 static bool parseArguements(const int argc, char *argv[],
                             const Config &config) {
   argparse::ArgumentParser program("dynamic paper");
@@ -75,9 +79,13 @@ static bool parseArguements(const int argc, char *argv[],
   argparse::ArgumentParser listCommand("list");
   listCommand.add_description("List all wallpaper set options");
 
+  argparse::ArgumentParser helpCommand("help");
+  listCommand.add_description("Show help");
+
   program.add_subparser(showCommand);
   program.add_subparser(randomCommand);
   program.add_subparser(listCommand);
+  program.add_subparser(helpCommand);
 
   try {
     program.parse_args(argc, argv);
@@ -94,6 +102,10 @@ static bool parseArguements(const int argc, char *argv[],
     handleListCommand(config);
   } else if (program.is_subcommand_used(randomCommand)) {
     handleRandomCommand(config);
+  } else if (program.is_subcommand_used(helpCommand)) {
+    showHelp(program);
+  } else {
+    showHelp(program);
   }
 
   return true;
