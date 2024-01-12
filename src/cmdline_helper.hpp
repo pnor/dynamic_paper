@@ -17,9 +17,7 @@ namespace dynamic_paper {
  * Exits the program if encounters an error parsing `backgroundSetFile`
  * Does not add `BackgroundSet`s that errored out when parsing
  */
-std::vector<BackgroundSet>
-getBackgroundSetsFromFile(const std::filesystem::path &backgroundSetFile,
-                          const Config &config);
+std::vector<BackgroundSet> getBackgroundSetsFromFile(const Config &config);
 
 /**
  * Returns the `BackgroundSet` called `name` from the config file, returning
@@ -27,7 +25,6 @@ getBackgroundSetsFromFile(const std::filesystem::path &backgroundSetFile,
  */
 std::optional<BackgroundSet>
 getBackgroundSetWithNameFromFile(const std::string_view name,
-                                 const std::filesystem::path &backgroundSetFile,
                                  const Config &config);
 
 /**
@@ -35,8 +32,6 @@ getBackgroundSetWithNameFromFile(const std::string_view name,
  *
  * If unable to parse any background sets, will return nullopt
  */
-std::optional<BackgroundSet>
-getRandomBackgroundSet(const std::filesystem::path &backgroundSetFile,
-                       const Config &config);
+std::optional<BackgroundSet> getRandomBackgroundSet(const Config &config);
 
 } // namespace dynamic_paper

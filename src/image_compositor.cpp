@@ -44,13 +44,13 @@ pathForCompositeImage(const std::filesystem::path &commonImageDirectory,
       std::filesystem::path(startImageName).extension();
 
   if (!filesHaveSameExtension(startImageName, endImageName)) {
-    logWarning(std::format("{} and {} are not the same type of image!",
-                           startImageName, endImageName));
+    logWarning("{} and {} are not the same type of image!", startImageName,
+               endImageName);
   }
   if (extension == "") {
-    logWarning(std::format("will use {} for the file extension but it does not "
-                           "have a filetype extension!",
-                           startImageName));
+    logWarning("will use {} for the file extension but it does not "
+               "have a filetype extension!",
+               startImageName);
   }
 
   const std::string compositeName =
@@ -66,14 +66,14 @@ createCompositeImage(const std::filesystem::path &startImagePath,
                      const std::filesystem::path &destinationImagePath,
                      const unsigned int percentage) {
   if (!std::filesystem::exists(startImagePath)) {
-    logWarning(std::format(
+    logWarning(
         "Trying to make a composite image using {} but it doesn't exist!",
-        startImagePath.string()));
+        startImagePath.string());
   }
   if (!std::filesystem::exists(endImagePath)) {
-    logWarning(std::format(
+    logWarning(
         "Trying to make a composite image using {} but it doesn't exist!",
-        endImagePath.string()));
+        endImagePath.string());
   }
   if (std::filesystem::exists(destinationImagePath)) {
     logWarning("Creating a new composite image that already exists in cache!");
@@ -99,8 +99,8 @@ getCompositedImage(const std::filesystem::path &commonImageDirectory,
                    const std::string &endImageName,
                    const std::filesystem::path &cacheDirectory,
                    const unsigned int percentage) {
-  logAssert(percentage <= 100, "percentage must be in range [0..100] but was " +
-                                   std::to_string(percentage));
+  logAssert(percentage <= 100,
+            "percentage must be in range [0..100] but was {}", percentage);
 
   if (percentage == 0) {
     return commonImageDirectory / startImageName;

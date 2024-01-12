@@ -52,13 +52,13 @@ BackgroundSetterMethodScript::BackgroundSetterMethodScript(
     const std::filesystem::path scriptPath)
     : script(scriptPath) {}
 
-Config::Config(std::filesystem::path imageDir, BackgroundSetterMethod setMethod,
-               SunEventPollerMethod sunMethod,
+Config::Config(std::filesystem::path backgroundSetConfigFile,
+               BackgroundSetterMethod setMethod, SunEventPollerMethod sunMethod,
                std::optional<std::filesystem::path> hookScript,
                std::filesystem::path imageCacheDirectory)
-    : backgroundImageDir(imageDir), backgroundSetterMethod(setMethod),
-      sunEventPollerMethod(sunMethod), hookScript(hookScript),
-      imageCacheDirectory(imageCacheDirectory) {}
+    : backgroundSetConfigFile(backgroundSetConfigFile),
+      backgroundSetterMethod(setMethod), sunEventPollerMethod(sunMethod),
+      hookScript(hookScript), imageCacheDirectory(imageCacheDirectory) {}
 
 std::expected<Config, ConfigError>
 loadConfigFromYAML(const YAML::Node &config) {

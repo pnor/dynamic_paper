@@ -47,24 +47,4 @@ void setupLogging(const LogLevel logLevel) {
   setShouldShowDebugLogs(logLevel);
 }
 
-void logInfo(const std::string_view msg) { spdlog::info(msg); }
-
-void logDebug(const std::string_view msg) { spdlog::debug(msg); }
-
-void logWarning(const std::string_view msg) { spdlog::warn(msg); }
-
-void logError(const std::string_view msg) { spdlog::error(msg); }
-
-void logFatalError(const std::string_view msg) { spdlog::critical(msg); }
-
-void logAssert(const bool condition, const std::string_view msg) {
-  if (condition) {
-    return;
-  }
-
-  spdlog::critical(msg);
-
-  throw std::logic_error("Assertion failed: " + std::string(msg));
-}
-
 } // namespace dynamic_paper

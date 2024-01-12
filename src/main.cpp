@@ -1,3 +1,4 @@
+#include <expected>
 #include <format>
 #include <iostream>
 
@@ -12,21 +13,70 @@
 
 using namespace dynamic_paper;
 
-// TODO replace
-const std::filesystem::path
-    BACKGROUND_SET_CONFIG("./files/background_sets.yaml");
+// ===== Helper ================
+constexpr std::string_view ANSI_COLOR_RED = "\x1b[31m";
+constexpr std::string_view ANSI_COLOR_GREEN = "\x1b[32m";
+constexpr std::string_view ANSI_COLOR_YELLOW = "\x1b[33m";
+constexpr std::string_view ANSI_COLOR_BLUE = "\x1b[34m";
+constexpr std::string_view ANSI_COLOR_MAGENTA = "\x1b[35m";
+constexpr std::string_view ANSI_COLOR_CYAN = "\x1b[36m";
+constexpr std::string_view ANSI_COLOR_RESET = "\x1b[0m";
 
+template <typename... Ts>
+void errorMsg(const std::format_string<Ts...> msg, Ts &&...args) {
+  const std::string formattedMessage =
+      std::format(msg, std::forward<Ts>(args)...);
+  std::cout << std::format("{}{}{}", ANSI_COLOR_RED, formattedMessage,
+                           ANSI_COLOR_RESET)
+            << std::endl;
+}
+
+// ===== Logging ===============
 void setupLogging(const YAML::Node &config) {
   LogLevel logLevel = loadLoggingLevelFromYAML(config);
   setupLogging(logLevel);
 }
+
+// ===== Command Line Arguements ===============
+YAML::Node loadConfigFileIntoYAML(const std::filesystem::path &file) {
+  if (!std::filesystem::exists(file)) {
+    errorMsg("Tried to load config file `{}` but it does not exist!",
+             file.string());
+    exit(EXIT_FAILURE);
+  }
+
+  try {
+    return YAML::LoadFile(file);
+  } catch (const YAML::BadFile &e) {
+    errorMsg("Could not parse config file `{}`", file.string());
+    exit(EXIT_FAILURE);
+  }
+}
+
+Config createConfigFromYAML(const YAML::Node configYaml) {
+  std::expected<Config, ConfigError> expConfig = loadConfigFromYAML(configYaml);
+
+  if (!expConfig.has_value()) {
+    switch (expConfig.error()) {
+    case ConfigError::MethodParsingError: {
+      errorMsg("Unable to parse general config; invalid method");
+      break;
+    }
+    }
+    exit(1);
+  }
+
+  return expConfig.value();
+}
+
+// ===== Command Line Arguements ===============
 
 static void handleShowCommand(argparse::ArgumentParser &showCommand,
                               const Config &config) {
   const std::string &name = showCommand.get("name");
 
   std::optional<BackgroundSet> optBackgroundSet =
-      getBackgroundSetWithNameFromFile(name, BACKGROUND_SET_CONFIG, config);
+      getBackgroundSetWithNameFromFile(name, config);
 
   if (!optBackgroundSet.has_value()) {
     std::cout << "Unable to show background set with name " << name
@@ -39,11 +89,11 @@ static void handleShowCommand(argparse::ArgumentParser &showCommand,
 
 static void handleRandomCommand(const Config &config) {
   std::optional<BackgroundSet> optBackgroundSet =
-      getRandomBackgroundSet(BACKGROUND_SET_CONFIG, config);
+      getRandomBackgroundSet(config);
 
   if (!optBackgroundSet.has_value()) {
     std::cout << "Unable to parse any background set from the config file at : "
-              << BACKGROUND_SET_CONFIG.string() << std::endl;
+              << config.backgroundSetConfigFile.string() << std::endl;
     return;
   }
 
@@ -51,8 +101,7 @@ static void handleRandomCommand(const Config &config) {
 }
 
 static void handleListCommand(const Config &config) {
-  std::vector<BackgroundSet> backgroundSets =
-      getBackgroundSetsFromFile(BACKGROUND_SET_CONFIG, config);
+  std::vector<BackgroundSet> backgroundSets = getBackgroundSetsFromFile(config);
   std::cout << "Available Background sets are: "
             << "\n"
             << std::endl;
@@ -68,6 +117,10 @@ static void showHelp(const argparse::ArgumentParser &program) {
 static bool parseArguements(const int argc, char *argv[],
                             const Config &config) {
   argparse::ArgumentParser program("dynamic paper");
+
+  program.add_argument("--config")
+      .help("Show optional config")
+      .default_value("~/.config/dynamic_paper/config.yaml");
 
   argparse::ArgumentParser showCommand("show");
   showCommand.add_description("Show wallpaper set with name");
@@ -114,11 +167,17 @@ static bool parseArguements(const int argc, char *argv[],
 // ===== Main ===============
 
 auto main(int argc, char *argv[]) -> int {
-  YAML::Node configYaml = YAML::LoadFile("./files/test.yaml");
+  // create config location if it doesn't exist (if looking for default)
+  // take a config from cmd line args
+  YAML::Node configYaml = loadConfigFileIntoYAML("./files/test.yaml");
 
   setupLogging(configYaml);
-  Config config = loadConfigFromYAML(configYaml).value();
+
+  Config config = createConfigFromYAML(configYaml);
   // TODO create cache dir if not existing  already
+  // TODO create default dirs like .local/share and .cache/dynamic_paper if they
+  // don't exist
+  // TODO create default config if it doesn't exist already
 
   bool result = parseArguements(argc, argv, config);
 

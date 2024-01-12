@@ -1,0 +1,28 @@
+#+title: Dynamic Paper
+
+Manage backgrounds that stay the same or change over the course of the day
+
+
+* General Config Options
+* Background Set Config Options
+**  Static Background Config
+=type=: =static
+=data_directory= : parent directory that images are stored.
+=images= or =image=: List of image names or one single image name that can be displayed as the
+background. If multiple images are specified, will randomly choose one when =show= is called.
+=mode=: Display mode. Can be either =center= or =fill=.
+
+The path to the image that will be shown can be found by combining the =data_directory= ad =image= paths:
+=data_directory= =/= =image=
+
+** Dynamic Background Config
+=type=: =dynamic=
+=data_directory= : ~string~ representing parent directory that images are stored.
+=images= or =image=: ~list[string]~ or ~string~. List of image names or one single image name that can be displayed as the
+background. If multiple images are specified, will randomly choose one when =show= is called.
+=mode=: ~string~  representing Display Mode. Can be either =center= or =fill=.
+=transition=: ~boolean~ for whether it should interpolate transitions
+=number_transition_steps=: ~int~ for number of steps to transition between backgrounds
+
+The path to the image that will be shown can be found by combining the =data_directory= ad =image= paths:
+=data_directory= =/= =image=

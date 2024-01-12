@@ -42,7 +42,7 @@ runCommandHandleError(const std::string &command) {
   const int result = runCommandExitCode(command);
 
   if (result != 0) {
-    logError("Command ''" + command + "' did not run succesfully");
+    logError("Command '{}' did not run succesfully", command);
     return std::unexpected(BackgroundError::CommandError);
   }
 
@@ -53,6 +53,8 @@ std::expected<void, BackgroundError>
 setBackgroundToImage(const std::filesystem::path &imagePath,
                      const BackgroundSetMode mode,
                      const BackgroundSetterMethod &method) {
+  logTrace("Setting background to image ({})", imagePath.string());
+
   const std::string imageName = imagePath.string();
 
   return std::visit(
@@ -121,6 +123,8 @@ std::expected<void, BackgroundError> lerpBackgroundBetweenImages(
 std::expected<void, HookCommandError>
 runHookCommand(const std::filesystem::path hookScriptPath,
                const std::filesystem::path imagePath) {
+  logTrace("Running hook command: ({})", hookScriptPath.string());
+
   const std::string commandStr =
       std::format("{} {}", hookScriptPath.string(), imagePath.string());
   const int result = runCommandExitCode(commandStr);

@@ -16,10 +16,9 @@ static void printDebugInfo(const StaticBackgroundData *data,
                            const BackgroundSetterMethod &method) {
   std::string modeString = backgroundSetModeString(data->mode);
   std::string methodString = backgroundSetterMethodString(method);
-  logWarning(std::format(
-      "Encountered error in attempting to set the background for static "
-      "background set. Image name was {} with mode {} using method {}",
-      imageName, modeString, methodString));
+  logWarning("Encountered error in attempting to set the background for static "
+             "background set. Image name was {} with mode {} using method {}",
+             imageName, modeString, methodString);
 }
 
 /** Returns a random number in range [0..max)*/
@@ -36,10 +35,10 @@ StaticBackgroundData::StaticBackgroundData(std::filesystem::path dataDirectory,
     : dataDirectory(dataDirectory), mode(mode), imageNames(imageNames) {}
 
 void StaticBackgroundData::show(const Config &config) const {
-  logInfo("Showing static background");
+  logTrace("Showing static background");
   logAssert(imageNames.size() > 0, "Static background");
 
-  const std::string imageName = imageNames[randomNumber(imageName.size())];
+  const std::string imageName = imageNames.at(randomNumber(imageNames.size()));
   const std::filesystem::path imagePath = dataDirectory / imageName;
 
   std::expected<void, BackgroundError> result =

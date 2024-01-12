@@ -237,6 +237,8 @@ BackgroundSet::BackgroundSet(std::string name, DynamicBackgroundData data)
       type(std::variant<StaticBackgroundData, DynamicBackgroundData>(data)) {}
 
 void BackgroundSet::show(const Config &config) const {
+  logTrace("show in BackgroundSet");
+
   std::visit(
       overloaded{
           [&config](const StaticBackgroundData &data) { data.show(config); },

@@ -44,7 +44,7 @@ getSunriseAndSetUsingSunwait() {
 
   if (sunwaitResult.size() < 12) {
     logWarning(
-        "return output not expected when getting sunrise/sunset times: " +
+        "return output not expected when getting sunrise/sunset times: {}",
         sunwaitResult);
     return std::unexpected(SunriseAndSetErrors::BadOutput);
   }
@@ -95,7 +95,7 @@ sunOffsetStringToTimeOffset(const SunriseAndSunsetTimes &sunriseAndSunsetTimes,
       convertRawTimeStringToTimeOffset(offsetStr);
 
   if (!timeOffset.has_value()) {
-    logWarning("Unable to parse " + offsetStr + " for a time offset");
+    logWarning("Unable to parse {} for a time offset", offsetStr);
     return std::nullopt;
   }
   if (!(sunsetOrRiseStr == "sunrise" || sunsetOrRiseStr == "sunset")) {
@@ -103,9 +103,9 @@ sunOffsetStringToTimeOffset(const SunriseAndSunsetTimes &sunriseAndSunsetTimes,
     return std::nullopt;
   }
   if (!(addOrSubtractStr == "+" || addOrSubtractStr == "-")) {
-    logWarning(
-        "Unable to identify whether to add or subtract time offset from " +
-        sunsetOrRiseStr + " time");
+    logWarning("Unable to identify whether to add or subtract time offset from "
+               "{} time",
+               sunsetOrRiseStr);
     return std::nullopt;
   }
 
@@ -207,7 +207,7 @@ timeStringToTime(const std::string &s,
     const std::string &offsetStr = groupMatches[0].str();
     return convertRawTimeStringToTimeOffset(offsetStr);
   } else {
-    logWarning("Unable to parse/match the time string: " + timeString);
+    logWarning("Unable to parse/match the time string: {}", timeString);
     return std::nullopt;
   }
 }

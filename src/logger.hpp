@@ -1,7 +1,10 @@
 #pragma once
 
 #include <cstddef>
+#include <format>
 #include <string_view>
+
+#include <spdlog/spdlog.h>
 
 namespace dynamic_paper {
 
@@ -14,23 +17,63 @@ enum class LogLevel { INFO, WARNING, ERROR, DEBUG, CRITICAL, TRACE, OFF };
  * logs should be shown. */
 void setupLogging(const LogLevel logLevel);
 
-/** Prints a debug log message saying `msg`. */
-void logDebug(const std::string_view msg);
+/** Prints a debug log message saying `msg`. Accepts `args` for use in a format
+ * string. */
+template <typename... Ts>
+void logDebug(const std::format_string<Ts...> &msg, Ts &&...args) {
+  spdlog::debug(std::format(msg, std::forward<Ts>(args)...));
+}
 
-/** Prints an informational log message saying `msg`. */
-void logInfo(const std::string_view msg);
+/** Prints an informational log message saying `msg`. Accepts `args` for use in
+ * a format string. */
+template <typename... Ts>
+void logInfo(const std::format_string<Ts...> &msg, Ts &&...args) {
+  spdlog::info(std::format(msg, std::forward<Ts>(args)...));
+}
 
-/** Prints a warning log message saying `msg`.*/
-void logWarning(const std::string_view msg);
+/** Prints a trace log message saying `msg`. Accepts `args` for use in a format
+ * string. */
+template <typename... Ts>
+void logTrace(const std::format_string<Ts...> &msg, Ts &&...args) {
+  spdlog::trace(std::format(msg, std::forward<Ts>(args)...));
+}
 
-/** Prints an error log message saying `msg`. */
-void logError(const std::string_view msg);
+/** Prints a warning log message saying `msg`. Accepts `args` for use in a
+ * format string.*/
+template <typename... Ts>
+void logWarning(const std::format_string<Ts...> &msg, Ts &&...args) {
+  spdlog::warn(std::format(msg, std::forward<Ts>(args)...));
+}
 
-/** Prints a fatal error log message saying `msg`. */
-void logFatalError(const std::string_view msg);
+/** Prints an error log message saying `msg`. Accepts `args` for use in a format
+ * string. */
+template <typename... Ts>
+void logError(const std::format_string<Ts...> &msg, Ts &&...args) {
+  spdlog::error(std::format(msg, std::forward<Ts>(args)...));
+}
+
+/** Prints a fatal error log message saying `msg`. Accepts `args` for use in a
+ * format string. */
+template <typename... Ts>
+void logFatalError(const std::format_string<Ts...> &msg, Ts &&...args) {
+  spdlog::critical(std::format(msg, std::forward<Ts>(args)...));
+}
 
 /** Asserts `condition`, printing a message if it fails and throwing an
- * exception. Otherwise, does nothing */
-void logAssert(const bool condition, const std::string_view msg);
+ * exception. Otherwise, does nothing.
+ * Accepts `args` for use in a format string.
+ */
+template <typename... Ts>
+void logAssert(const bool condition, const std::format_string<Ts...> &msg,
+               Ts &&...args) {
+  if (condition) {
+    return;
+  }
+
+  spdlog::critical(std::format(msg, std::forward<Ts>(args)...));
+
+  throw std::logic_error("Assertion failed: " +
+                         std::format(msg, std::forward<Ts>(args)...));
+}
 
 } // namespace dynamic_paper

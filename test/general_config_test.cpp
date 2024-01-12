@@ -11,7 +11,7 @@
 using namespace dynamic_paper;
 
 static constexpr std::string_view DEFAULT_IMAGE_DIR =
-    "~/.local/share/dynamic_paper/images";
+    "~/.local/share/dynamic_paper/background_sets.yaml";
 static constexpr std::string_view DEFAULT_CACHE_IMAGE_DIR =
     "~/.cache/dynamic_paper";
 
@@ -67,7 +67,8 @@ TEST(GeneralConfig, AllFilled) {
       std::get<BackgroundSetterMethodWallUtils>(cfg.backgroundSetterMethod),
       BackgroundSetterMethodWallUtils());
   EXPECT_EQ(cfg.sunEventPollerMethod, SunEventPollerMethod::Sunwait);
-  EXPECT_EQ(cfg.backgroundImageDir, std::filesystem::path("./an_image_dir"));
+  EXPECT_EQ(cfg.backgroundSetConfigFile,
+            std::filesystem::path("./an_image_dir"));
   EXPECT_EQ(cfg.hookScript,
             std::make_optional(std::filesystem::path("./hook_script.sh")));
   EXPECT_EQ(cfg.imageCacheDirectory,
@@ -86,7 +87,8 @@ TEST(GeneralConfig, DefaultValues) {
       std::get<BackgroundSetterMethodWallUtils>(cfg.backgroundSetterMethod),
       BackgroundSetterMethodWallUtils());
   EXPECT_EQ(cfg.sunEventPollerMethod, SunEventPollerMethod::Sunwait);
-  EXPECT_EQ(cfg.backgroundImageDir, std::filesystem::path(DEFAULT_IMAGE_DIR));
+  EXPECT_EQ(cfg.backgroundSetConfigFile,
+            std::filesystem::path(DEFAULT_IMAGE_DIR));
   EXPECT_EQ(cfg.hookScript, std::nullopt);
   EXPECT_EQ(cfg.imageCacheDirectory,
             std::filesystem::path(DEFAULT_CACHE_IMAGE_DIR));
@@ -104,7 +106,8 @@ TEST(GeneralConfig, MethodOnly) {
       std::get<BackgroundSetterMethodWallUtils>(cfg.backgroundSetterMethod),
       BackgroundSetterMethodWallUtils());
   EXPECT_EQ(cfg.sunEventPollerMethod, SunEventPollerMethod::Sunwait);
-  EXPECT_EQ(cfg.backgroundImageDir, std::filesystem::path(DEFAULT_IMAGE_DIR));
+  EXPECT_EQ(cfg.backgroundSetConfigFile,
+            std::filesystem::path(DEFAULT_IMAGE_DIR));
   EXPECT_EQ(cfg.hookScript, std::nullopt);
 }
 
@@ -121,7 +124,7 @@ TEST(GeneralConfig, MethodWallUtils) {
       BackgroundSetterMethodWallUtils());
 
   EXPECT_EQ(cfg.sunEventPollerMethod, SunEventPollerMethod::Sunwait);
-  EXPECT_EQ(cfg.backgroundImageDir, std::filesystem::path("./image"));
+  EXPECT_EQ(cfg.backgroundSetConfigFile, std::filesystem::path("./image"));
   EXPECT_EQ(cfg.hookScript, std::nullopt);
 }
 
@@ -137,7 +140,7 @@ TEST(GeneralConfig, MethodScript) {
             BackgroundSetterMethodScript(std::filesystem::path("./script.sh")));
 
   EXPECT_EQ(cfg.sunEventPollerMethod, SunEventPollerMethod::Sunwait);
-  EXPECT_EQ(cfg.backgroundImageDir, std::filesystem::path("./image"));
+  EXPECT_EQ(cfg.backgroundSetConfigFile, std::filesystem::path("./image"));
   EXPECT_EQ(cfg.hookScript, std::nullopt);
 }
 
@@ -154,7 +157,7 @@ TEST(GeneralConfig, BothMethodAndScript) {
       BackgroundSetterMethodWallUtils());
 
   EXPECT_EQ(cfg.sunEventPollerMethod, SunEventPollerMethod::Sunwait);
-  EXPECT_EQ(cfg.backgroundImageDir, std::filesystem::path("./image"));
+  EXPECT_EQ(cfg.backgroundSetConfigFile, std::filesystem::path("./image"));
   EXPECT_EQ(cfg.hookScript, std::nullopt);
 }
 

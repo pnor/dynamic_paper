@@ -33,7 +33,7 @@ parseBackgroundSetterMethod(YAML::Node config, const std::string_view methodKey,
   } else if (s == WALLUTILS_STRING) {
     return BackgroundSetterMethodWallUtils();
   } else {
-    logError("String " + s + " doesn't correspond to valid method");
+    logError("String '{}' doesn't correspond to valid method", s);
     return std::unexpected(BackgroundSetterMethodError::InvalidMethod);
   }
 }

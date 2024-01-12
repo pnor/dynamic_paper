@@ -289,7 +289,7 @@ static void sleepUntilNextTime(const time_t &now, const time_t &later) {
                                      (later - midnight));
   }
 
-  logDebug(std::format("Sleeping for {} seconds ...", sleepTime));
+  logDebug("Sleeping for {} seconds ...", sleepTime);
   std::this_thread::sleep_for(std::chrono::seconds(sleepTime));
 }
 
@@ -335,7 +335,7 @@ DynamicBackgroundData::DynamicBackgroundData(
       order(order), imageNames(imageNames), times(times) {}
 
 void DynamicBackgroundData::show(const Config &config) const {
-  logInfo("Show dynamic background");
+  logTrace("Show dynamic background");
 
   doBackgroundLoop(this, config);
 }

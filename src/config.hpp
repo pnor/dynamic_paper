@@ -75,9 +75,8 @@ enum class ConfigError { MethodParsingError };
 /** Default values used if a config option is not specified in the user config
  */
 struct ConfigDefaults {
-  // TODO delete background image dir in general config
   static constexpr std::string_view backgroundImageDir =
-      "~/.local/share/dynamic_paper/images";
+      "~/.local/share/dynamic_paper/background_sets.yaml";
   static constexpr BackgroundSetterMethodWallUtils backgroundSetterMethod =
       BackgroundSetterMethodWallUtils();
   static constexpr SunEventPollerMethod sunEventPollerMethod =
@@ -96,15 +95,20 @@ struct ConfigDefaults {
  * they are shown*/
 class Config {
 public:
-  // TODO delete background image dir in general config
-  std::filesystem::path backgroundImageDir;
+  /** Location to where the file which Background Sets are loaded from*/
+  std::filesystem::path backgroundSetConfigFile;
+  /** Method used to set backgrounds as the wallpaper*/
   BackgroundSetterMethod backgroundSetterMethod;
+  /** Method used to determine the location of the sun in the sky */
   SunEventPollerMethod sunEventPollerMethod;
+  /** Location of script that is called after a background is set*/
   std::optional<std::filesystem::path> hookScript;
+  /** Location of the directory cached images created to transition between
+   * backgrounds is kept*/
   std::filesystem::path imageCacheDirectory;
 
-  Config(std::filesystem::path imageDir, BackgroundSetterMethod setMethod,
-         SunEventPollerMethod sunMethod,
+  Config(std::filesystem::path backgroundSetConfigFile,
+         BackgroundSetterMethod setMethod, SunEventPollerMethod sunMethod,
          std::optional<std::filesystem::path> hookScript,
          std::filesystem::path imageCacheDirectory);
 };
