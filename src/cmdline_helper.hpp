@@ -1,5 +1,7 @@
 #pragma once
 
+#include <argparse/argparse.hpp>
+
 #include "background_set.hpp"
 #include "config.hpp"
 
@@ -9,6 +11,7 @@ namespace dynamic_paper {
  * program */
 
 // ===== Command Line Args ===============
+
 // ===== Background Set ===============
 
 /**

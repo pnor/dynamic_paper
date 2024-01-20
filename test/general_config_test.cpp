@@ -10,54 +10,62 @@
 
 using namespace dynamic_paper;
 
-static constexpr std::string_view DEFAULT_IMAGE_DIR =
-    "~/.local/share/dynamic_paper/background_sets.yaml";
-static constexpr std::string_view DEFAULT_CACHE_IMAGE_DIR =
-    "~/.cache/dynamic_paper";
+namespace {
 
-static const std::string GENERAL_CONFIG_YAML = R""""(
+constexpr std::string_view DEFAULT_BACKGROUND_SET_CONFIG =
+    "~/.local/share/dynamic_paper/background_sets.yaml";
+constexpr std::string_view DEFAULT_CACHE_IMAGE_DIR = "~/.cache/dynamic_paper";
+
+constexpr std::string_view GENERAL_CONFIG_YAML = R""""(
 method: "wallutils"
 sun_poller: "sunwait"
-image_dir: "./an_image_dir"
+background_config: "./an_image_dir"
 hook_script: "./hook_script.sh"
 cache_dir: "~/.cache/backgrounds"
 )"""";
 
-static const std::string EMPTY_YAML = "";
+constexpr std::string EMPTY_YAML;
 
-static const std::string GENERAL_CONFIG_ONLY_METHOD_YAML = R""""(
+constexpr std::string_view GENERAL_CONFIG_ONLY_METHOD_YAML = R""""(
 method: "wallutils"
 )"""";
 
-static const std::string METHOD_WALLUTILS = R""""(
+constexpr std::string_view METHOD_WALLUTILS = R""""(
 method: "wallutils"
 sun_poller: "sunwait"
-image_dir: "./image"
+background_config: "./image"
 )"""";
 
-static const std::string METHOD_SCRIPT = R""""(
+constexpr std::string_view METHOD_SCRIPT = R""""(
 method: "script"
 method_script: "./script.sh"
 sun_poller: "sunwait"
-image_dir: "./image"
+background_config: "./image"
 )"""";
 
-static const std::string BOTH_METHOD_AND_SCRIPT = R""""(
+constexpr std::string_view BOTH_METHOD_AND_SCRIPT = R""""(
 method: "wallutils"
 method_script: "./script.sh"
 sun_poller: "sunwait"
-image_dir: "./image"
+background_config: "./image"
 )"""";
 
-static const std::string SCRIPT_WITH_NO_SCRIPT = R""""(
+constexpr std::string_view SCRIPT_WITH_NO_SCRIPT = R""""(
 method: "script"
 sun_poller: "sunwait"
-image_dir: "./image"
+background_config: "./image"
 )"""";
+
+std::expected<Config, ConfigError>
+loadConfigFromString(const std::string_view configString) {
+  return loadConfigFromYAML(YAML::Load(std::string(configString)));
+}
+
+} // namespace
 
 TEST(GeneralConfig, AllFilled) {
   const std::expected<Config, ConfigError> expectedConfig =
-      loadConfigFromYAML(YAML::Load(GENERAL_CONFIG_YAML));
+      loadConfigFromString(GENERAL_CONFIG_YAML);
 
   EXPECT_TRUE(expectedConfig.has_value());
 
@@ -77,7 +85,7 @@ TEST(GeneralConfig, AllFilled) {
 
 TEST(GeneralConfig, DefaultValues) {
   const std::expected<Config, ConfigError> expectedConfig =
-      loadConfigFromYAML(YAML::Load(EMPTY_YAML));
+      loadConfigFromString(EMPTY_YAML);
 
   EXPECT_TRUE(expectedConfig.has_value());
 
@@ -88,7 +96,7 @@ TEST(GeneralConfig, DefaultValues) {
       BackgroundSetterMethodWallUtils());
   EXPECT_EQ(cfg.sunEventPollerMethod, SunEventPollerMethod::Sunwait);
   EXPECT_EQ(cfg.backgroundSetConfigFile,
-            std::filesystem::path(DEFAULT_IMAGE_DIR));
+            std::filesystem::path(DEFAULT_BACKGROUND_SET_CONFIG));
   EXPECT_EQ(cfg.hookScript, std::nullopt);
   EXPECT_EQ(cfg.imageCacheDirectory,
             std::filesystem::path(DEFAULT_CACHE_IMAGE_DIR));
@@ -96,7 +104,7 @@ TEST(GeneralConfig, DefaultValues) {
 
 TEST(GeneralConfig, MethodOnly) {
   const std::expected<Config, ConfigError> expectedConfig =
-      loadConfigFromYAML(YAML::Load(GENERAL_CONFIG_ONLY_METHOD_YAML));
+      loadConfigFromString(GENERAL_CONFIG_ONLY_METHOD_YAML);
 
   EXPECT_TRUE(expectedConfig.has_value());
 
@@ -107,13 +115,13 @@ TEST(GeneralConfig, MethodOnly) {
       BackgroundSetterMethodWallUtils());
   EXPECT_EQ(cfg.sunEventPollerMethod, SunEventPollerMethod::Sunwait);
   EXPECT_EQ(cfg.backgroundSetConfigFile,
-            std::filesystem::path(DEFAULT_IMAGE_DIR));
+            std::filesystem::path(DEFAULT_BACKGROUND_SET_CONFIG));
   EXPECT_EQ(cfg.hookScript, std::nullopt);
 }
 
 TEST(GeneralConfig, MethodWallUtils) {
   const std::expected<Config, ConfigError> expectedConfig =
-      loadConfigFromYAML(YAML::Load(METHOD_WALLUTILS));
+      loadConfigFromString(METHOD_WALLUTILS);
 
   EXPECT_TRUE(expectedConfig.has_value());
 
@@ -130,7 +138,7 @@ TEST(GeneralConfig, MethodWallUtils) {
 
 TEST(GeneralConfig, MethodScript) {
   const std::expected<Config, ConfigError> expectedConfig =
-      loadConfigFromYAML(YAML::Load(METHOD_SCRIPT));
+      loadConfigFromString(METHOD_SCRIPT);
 
   EXPECT_TRUE(expectedConfig.has_value());
 
@@ -146,7 +154,7 @@ TEST(GeneralConfig, MethodScript) {
 
 TEST(GeneralConfig, BothMethodAndScript) {
   const std::expected<Config, ConfigError> expectedConfig =
-      loadConfigFromYAML(YAML::Load(BOTH_METHOD_AND_SCRIPT));
+      loadConfigFromString(BOTH_METHOD_AND_SCRIPT);
 
   EXPECT_TRUE(expectedConfig.has_value());
 
@@ -163,7 +171,7 @@ TEST(GeneralConfig, BothMethodAndScript) {
 
 TEST(GeneralConfig, ScriptWithNoScript) {
   const std::expected<Config, ConfigError> expectedConfig =
-      loadConfigFromYAML(YAML::Load(SCRIPT_WITH_NO_SCRIPT));
+      loadConfigFromString(SCRIPT_WITH_NO_SCRIPT);
 
   EXPECT_FALSE(expectedConfig.has_value());
 

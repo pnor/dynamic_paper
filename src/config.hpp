@@ -72,25 +72,6 @@ backgroundSetterMethodString(const BackgroundSetterMethod &method) {
 
 enum class ConfigError { MethodParsingError };
 
-/** Default values used if a config option is not specified in the user config
- */
-struct ConfigDefaults {
-  static constexpr std::string_view backgroundImageDir =
-      "~/.local/share/dynamic_paper/background_sets.yaml";
-  static constexpr BackgroundSetterMethodWallUtils backgroundSetterMethod =
-      BackgroundSetterMethodWallUtils();
-  static constexpr SunEventPollerMethod sunEventPollerMethod =
-      SunEventPollerMethod::Sunwait;
-  static constexpr std::string_view imageCacheDirectory =
-      "~/.cache/dynamic_paper";
-  static constexpr LogLevel logLevel = LogLevel::INFO;
-
-  ConfigDefaults() = delete;
-  ConfigDefaults(ConfigDefaults &other) = delete;
-  ConfigDefaults(ConfigDefaults &&other) = delete;
-  ~ConfigDefaults() = delete;
-};
-
 /** Config options specified for user that control which images are used and how
  * they are shown*/
 class Config {

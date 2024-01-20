@@ -1,4 +1,3 @@
-
 /**
  *   Test conversion of time strings to unix time
  *

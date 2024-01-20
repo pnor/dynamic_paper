@@ -36,7 +36,7 @@ StaticBackgroundData::StaticBackgroundData(std::filesystem::path dataDirectory,
 
 void StaticBackgroundData::show(const Config &config) const {
   logTrace("Showing static background");
-  logAssert(imageNames.size() > 0, "Static background");
+  logAssert(imageNames.empty(), "Static background cannot show with no images");
 
   const std::string imageName = imageNames.at(randomNumber(imageNames.size()));
   const std::filesystem::path imagePath = dataDirectory / imageName;

@@ -41,6 +41,7 @@ add_executable(
   time_util.cpp
   yaml_helper.cpp
   cmdline_helper.cpp
+  file_util.cpp
 )
 
 target_link_libraries(

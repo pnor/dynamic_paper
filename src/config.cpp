@@ -6,14 +6,16 @@
 
 #include <yaml-cpp/yaml.h>
 
-#include "src/globals.hpp"
+#include "defaults.hpp"
+#include "globals.hpp"
 #include "yaml_helper.hpp"
 
 namespace dynamic_paper {
 
 static constexpr std::string_view METHOD_KEY = "method";
 static constexpr std::string_view SUN_POLL_METHOD_KEY = "sun_poller";
-static constexpr std::string_view BACKGROUND_IMAGE_DIR_KEY = "image_dir";
+static constexpr std::string_view BACKGROUND_SET_CONFIG_FILE =
+    "background_config";
 static constexpr std::string_view METHOD_SCRIPT_KEY = "method_script";
 static constexpr std::string_view HOOK_SCRIPT_KEY = "hook_script";
 static constexpr std::string_view IMAGE_CACHE_DIR_KEY = "cache_dir";
@@ -74,9 +76,10 @@ loadConfigFromYAML(const YAML::Node &config) {
       generalConfigParseOrUseDefault<SunEventPollerMethod>(
           config, SUN_POLL_METHOD_KEY, ConfigDefaults::sunEventPollerMethod);
 
-  std::filesystem::path backgroundImageDir =
+  std::filesystem::path backgroundSetConfigFile =
       generalConfigParseOrUseDefault<std::filesystem::path>(
-          config, BACKGROUND_IMAGE_DIR_KEY, ConfigDefaults::backgroundImageDir);
+          config, BACKGROUND_SET_CONFIG_FILE,
+          ConfigDefaults::backgroundSetConfigFile);
 
   std::optional<std::filesystem::path> hookScript =
       generalConfigParseOrUseDefault<std::optional<std::filesystem::path>>(
@@ -86,7 +89,7 @@ loadConfigFromYAML(const YAML::Node &config) {
       generalConfigParseOrUseDefault<std::filesystem::path>(
           config, IMAGE_CACHE_DIR_KEY, ConfigDefaults::imageCacheDirectory);
 
-  return Config(backgroundImageDir, expectedMethod.value(), sunMethod,
+  return Config(backgroundSetConfigFile, expectedMethod.value(), sunMethod,
                 hookScript, imageCacheDir);
 };
 

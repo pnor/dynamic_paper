@@ -12,8 +12,7 @@
 
 namespace dynamic_paper {
 
-class StaticBackgroundData {
-public:
+struct StaticBackgroundData {
   std::filesystem::path dataDirectory;
   BackgroundSetMode mode;
   std::vector<std::string> imageNames;

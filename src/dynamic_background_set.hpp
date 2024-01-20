@@ -23,8 +23,7 @@ struct TransitionInfo {
       : duration(duration), steps(steps) {}
 };
 
-class DynamicBackgroundData {
-public:
+struct DynamicBackgroundData {
   std::filesystem::path dataDirectory;
   BackgroundSetMode mode;
   /** nullopt if does not transition. */

@@ -51,6 +51,7 @@ add_executable(
   ${dynamic_paper_SOURCE_DIR}/src/time_util.cpp
   ${dynamic_paper_SOURCE_DIR}/src/yaml_helper.cpp
   ${dynamic_paper_SOURCE_DIR}/src/cmdline_helper.cpp
+  ${dynamic_paper_SOURCE_DIR}/src/file_util.cpp
 )
 
 target_link_libraries(

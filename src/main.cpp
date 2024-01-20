@@ -9,9 +9,13 @@
 #include "background_set.hpp"
 #include "cmdline_helper.hpp"
 #include "config.hpp"
+#include "defaults.hpp"
+#include "file_util.hpp"
 #include "logger.hpp"
 
 using namespace dynamic_paper;
+
+namespace {
 
 // ===== Helper ================
 constexpr std::string_view ANSI_COLOR_RED = "\x1b[31m";
@@ -30,20 +34,15 @@ void errorMsg(const std::format_string<Ts...> msg, Ts &&...args) {
                            ANSI_COLOR_RESET)
             << std::endl;
 }
-
 // ===== Logging ===============
 void setupLogging(const YAML::Node &config) {
   LogLevel logLevel = loadLoggingLevelFromYAML(config);
   setupLogging(logLevel);
 }
 
-// ===== Command Line Arguements ===============
+// ===== Config ===============
 YAML::Node loadConfigFileIntoYAML(const std::filesystem::path &file) {
-  if (!std::filesystem::exists(file)) {
-    errorMsg("Tried to load config file `{}` but it does not exist!",
-             file.string());
-    exit(EXIT_FAILURE);
-  }
+  createFileIfDoesntExist(file, DEFAULT_CONFIG_FILE);
 
   try {
     return YAML::LoadFile(file);
@@ -53,7 +52,7 @@ YAML::Node loadConfigFileIntoYAML(const std::filesystem::path &file) {
   }
 }
 
-Config createConfigFromYAML(const YAML::Node configYaml) {
+Config createConfigFromYAML(const YAML::Node &configYaml) {
   std::expected<Config, ConfigError> expConfig = loadConfigFromYAML(configYaml);
 
   if (!expConfig.has_value()) {
@@ -69,10 +68,21 @@ Config createConfigFromYAML(const YAML::Node configYaml) {
   return expConfig.value();
 }
 
+Config getConfigAndSetupLogging(const argparse::ArgumentParser &program) {
+  const std::filesystem::path configFilePath =
+      std::filesystem::path(program.get("--config"));
+
+  YAML::Node configYaml = loadConfigFileIntoYAML(configFilePath);
+
+  setupLogging(configYaml);
+
+  return createConfigFromYAML(configYaml);
+}
+
 // ===== Command Line Arguements ===============
 
-static void handleShowCommand(argparse::ArgumentParser &showCommand,
-                              const Config &config) {
+void handleShowCommand(argparse::ArgumentParser &showCommand,
+                       const Config &config) {
   const std::string &name = showCommand.get("name");
 
   std::optional<BackgroundSet> optBackgroundSet =
@@ -87,7 +97,7 @@ static void handleShowCommand(argparse::ArgumentParser &showCommand,
   optBackgroundSet->show(config);
 }
 
-static void handleRandomCommand(const Config &config) {
+void handleRandomCommand(const Config &config) {
   std::optional<BackgroundSet> optBackgroundSet =
       getRandomBackgroundSet(config);
 
@@ -100,27 +110,31 @@ static void handleRandomCommand(const Config &config) {
   optBackgroundSet->show(config);
 }
 
-static void handleListCommand(const Config &config) {
+void handleListCommand(const Config &config) {
   std::vector<BackgroundSet> backgroundSets = getBackgroundSetsFromFile(config);
   std::cout << "Available Background sets are: "
             << "\n"
             << std::endl;
-  for (const auto &b : backgroundSets) {
-    std::cout << b.name << std::endl;
+  for (const auto &backgroundSet : backgroundSets) {
+    std::cout << backgroundSet.name << std::endl;
   }
 }
 
-static void showHelp(const argparse::ArgumentParser &program) {
+void showHelp(const argparse::ArgumentParser &program) {
   std::cout << program.help().str();
 }
 
-static bool parseArguements(const int argc, char *argv[],
-                            const Config &config) {
-  argparse::ArgumentParser program("dynamic paper");
+} // namespace
 
+// ===== Main ===============
+
+auto main(int argc, char *argv[]) -> int {
+  // TODO make help not care about config or anything
+  argparse::ArgumentParser program("dynamicpaper");
   program.add_argument("--config")
       .help("Show optional config")
-      .default_value("~/.config/dynamic_paper/config.yaml");
+      .default_value("~/.config/dynamic_paper/config.yaml")
+      .implicit_value("");
 
   argparse::ArgumentParser showCommand("show");
   showCommand.add_description("Show wallpaper set with name");
@@ -134,7 +148,6 @@ static bool parseArguements(const int argc, char *argv[],
 
   argparse::ArgumentParser helpCommand("help");
   listCommand.add_description("Show help");
-
   program.add_subparser(showCommand);
   program.add_subparser(randomCommand);
   program.add_subparser(listCommand);
@@ -143,43 +156,29 @@ static bool parseArguements(const int argc, char *argv[],
   try {
     program.parse_args(argc, argv);
   } catch (const std::runtime_error &err) {
-    std::cout << "Error parsing command line options:" << std::endl;
-    std::cerr << err.what() << std::endl;
-    std::cerr << program;
-    return false;
+    errorMsg("Error parsing command line options:\n{}", err.what());
+    return EXIT_FAILURE;
   }
 
+  // TODO create cache dir if not existing  already
+  // TODO create default dirs like .local/share and .cache/dynamic_paper if
+  // they don't exist
+
   if (program.is_subcommand_used(showCommand)) {
+    Config config = getConfigAndSetupLogging(program);
     handleShowCommand(showCommand, config);
   } else if (program.is_subcommand_used(listCommand)) {
+    Config config = getConfigAndSetupLogging(program);
     handleListCommand(config);
   } else if (program.is_subcommand_used(randomCommand)) {
+    Config config = getConfigAndSetupLogging(program);
     handleRandomCommand(config);
   } else if (program.is_subcommand_used(helpCommand)) {
     showHelp(program);
   } else {
+    errorMsg("Unknown option");
     showHelp(program);
   }
 
-  return true;
-}
-
-// ===== Main ===============
-
-auto main(int argc, char *argv[]) -> int {
-  // create config location if it doesn't exist (if looking for default)
-  // take a config from cmd line args
-  YAML::Node configYaml = loadConfigFileIntoYAML("./files/test.yaml");
-
-  setupLogging(configYaml);
-
-  Config config = createConfigFromYAML(configYaml);
-  // TODO create cache dir if not existing  already
-  // TODO create default dirs like .local/share and .cache/dynamic_paper if they
-  // don't exist
-  // TODO create default config if it doesn't exist already
-
-  bool result = parseArguements(argc, argv, config);
-
-  return result ? 0 : 1;
+  return EXIT_SUCCESS;
 }

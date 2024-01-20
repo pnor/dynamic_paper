@@ -16,12 +16,16 @@ using namespace dynamic_paper;
 using namespace dynamic_paper_test;
 using namespace testing;
 
-// Static
-static const Config config("./images", BackgroundSetterMethodWallUtils(),
-                           SunEventPollerMethod::Dummy, std::nullopt,
-                           "~/.cache/backgrounds");
+namespace {
 
-static const std::string STATIC_BACKGROUND_SET = R""""(
+Config getConfig() {
+  return Config("./images", BackgroundSetterMethodWallUtils(),
+                SunEventPollerMethod::Dummy, std::nullopt,
+                "~/.cache/backgrounds");
+}
+
+// Static
+const std::string_view STATIC_BACKGROUND_SET = R""""(
 static_paper:
   data_directory: "~/backgrounds"
   type: static
@@ -29,7 +33,7 @@ static_paper:
   image: 1.jpg
 )"""";
 
-static const std::string STATIC_BACKGROUND_IMAGE_LIST_SET = R""""(
+const std::string_view STATIC_BACKGROUND_IMAGE_LIST_SET = R""""(
 static_paper:
   data_directory: "~/backgrounds2"
   type: static
@@ -40,7 +44,7 @@ static_paper:
 )"""";
 
 // Dynamic
-static const std::string DYNAMIC_BACKGROUND_SET = R""""(
+const std::string_view DYNAMIC_BACKGROUND_SET = R""""(
 dynamic_paper:
   data_directory: "./backgrounds/dynamic"
   type: dynamic
@@ -59,7 +63,7 @@ dynamic_paper:
     - "sunset"
 )"""";
 
-static const std::string DYNAMIC_BACKGROUND_SET_RANDOM = R""""(
+static const std::string_view DYNAMIC_BACKGROUND_SET_RANDOM = R""""(
 dynamic_paper:
   data_directory: "./backgrounds/dynamic"
   type: dynamic
@@ -78,7 +82,7 @@ dynamic_paper:
     - "16:00"
 )"""";
 
-static const std::string DYNAMIC_BACKGROUND_SET_STEPS_NO_LENGTH = R""""(
+const std::string_view DYNAMIC_BACKGROUND_SET_STEPS_NO_LENGTH = R""""(
 dynamic_paper:
   data_directory: "./backgrounds/dynamic"
   type: dynamic
@@ -96,7 +100,7 @@ dynamic_paper:
     - "16:00"
 )"""";
 
-static const std::string DYNAMIC_BACKGROUND_SET_EMPTY = R""""(
+const std::string_view DYNAMIC_BACKGROUND_SET_EMPTY = R""""(
 dynamic_paper:
   data_directory: "./backgrounds/dynamic"
   type: dynamic
@@ -108,7 +112,7 @@ dynamic_paper:
     - "01:00"
 )"""";
 
-static const std::string DYNAMIC_BACKGROUND_SUNTIMES = R""""(
+const std::string_view DYNAMIC_BACKGROUND_SUNTIMES = R""""(
 suntimes:
   data_directory: "./backgrounds/dynamic"
   type: dynamic
@@ -140,7 +144,7 @@ suntimes:
     - "sunset"
 )"""";
 
-static const std::string DYNAMIC_BACKGROUND_STRICT_TIMES = R""""(
+const std::string_view DYNAMIC_BACKGROUND_STRICT_TIMES = R""""(
 suntimes:
   data_directory: "./backgrounds/dynamic"
   type: dynamic
@@ -164,7 +168,7 @@ suntimes:
     - "23:59"
 )"""";
 
-static const std::string DYNAMIC_BACKGROUND_NO_IMAGES_OR_TIMES = R""""(
+const std::string_view DYNAMIC_BACKGROUND_NO_IMAGES_OR_TIMES = R""""(
 suntimes:
   data_directory: "./backgrounds/dynamic"
   type: dynamic
@@ -173,14 +177,14 @@ suntimes:
 )"""";
 
 // ===== Helper ===================
-static BackgroundSet getBackgroundSetFrom(const std::string &s) {
-  YAML::Node yaml = YAML::Load(s);
+BackgroundSet getBackgroundSetFrom(const std::string_view yamlString) {
+  YAML::Node yaml = YAML::Load(std::string(yamlString));
   auto yamlMap = yaml.as<std::unordered_map<std::string, YAML::Node>>();
 
   // yamlMap only has 1 entry; mapping the name to all the yaml info
   for (const auto &kv : yamlMap) {
     std::expected<BackgroundSet, BackgroundSetParseErrors> expBackgroundSet =
-        parseFromYAML(kv.first, kv.second, config);
+        parseFromYAML(kv.first, kv.second, getConfig());
     EXPECT_TRUE(expBackgroundSet.has_value());
     return expBackgroundSet.value();
   }
@@ -188,6 +192,8 @@ static BackgroundSet getBackgroundSetFrom(const std::string &s) {
   throw std::logic_error(
       "Reached impossible cast when getting background set from string");
 }
+
+} // namespace
 
 // ===== Tests ====================
 
@@ -365,12 +371,13 @@ TEST(BackgroundSetTests, DynamicBackgroundSetStrictTimes) {
 }
 
 TEST(BackgroundSetTests, DynamicBackgroundSetNoImagesOrTimes) {
-  YAML::Node yaml = YAML::Load(DYNAMIC_BACKGROUND_NO_IMAGES_OR_TIMES);
+  YAML::Node yaml =
+      YAML::Load(std::string(DYNAMIC_BACKGROUND_NO_IMAGES_OR_TIMES));
   auto yamlMap = yaml.as<std::unordered_map<std::string, YAML::Node>>();
 
   for (const auto &kv : yamlMap) {
     std::expected<BackgroundSet, BackgroundSetParseErrors> expBackgroundSet =
-        parseFromYAML(kv.first, kv.second, config);
+        parseFromYAML(kv.first, kv.second, getConfig());
     EXPECT_FALSE(expBackgroundSet.has_value());
     EXPECT_EQ(expBackgroundSet.error(), BackgroundSetParseErrors::NoImages);
   }

@@ -12,16 +12,17 @@
 
 namespace dynamic_paper {
 
+namespace {
+
 // Static Commmands Run in Shell
 constexpr std::string_view WALLUTILS_SET_CENTERED_FORMAT_STRING =
     "setwallpaper -m center {}";
 constexpr std::string_view WALLUTILS_SET_FILLED_FORMAT_STRING =
     "setwallpaper -m fill {}";
 
-static inline std::string
-convertScriptNameToCommand(const std::string &scriptName,
-                           const BackgroundSetMode mode,
-                           const std::string &imageName) {
+inline std::string convertScriptNameToCommand(const std::string &scriptName,
+                                              const BackgroundSetMode mode,
+                                              const std::string &imageName) {
   std::string modeString;
   switch (mode) {
   case BackgroundSetMode::Center: {
@@ -37,7 +38,7 @@ convertScriptNameToCommand(const std::string &scriptName,
   return std::format("{} -m {} {}", scriptName, modeString, imageName);
 }
 
-static std::expected<void, BackgroundError>
+std::expected<void, BackgroundError>
 runCommandHandleError(const std::string &command) {
   const int result = runCommandExitCode(command);
 
@@ -48,6 +49,12 @@ runCommandHandleError(const std::string &command) {
 
   return std::expected<void, BackgroundError>();
 }
+
+bool createDirectoryIfDoesntExist() {}
+
+} // namespace
+
+// ===== Header ===============
 
 std::expected<void, BackgroundError>
 setBackgroundToImage(const std::filesystem::path &imagePath,
@@ -92,6 +99,8 @@ std::expected<void, BackgroundError> lerpBackgroundBetweenImages(
     const std::filesystem::path &cacheDirectory,
     const std::chrono::seconds duration, const unsigned int numSteps,
     const BackgroundSetMode mode, const BackgroundSetterMethod &method) {
+
+  // TODO create cache dir if doesn't exist
 
   for (unsigned int i = 0; i < numSteps; i++) {
     const float percentageFloat = i / static_cast<float>(numSteps);
