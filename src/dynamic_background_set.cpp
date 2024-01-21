@@ -137,10 +137,11 @@ static time_t getCurrentTime() {
 static std::vector<std::pair<time_t, std::string>>
 timesAndNamesSortedByTime(const DynamicBackgroundData *dynamicData) {
   std::vector<std::pair<time_t, std::string>> timesNames;
+  const std::vector<time_t> &times = dynamicData->times;
+  const std::vector<std::string> &imageNames = dynamicData->imageNames;
 
-  for (const auto &timeName :
-       std::views::zip(dynamicData->times, dynamicData->imageNames)) {
-    timesNames.push_back(timeName);
+  for (size_t i = 0; i < std::min(times.size(), imageNames.size()); i++) {
+    timesNames.emplace_back(times[i], imageNames[i]);
   }
 
   std::ranges::sort(timesNames, {}, &std::pair<time_t, std::string>::first);
@@ -246,7 +247,7 @@ static void doEvent(const Event &event,
                     const Config &config) {
   std::visit(
       overloaded{[&config, backgroundData](const SetBackgroundEvent &event) {
-                   std::expected<void, BackgroundError> result =
+                   tl::expected<void, BackgroundError> result =
                        setBackgroundToImage(event.imagePath,
                                             backgroundData->mode,
                                             config.backgroundSetterMethod);
@@ -260,7 +261,7 @@ static void doEvent(const Event &event,
                    }
                  },
                  [&config, backgroundData](const LerpBackgroundEvent &event) {
-                   std::expected<void, BackgroundError> result =
+                   tl::expected<void, BackgroundError> result =
                        lerpBackgroundBetweenImages(
                            event.commonImageDirectory, event.startImageName,
                            event.endImageName, config.imageCacheDirectory,

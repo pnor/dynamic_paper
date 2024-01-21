@@ -56,7 +56,7 @@ sun_poller: "sunwait"
 background_config: "./image"
 )"""";
 
-std::expected<Config, ConfigError>
+tl::expected<Config, ConfigError>
 loadConfigFromString(const std::string_view configString) {
   return loadConfigFromYAML(YAML::Load(std::string(configString)));
 }
@@ -64,7 +64,7 @@ loadConfigFromString(const std::string_view configString) {
 } // namespace
 
 TEST(GeneralConfig, AllFilled) {
-  const std::expected<Config, ConfigError> expectedConfig =
+  const tl::expected<Config, ConfigError> expectedConfig =
       loadConfigFromString(GENERAL_CONFIG_YAML);
 
   EXPECT_TRUE(expectedConfig.has_value());
@@ -84,7 +84,7 @@ TEST(GeneralConfig, AllFilled) {
 }
 
 TEST(GeneralConfig, DefaultValues) {
-  const std::expected<Config, ConfigError> expectedConfig =
+  const tl::expected<Config, ConfigError> expectedConfig =
       loadConfigFromString(EMPTY_YAML);
 
   EXPECT_TRUE(expectedConfig.has_value());
@@ -103,7 +103,7 @@ TEST(GeneralConfig, DefaultValues) {
 }
 
 TEST(GeneralConfig, MethodOnly) {
-  const std::expected<Config, ConfigError> expectedConfig =
+  const tl::expected<Config, ConfigError> expectedConfig =
       loadConfigFromString(GENERAL_CONFIG_ONLY_METHOD_YAML);
 
   EXPECT_TRUE(expectedConfig.has_value());
@@ -120,7 +120,7 @@ TEST(GeneralConfig, MethodOnly) {
 }
 
 TEST(GeneralConfig, MethodWallUtils) {
-  const std::expected<Config, ConfigError> expectedConfig =
+  const tl::expected<Config, ConfigError> expectedConfig =
       loadConfigFromString(METHOD_WALLUTILS);
 
   EXPECT_TRUE(expectedConfig.has_value());
@@ -137,7 +137,7 @@ TEST(GeneralConfig, MethodWallUtils) {
 }
 
 TEST(GeneralConfig, MethodScript) {
-  const std::expected<Config, ConfigError> expectedConfig =
+  const tl::expected<Config, ConfigError> expectedConfig =
       loadConfigFromString(METHOD_SCRIPT);
 
   EXPECT_TRUE(expectedConfig.has_value());
@@ -153,7 +153,7 @@ TEST(GeneralConfig, MethodScript) {
 }
 
 TEST(GeneralConfig, BothMethodAndScript) {
-  const std::expected<Config, ConfigError> expectedConfig =
+  const tl::expected<Config, ConfigError> expectedConfig =
       loadConfigFromString(BOTH_METHOD_AND_SCRIPT);
 
   EXPECT_TRUE(expectedConfig.has_value());
@@ -170,7 +170,7 @@ TEST(GeneralConfig, BothMethodAndScript) {
 }
 
 TEST(GeneralConfig, ScriptWithNoScript) {
-  const std::expected<Config, ConfigError> expectedConfig =
+  const tl::expected<Config, ConfigError> expectedConfig =
       loadConfigFromString(SCRIPT_WITH_NO_SCRIPT);
 
   EXPECT_FALSE(expectedConfig.has_value());

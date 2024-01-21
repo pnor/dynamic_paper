@@ -22,7 +22,7 @@ static constexpr std::string_view IMAGE_CACHE_DIR_KEY = "cache_dir";
 static constexpr std::string_view LOGGING_KEY = "logging_level";
 
 using ExpectedMethod =
-    std::expected<BackgroundSetterMethod, BackgroundSetterMethodError>;
+    tl::expected<BackgroundSetterMethod, BackgroundSetterMethodError>;
 
 static ExpectedMethod handleMethodError(const ExpectedMethod &expectedMethod) {
   if (expectedMethod.has_value()) {
@@ -39,13 +39,13 @@ static ExpectedMethod handleMethodError(const ExpectedMethod &expectedMethod) {
     return BackgroundSetterMethodWallUtils();
   }
   case BackgroundSetterMethodError::NoScriptProvided: {
-    return std::unexpected(BackgroundSetterMethodError::NoScriptProvided);
+    return tl::unexpected(BackgroundSetterMethodError::NoScriptProvided);
   }
   }
 
   logAssert(false, "Reached impossible case when handling expected method "
                    "return type when parsing method from config!");
-  return std::unexpected(BackgroundSetterMethodError::InvalidMethod);
+  return tl::unexpected(BackgroundSetterMethodError::InvalidMethod);
 }
 
 // ===== Header ===============
@@ -62,14 +62,13 @@ Config::Config(std::filesystem::path backgroundSetConfigFile,
       backgroundSetterMethod(setMethod), sunEventPollerMethod(sunMethod),
       hookScript(hookScript), imageCacheDirectory(imageCacheDirectory) {}
 
-std::expected<Config, ConfigError>
-loadConfigFromYAML(const YAML::Node &config) {
+tl::expected<Config, ConfigError> loadConfigFromYAML(const YAML::Node &config) {
 
   const ExpectedMethod parsedExpectedMethod =
       parseBackgroundSetterMethod(config, METHOD_KEY, METHOD_SCRIPT_KEY);
   const ExpectedMethod expectedMethod = handleMethodError(parsedExpectedMethod);
   if (!expectedMethod.has_value()) {
-    return std::unexpected(ConfigError::MethodParsingError);
+    return tl::unexpected(ConfigError::MethodParsingError);
   }
 
   SunEventPollerMethod sunMethod =

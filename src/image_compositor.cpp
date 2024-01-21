@@ -28,7 +28,7 @@ static bool filesHaveSameExtension(const std::string &name1,
          std::filesystem::path(name2).extension();
 }
 
-static std::expected<std::filesystem::path, CompositeImageError>
+static tl::expected<std::filesystem::path, CompositeImageError>
 pathForCompositeImage(const std::filesystem::path &commonImageDirectory,
                       const std::string &startImageName,
                       const std::string &endImageName,
@@ -36,7 +36,7 @@ pathForCompositeImage(const std::filesystem::path &commonImageDirectory,
                       const std::filesystem::path &cacheDirectory) {
   const std::optional<std::string> optDirName = basename(commonImageDirectory);
   if (!optDirName.has_value()) {
-    return std::unexpected(CompositeImageError::UnableToCreatePath);
+    return tl::unexpected(CompositeImageError::UnableToCreatePath);
   }
 
   const std::string &dirName = optDirName.value();
@@ -60,7 +60,7 @@ pathForCompositeImage(const std::filesystem::path &commonImageDirectory,
   return cacheDirectory / compositeName;
 }
 
-static std::expected<std::filesystem::path, CompositeImageError>
+static tl::expected<std::filesystem::path, CompositeImageError>
 createCompositeImage(const std::filesystem::path &startImagePath,
                      const std::filesystem::path &endImagePath,
                      const std::filesystem::path &destinationImagePath,
@@ -87,13 +87,13 @@ createCompositeImage(const std::filesystem::path &startImagePath,
   if (exitCode == EXIT_SUCCESS) {
     return destinationImagePath;
   } else {
-    return std::unexpected(CompositeImageError::CommandError);
+    return tl::unexpected(CompositeImageError::CommandError);
   }
 }
 
 // ===== Header ===============
 
-std::expected<std::filesystem::path, CompositeImageError>
+tl::expected<std::filesystem::path, CompositeImageError>
 getCompositedImage(const std::filesystem::path &commonImageDirectory,
                    const std::string &startImageName,
                    const std::string &endImageName,
@@ -109,13 +109,13 @@ getCompositedImage(const std::filesystem::path &commonImageDirectory,
     return commonImageDirectory / endImageName;
   }
 
-  const std::expected<std::filesystem::path, CompositeImageError>
+  const tl::expected<std::filesystem::path, CompositeImageError>
       compositeImagePath =
           pathForCompositeImage(commonImageDirectory, startImageName,
                                 endImageName, percentage, cacheDirectory);
 
   if (!compositeImagePath.has_value()) {
-    return std::unexpected(compositeImagePath.error());
+    return tl::unexpected(compositeImagePath.error());
   }
 
   if (std::filesystem::exists(compositeImagePath.value())) {

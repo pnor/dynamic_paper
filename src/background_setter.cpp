@@ -1,9 +1,10 @@
 #include "background_setter.hpp"
 
 #include <algorithm>
-#include <expected>
 #include <format>
 #include <thread>
+
+#include <tl/expected.hpp>
 
 #include "command_executor.hpp"
 #include "image_compositor.hpp"
@@ -38,16 +39,16 @@ inline std::string convertScriptNameToCommand(const std::string &scriptName,
   return std::format("{} -m {} {}", scriptName, modeString, imageName);
 }
 
-std::expected<void, BackgroundError>
+tl::expected<void, BackgroundError>
 runCommandHandleError(const std::string &command) {
   const int result = runCommandExitCode(command);
 
   if (result != 0) {
     logError("Command '{}' did not run succesfully", command);
-    return std::unexpected(BackgroundError::CommandError);
+    return tl::unexpected(BackgroundError::CommandError);
   }
 
-  return std::expected<void, BackgroundError>();
+  return tl::expected<void, BackgroundError>();
 }
 
 bool createDirectoryIfDoesntExist() {}
@@ -56,7 +57,7 @@ bool createDirectoryIfDoesntExist() {}
 
 // ===== Header ===============
 
-std::expected<void, BackgroundError>
+tl::expected<void, BackgroundError>
 setBackgroundToImage(const std::filesystem::path &imagePath,
                      const BackgroundSetMode mode,
                      const BackgroundSetterMethod &method) {
@@ -88,12 +89,12 @@ setBackgroundToImage(const std::filesystem::path &imagePath,
 
             logAssert(false, "Unhandled background set mode case when setting "
                              "background to image!");
-            return std::expected<void, BackgroundError>();
+            return tl::expected<void, BackgroundError>();
           }},
       method);
 }
 
-std::expected<void, BackgroundError> lerpBackgroundBetweenImages(
+tl::expected<void, BackgroundError> lerpBackgroundBetweenImages(
     const std::filesystem::path &commonImageDirectory,
     const std::string &beforeImageName, const std::string &afterImageName,
     const std::filesystem::path &cacheDirectory,
@@ -107,29 +108,29 @@ std::expected<void, BackgroundError> lerpBackgroundBetweenImages(
     const unsigned int percentage = std::clamp(
         static_cast<unsigned int>(percentageFloat * 100.0), 0u, 100u);
 
-    std::expected<std::filesystem::path, CompositeImageError>
+    tl::expected<std::filesystem::path, CompositeImageError>
         expectedCompositedImage =
             getCompositedImage(commonImageDirectory, beforeImageName,
                                afterImageName, cacheDirectory, percentage);
 
     if (!expectedCompositedImage.has_value()) {
-      return std::unexpected(BackgroundError::CompositeImageError);
+      return tl::unexpected(BackgroundError::CompositeImageError);
     }
 
-    std::expected<void, BackgroundError> backgroundResult =
+    tl::expected<void, BackgroundError> backgroundResult =
         setBackgroundToImage(expectedCompositedImage.value(), mode, method);
 
     if (!backgroundResult.has_value()) {
-      return std::unexpected(BackgroundError::SetBackgroundError);
+      return tl::unexpected(BackgroundError::SetBackgroundError);
     }
 
     std::this_thread::sleep_for(std::chrono::milliseconds(duration) / numSteps);
   }
 
-  return std::expected<void, BackgroundError>();
+  return tl::expected<void, BackgroundError>();
 }
 
-std::expected<void, HookCommandError>
+tl::expected<void, HookCommandError>
 runHookCommand(const std::filesystem::path hookScriptPath,
                const std::filesystem::path imagePath) {
   logTrace("Running hook command: ({})", hookScriptPath.string());
@@ -139,9 +140,9 @@ runHookCommand(const std::filesystem::path hookScriptPath,
   const int result = runCommandExitCode(commandStr);
 
   if (result != EXIT_SUCCESS) {
-    return std::unexpected(HookCommandError::CommandError);
+    return tl::unexpected(HookCommandError::CommandError);
   }
 
-  return std::expected<void, HookCommandError>();
+  return tl::expected<void, HookCommandError>();
 }
 } // namespace dynamic_paper

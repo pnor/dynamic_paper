@@ -183,7 +183,7 @@ BackgroundSet getBackgroundSetFrom(const std::string_view yamlString) {
 
   // yamlMap only has 1 entry; mapping the name to all the yaml info
   for (const auto &kv : yamlMap) {
-    std::expected<BackgroundSet, BackgroundSetParseErrors> expBackgroundSet =
+    tl::expected<BackgroundSet, BackgroundSetParseErrors> expBackgroundSet =
         parseFromYAML(kv.first, kv.second, getConfig());
     EXPECT_TRUE(expBackgroundSet.has_value());
     return expBackgroundSet.value();
@@ -376,7 +376,7 @@ TEST(BackgroundSetTests, DynamicBackgroundSetNoImagesOrTimes) {
   auto yamlMap = yaml.as<std::unordered_map<std::string, YAML::Node>>();
 
   for (const auto &kv : yamlMap) {
-    std::expected<BackgroundSet, BackgroundSetParseErrors> expBackgroundSet =
+    tl::expected<BackgroundSet, BackgroundSetParseErrors> expBackgroundSet =
         parseFromYAML(kv.first, kv.second, getConfig());
     EXPECT_FALSE(expBackgroundSet.has_value());
     EXPECT_EQ(expBackgroundSet.error(), BackgroundSetParseErrors::NoImages);

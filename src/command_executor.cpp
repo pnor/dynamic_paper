@@ -10,7 +10,7 @@
 
 namespace dynamic_paper {
 
-std::expected<std::string, CommandExecError>
+tl::expected<std::string, CommandExecError>
 runCommandStdout(const std::string &cmd) {
   logTrace("Running command (returning stdout): {}", cmd);
 
@@ -20,7 +20,7 @@ runCommandStdout(const std::string &cmd) {
                                                 pclose);
   if (!pipe) {
     logError("Unable to open pipe when running the command: {}", cmd);
-    return std::unexpected(CommandExecError::PopenFail);
+    return tl::unexpected(CommandExecError::PopenFail);
   }
   while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
     result += buffer.data();

@@ -120,7 +120,7 @@ tryCreateTransitionInfoFrom(const ParsingInfo &parsingInfo) {
   return std::nullopt;
 }
 
-static std::expected<BackgroundSet, BackgroundSetParseErrors>
+static tl::expected<BackgroundSet, BackgroundSetParseErrors>
 createStaticBackgroundSetFromInfo(const ParsingInfo &parsingInfo) {
   assert((void("Parsing info should have name by time this helper function "
                "is called"),
@@ -130,14 +130,14 @@ createStaticBackgroundSetFromInfo(const ParsingInfo &parsingInfo) {
 
   if (!(parsingInfo.image.has_value() || parsingInfo.images.has_value())) {
     if (parsingInfo.images.has_value() && parsingInfo.images->empty()) {
-      return std::unexpected(BackgroundSetParseErrors::NoImages);
+      return tl::unexpected(BackgroundSetParseErrors::NoImages);
     } else if (!parsingInfo.image.has_value()) {
-      return std::unexpected(BackgroundSetParseErrors::NoImages);
+      return tl::unexpected(BackgroundSetParseErrors::NoImages);
     }
   }
 
   if (!parsingInfo.dataDirectory.has_value()) {
-    return std::unexpected(BackgroundSetParseErrors::NoImageDirectory);
+    return tl::unexpected(BackgroundSetParseErrors::NoImageDirectory);
   }
 
   logAssert(parsingInfo.image.has_value() || parsingInfo.images.has_value(),
@@ -159,7 +159,7 @@ createStaticBackgroundSetFromInfo(const ParsingInfo &parsingInfo) {
   }
 }
 
-static std::expected<BackgroundSet, BackgroundSetParseErrors>
+static tl::expected<BackgroundSet, BackgroundSetParseErrors>
 createDynamicBackgroundSetFromInfo(const ParsingInfo &parsingInfo,
                                    const Config &config) {
   assert((void("Parsing info should have name by time this helper function "
@@ -169,28 +169,28 @@ createDynamicBackgroundSetFromInfo(const ParsingInfo &parsingInfo,
   const std::string &name = parsingInfo.name.value();
 
   if (!parsingInfo.images.has_value() || parsingInfo.images->empty()) {
-    return std::unexpected(BackgroundSetParseErrors::NoImages);
+    return tl::unexpected(BackgroundSetParseErrors::NoImages);
   }
 
   if (!parsingInfo.dataDirectory.has_value()) {
-    return std::unexpected(BackgroundSetParseErrors::NoImageDirectory);
+    return tl::unexpected(BackgroundSetParseErrors::NoImageDirectory);
   }
 
   if (!parsingInfo.timeStrings.has_value() ||
       parsingInfo.timeStrings->empty()) {
-    return std::unexpected(BackgroundSetParseErrors::NoTimes);
+    return tl::unexpected(BackgroundSetParseErrors::NoTimes);
   }
 
   std::optional<SunriseAndSunsetTimes> optSunriseAndSunsetTimes =
       getSunriseAndSetString(config);
   if (!optSunriseAndSunsetTimes.has_value()) {
-    return std::unexpected(BackgroundSetParseErrors::MissingSunpollInfo);
+    return tl::unexpected(BackgroundSetParseErrors::MissingSunpollInfo);
   }
 
   std::optional<std::vector<time_t>> optTimeOffsets = timeStringsToTimes(
       parsingInfo.timeStrings.value(), optSunriseAndSunsetTimes.value());
   if (!optTimeOffsets.has_value()) {
-    return std::unexpected(BackgroundSetParseErrors::BadTimes);
+    return tl::unexpected(BackgroundSetParseErrors::BadTimes);
   }
 
   std::optional<TransitionInfo> transition =
@@ -204,15 +204,15 @@ createDynamicBackgroundSetFromInfo(const ParsingInfo &parsingInfo,
                            parsingInfo.images.value(), optTimeOffsets.value()));
 }
 
-static std::expected<BackgroundSet, BackgroundSetParseErrors>
+static tl::expected<BackgroundSet, BackgroundSetParseErrors>
 createBackgroundSetFromInfo(const ParsingInfo &parsingInfo,
                             const Config &config) {
   if (!parsingInfo.name.has_value()) {
-    return std::unexpected(BackgroundSetParseErrors::NoName);
+    return tl::unexpected(BackgroundSetParseErrors::NoName);
   }
 
   if (!parsingInfo.type.has_value()) {
-    return std::unexpected(BackgroundSetParseErrors::NoType);
+    return tl::unexpected(BackgroundSetParseErrors::NoType);
   }
 
   switch (parsingInfo.type.value()) {
@@ -247,7 +247,7 @@ void BackgroundSet::show(const Config &config) const {
       this->type);
 }
 
-std::expected<BackgroundSet, BackgroundSetParseErrors>
+tl::expected<BackgroundSet, BackgroundSetParseErrors>
 parseFromYAML(const std::string &name, const YAML::Node &yaml,
               const Config &config) {
   ParsingInfo parsingInfo;

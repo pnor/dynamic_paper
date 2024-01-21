@@ -5,6 +5,7 @@
 #include <optional>
 #include <variant>
 
+#include <tl/expected.hpp>
 #include <yaml-cpp/yaml.h>
 
 #include "background_set_enums.hpp"
@@ -36,7 +37,7 @@ enum class BackgroundSetParseErrors {
   NoTimes
 };
 
-std::expected<BackgroundSet, BackgroundSetParseErrors>
+tl::expected<BackgroundSet, BackgroundSetParseErrors>
 parseFromYAML(const std::string &name, const YAML::Node &yaml,
               const Config &config);
 } // namespace dynamic_paper

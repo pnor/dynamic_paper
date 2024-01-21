@@ -1,14 +1,15 @@
 #pragma once
 
-#include <expected>
 #include <string>
+
+#include <tl/expected.hpp>
 
 namespace dynamic_paper {
 
 enum class CommandExecError { PopenFail };
 
 /** Runs `cmd` and returns the output in a string */
-std::expected<std::string, CommandExecError>
+tl::expected<std::string, CommandExecError>
 runCommandStdout(const std::string &cmd);
 
 /** Runs `cmd` and returns the exit code */

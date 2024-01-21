@@ -1,8 +1,9 @@
 #pragma once
 
-#include <expected>
 #include <filesystem>
 #include <string>
+
+#include <tl/expected.hpp>
 
 namespace dynamic_paper {
 
@@ -18,7 +19,7 @@ enum class CompositeImageError { UnableToCreatePath, CommandError };
  *
  * `percentage` should be in the range [0..100]
  */
-std::expected<std::filesystem::path, CompositeImageError> getCompositedImage(
+tl::expected<std::filesystem::path, CompositeImageError> getCompositedImage(
     const std::filesystem::path &commonImageDirectory,
     const std::string &startImageName, const std::string &endImageName,
     const std::filesystem::path &cacheDirectory, const unsigned int percentage);

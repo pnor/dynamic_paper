@@ -4,6 +4,8 @@
 #include <format>
 #include <random>
 
+#include <tl/expected.hpp>
+
 #include "background_setter.hpp"
 #include "config.hpp"
 #include "logger.hpp"
@@ -41,7 +43,7 @@ void StaticBackgroundData::show(const Config &config) const {
   const std::string imageName = imageNames.at(randomNumber(imageNames.size()));
   const std::filesystem::path imagePath = dataDirectory / imageName;
 
-  std::expected<void, BackgroundError> result =
+  tl::expected<void, BackgroundError> result =
       setBackgroundToImage(imagePath, mode, config.backgroundSetterMethod);
 
   if (!result.has_value()) {

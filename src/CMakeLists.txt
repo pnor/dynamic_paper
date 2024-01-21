@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.12)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(POLICY CMP0135)
@@ -27,6 +27,13 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(argparse)
 
+FetchContent_Declare(
+  expected
+  GIT_REPOSITORY https://github.com/TartanLlama/expected.git
+  GIT_TAG v1.1.0
+)
+FetchContent_MakeAvailable(expected)
+
 add_executable(
   dynamic_paper
   main.cpp
@@ -50,6 +57,7 @@ target_link_libraries(
   yaml-cpp
   spdlog
   argparse
+  expected
 )
 
 target_include_directories(
@@ -57,3 +65,8 @@ target_include_directories(
   PRIVATE
   ${dynamic_paper_SOURCE_DIR}
 )
+
+# clang tidy
+#find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
+#set(CLANG_TIDY_COMMAND "${CLANG_TIDY_EXE}")
+#set_target_properties(dynamic_paper PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND}")

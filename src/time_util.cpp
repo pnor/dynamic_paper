@@ -4,9 +4,10 @@
 #include <assert.h>
 #include <cctype>
 #include <ctime>
-#include <expected>
 #include <locale>
 #include <regex>
+
+#include <tl/expected.hpp>
 
 #include "command_executor.hpp"
 #include "config.hpp"
@@ -29,15 +30,15 @@ static std::tm hourMinuteStringToTM(const std::string &hourMinutes) {
   return timeTm;
 }
 
-static std::expected<SunriseAndSunsetTimes, SunriseAndSetErrors>
+static tl::expected<SunriseAndSunsetTimes, SunriseAndSetErrors>
 getSunriseAndSetUsingSunwait() {
-  const std::expected<std::string, CommandExecError> sunwaitExpectation =
+  const tl::expected<std::string, CommandExecError> sunwaitExpectation =
       runCommandStdout("sunwait list");
 
   if (!sunwaitExpectation.has_value()) {
     logWarning(
         "Unable to execute command in attempt to get sunrise/sunset times");
-    return std::unexpected(SunriseAndSetErrors::UnableExecuteCommand);
+    return tl::unexpected(SunriseAndSetErrors::UnableExecuteCommand);
   }
 
   const std::string &sunwaitResult = sunwaitExpectation.value();
@@ -46,7 +47,7 @@ getSunriseAndSetUsingSunwait() {
     logWarning(
         "return output not expected when getting sunrise/sunset times: {}",
         sunwaitResult);
-    return std::unexpected(SunriseAndSetErrors::BadOutput);
+    return tl::unexpected(SunriseAndSetErrors::BadOutput);
   }
 
   std::tm sunriseTm = hourMinuteStringToTM(sunwaitResult.substr(0, 5));
@@ -133,7 +134,7 @@ std::optional<SunriseAndSunsetTimes>
 getSunriseAndSetString(const Config &config) {
   switch (config.sunEventPollerMethod) {
   case SunEventPollerMethod::Sunwait: {
-    std::expected<SunriseAndSunsetTimes, SunriseAndSetErrors> expectation =
+    tl::expected<SunriseAndSunsetTimes, SunriseAndSetErrors> expectation =
         getSunriseAndSetUsingSunwait();
 
     if (expectation.has_value()) {

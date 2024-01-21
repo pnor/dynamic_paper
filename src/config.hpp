@@ -1,11 +1,11 @@
 #pragma once
 
-#include <expected>
 #include <filesystem>
 #include <optional>
 #include <type_traits>
 #include <variant>
 
+#include <tl/expected.hpp>
 #include <yaml-cpp/yaml.h>
 
 #include "logger.hpp"
@@ -97,7 +97,7 @@ public:
 // ===== Loading config from files ====================
 
 /** Loads the general config from a yaml file representing the config */
-std::expected<Config, ConfigError> loadConfigFromYAML(const YAML::Node &config);
+tl::expected<Config, ConfigError> loadConfigFromYAML(const YAML::Node &config);
 
 /** Laods the amount of logging from the general config file*/
 LogLevel loadLoggingLevelFromYAML(const YAML::Node &config);

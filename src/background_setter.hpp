@@ -1,7 +1,8 @@
 #pragma once
 
-#include <expected>
 #include <filesystem>
+
+#include <tl/expected.hpp>
 
 #include "config.hpp"
 #include "static_background_set.hpp"
@@ -21,7 +22,7 @@ enum class HookCommandError { CommandError };
  * Using a program specified by `method`, sets the background to the image in
  * `imagePath` using a display mode of `mode`
  */
-std::expected<void, BackgroundError>
+tl::expected<void, BackgroundError>
 setBackgroundToImage(const std::filesystem::path &imagePath,
                      const BackgroundSetMode mode,
                      const BackgroundSetterMethod &method);
@@ -36,7 +37,7 @@ setBackgroundToImage(const std::filesystem::path &imagePath,
  *
  * Uses the external program imagemagick to create interpolated images.
  */
-std::expected<void, BackgroundError> lerpBackgroundBetweenImages(
+tl::expected<void, BackgroundError> lerpBackgroundBetweenImages(
     const std::filesystem::path &commonImageDirectory,
     const std::string &beforeImageName, const std::string &afterImageName,
     const std::filesystem::path &cacheDirectory,
@@ -48,7 +49,7 @@ std::expected<void, BackgroundError> lerpBackgroundBetweenImages(
  *
  * Used to run user defined hooks after the background changes.
  */
-std::expected<void, HookCommandError>
+tl::expected<void, HookCommandError>
 runHookCommand(const std::filesystem::path hookScriptPath,
                const std::filesystem::path imagePath);
 

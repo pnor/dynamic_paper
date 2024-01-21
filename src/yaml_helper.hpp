@@ -1,12 +1,12 @@
 #pragma once
 
 #include <algorithm>
-#include <expected>
 #include <filesystem>
 #include <optional>
 #include <type_traits>
 #include <variant>
 
+#include <tl/expected.hpp>
 #include <yaml-cpp/yaml.h>
 
 #include "background_set_enums.hpp"
@@ -179,7 +179,7 @@ template <> constexpr std::optional<LogLevel> stringTo(const std::string &s) {
  *
  *  If no method is specified, defaults to 'Wallutils'
  */
-std::expected<BackgroundSetterMethod, BackgroundSetterMethodError>
+tl::expected<BackgroundSetterMethod, BackgroundSetterMethodError>
 parseBackgroundSetterMethod(YAML::Node config, const std::string_view methodKey,
                             const std::string_view criptKey);
 

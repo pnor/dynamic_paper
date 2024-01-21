@@ -1,9 +1,9 @@
-#include <expected>
 #include <format>
 #include <iostream>
 
 #include <argparse/argparse.hpp>
 #include <spdlog/spdlog.h>
+#include <tl/expected.hpp>
 #include <yaml-cpp/yaml.h>
 
 #include "background_set.hpp"
@@ -53,7 +53,7 @@ YAML::Node loadConfigFileIntoYAML(const std::filesystem::path &file) {
 }
 
 Config createConfigFromYAML(const YAML::Node &configYaml) {
-  std::expected<Config, ConfigError> expConfig = loadConfigFromYAML(configYaml);
+  tl::expected<Config, ConfigError> expConfig = loadConfigFromYAML(configYaml);
 
   if (!expConfig.has_value()) {
     switch (expConfig.error()) {
@@ -129,7 +129,6 @@ void showHelp(const argparse::ArgumentParser &program) {
 // ===== Main ===============
 
 auto main(int argc, char *argv[]) -> int {
-  // TODO make help not care about config or anything
   argparse::ArgumentParser program("dynamicpaper");
   program.add_argument("--config")
       .help("Show optional config")
@@ -176,7 +175,7 @@ auto main(int argc, char *argv[]) -> int {
   } else if (program.is_subcommand_used(helpCommand)) {
     showHelp(program);
   } else {
-    errorMsg("Unknown option");
+    errorMsg("Unknown option\n");
     showHelp(program);
   }
 
