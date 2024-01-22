@@ -8,6 +8,7 @@
 #include <random>
 #include <ranges>
 #include <thread>
+#include <utility>
 
 #include "background_setter.hpp"
 #include "globals.hpp"
@@ -26,34 +27,38 @@ using EventList = std::vector<TimeAndEvent>;
 // ===== Helper Objects ===============
 /** Information needed for the event to change the background to an image */
 struct SetBackgroundEvent {
-  const std::filesystem::path imagePath;
+  std::filesystem::path imagePath;
 
-  explicit SetBackgroundEvent(const std::filesystem::path &imagePath)
-      : imagePath(imagePath) {}
+  explicit SetBackgroundEvent(std::filesystem::path imagePath)
+      : imagePath(std::move(imagePath)) {}
 };
 
 /** Information needed for the event to gradually interpolate between one image
  * and the next */
 struct LerpBackgroundEvent {
-  const std::filesystem::path commonImageDirectory;
-  const std::string startImageName;
-  const std::string endImageName;
-  const std::chrono::seconds duration;
-  const unsigned int numSteps;
+  std::filesystem::path commonImageDirectory;
+  std::string startImageName;
+  std::string endImageName;
+  std::chrono::seconds duration;
+  unsigned int numSteps;
 
-  LerpBackgroundEvent(const std::filesystem::path &commonImageDirectory,
-                      const std::string &startImageName,
-                      const std::string &endImageName,
+  LerpBackgroundEvent(std::filesystem::path commonImageDirectory,
+                      std::string startImageName, std::string endImageName,
                       const std::chrono::seconds duration,
                       const unsigned int numSteps)
-      : commonImageDirectory(commonImageDirectory),
-        startImageName(startImageName), endImageName(endImageName),
-        duration(duration), numSteps(numSteps) {}
+      : commonImageDirectory(std::move(commonImageDirectory)),
+        startImageName(std::move(startImageName)),
+        endImageName(std::move(endImageName)), duration(duration),
+        numSteps(numSteps) {}
 };
 
 /**
  * Class to be used by `std::shuffle` that uses `std::rand`.
  * Mainly for the ability to control the random order by calling `std::srand`
+ *
+ * Purposely uses `std::rand` in this case as the integrity of randomness for
+ * choosing order of backgrounds is not that important, and is easily manipulatd
+ * with `std::srand`.
  */
 class RandUniformRandomBitGenerator {
 public:
@@ -68,7 +73,9 @@ public:
 
 // ===== Helper ===============
 
-static void describeError(const BackgroundError error) {
+namespace {
+
+void describeError(const BackgroundError error) {
   switch (error) {
   case BackgroundError::CommandError: {
     logError("Error occured when trying to interpolate the background: eror "
@@ -89,24 +96,24 @@ static void describeError(const BackgroundError error) {
 }
 
 inline unsigned int chooseRandomSeed() {
-  std::random_device rd;
-  std::mt19937 g(rd());
+  std::random_device random_device;
+  std::mt19937 generator(random_device());
 
   using limits = std::numeric_limits<unsigned int>;
 
   std::uniform_int_distribution<unsigned int> uniformDist(limits::min(),
                                                           limits::max());
-  return uniformDist(g);
+  return uniformDist(generator);
 }
 
 /**
  * Shuffles a vector using `std::rand()` as the source of randomness
  */
-template <typename T> static void shuffleVector(std::vector<T> &vec) {
+template <typename T> void shuffleVector(std::vector<T> &vec) {
   std::shuffle(vec.begin(), vec.end(), RandUniformRandomBitGenerator());
 }
 
-static inline bool eventLsitIsSortedByTime(const EventList &eventList) {
+inline bool eventLsitIsSortedByTime(const EventList &eventList) {
   for (size_t i = 0; i < eventList.size() - 1; i++) {
     if (!(eventList[i].first < eventList[i + 1].first)) {
       return false;
@@ -115,12 +122,15 @@ static inline bool eventLsitIsSortedByTime(const EventList &eventList) {
   return true;
 }
 
-static time_t getCurrentTime() {
+time_t getCurrentTime() {
+  // HH:MM
+  constexpr size_t HOURS_MINUTES_SIZE = 5;
+
   const std::string timeString =
       std::format("{:%T}", std::chrono::floor<std::chrono::seconds>(
                                std::chrono::system_clock::now()));
-  std::optional<time_t> optTime =
-      convertRawTimeStringToTimeOffset(timeString.substr(0, 5));
+  std::optional<time_t> optTime = convertRawTimeStringToTimeOffset(
+      timeString.substr(0, HOURS_MINUTES_SIZE));
 
   logAssert(optTime.has_value(), "Unable to parse valid time from return "
                                  "result of current time as string");
@@ -134,7 +144,7 @@ static time_t getCurrentTime() {
  * Example: if a time was at index 1 in times and a name was at index 1 in
  * names, they would appear in the same pair in the sorted output.
  **/
-static std::vector<std::pair<time_t, std::string>>
+std::vector<std::pair<time_t, std::string>>
 timesAndNamesSortedByTime(const DynamicBackgroundData *dynamicData) {
   std::vector<std::pair<time_t, std::string>> timesNames;
   const std::vector<time_t> &times = dynamicData->times;
@@ -153,7 +163,7 @@ timesAndNamesSortedByTime(const DynamicBackgroundData *dynamicData) {
  * Returns the times and names in `dynamicData` sorted by time, but with the
  * image name chosen randomly.
  */
-static std::vector<std::pair<time_t, std::string>>
+std::vector<std::pair<time_t, std::string>>
 timesAndRandomNamesSortedByTime(const DynamicBackgroundData *dynamicData) {
   std::vector<std::pair<time_t, std::string>> timesAndNames;
 
@@ -167,12 +177,12 @@ timesAndRandomNamesSortedByTime(const DynamicBackgroundData *dynamicData) {
   return timesAndNames;
 }
 
-static EventList createEventListFromTimesAndNames(
+EventList createEventListFromTimesAndNames(
     const DynamicBackgroundData *dynamicData,
     const std::vector<std::pair<time_t, std::string>> &timesAndNames) {
   EventList eventList;
 
-  logAssert(timesAndNames.size() >= 1, "Times and names cannot be empty");
+  logAssert(!timesAndNames.empty(), "Times and names cannot be empty");
 
   eventList.emplace_back(
       timesAndNames[0].first,
@@ -200,7 +210,7 @@ static EventList createEventListFromTimesAndNames(
   return eventList;
 }
 
-static EventList getEventList(const DynamicBackgroundData *dynamicData) {
+EventList getEventList(const DynamicBackgroundData *dynamicData) {
   EventList eventList;
 
   switch (dynamicData->order) {
@@ -219,9 +229,9 @@ static EventList getEventList(const DynamicBackgroundData *dynamicData) {
   return eventList;
 }
 
-static std::pair<TimeAndEvent, time_t>
+std::pair<TimeAndEvent, time_t>
 getCurrentEventAndNextTime(const EventList &eventList, const time_t time) {
-  logAssert(eventList.size() >= 1, "Event list is empty");
+  logAssert(!eventList.empty(), "Event list is empty");
 
   auto firstAfterTime =
       std::ranges::find_if(eventList, [time](const TimeAndEvent &timeAndEvent) {
@@ -234,17 +244,16 @@ getCurrentEventAndNextTime(const EventList &eventList, const time_t time) {
     time_t next = eventList.front().first;
 
     return std::make_pair(current, next);
-  } else {
-    TimeAndEvent current = *(firstAfterTime - 1);
-    time_t next = firstAfterTime->first;
-
-    return std::make_pair(current, next);
   }
+
+  TimeAndEvent current = *(firstAfterTime - 1);
+  time_t next = firstAfterTime->first;
+
+  return std::make_pair(current, next);
 }
 
-static void doEvent(const Event &event,
-                    const DynamicBackgroundData *backgroundData,
-                    const Config &config) {
+void doEvent(const Event &event, const DynamicBackgroundData *backgroundData,
+             const Config &config) {
   std::visit(
       overloaded{[&config, backgroundData](const SetBackgroundEvent &event) {
                    tl::expected<void, BackgroundError> result =
@@ -275,7 +284,7 @@ static void doEvent(const Event &event,
       event);
 }
 
-static void sleepUntilNextTime(const time_t &now, const time_t &later) {
+void sleepUntilNextTime(const time_t &now, const time_t &later) {
   std::chrono::seconds sleepTime;
 
   if (now < later) {
@@ -293,6 +302,8 @@ static void sleepUntilNextTime(const time_t &now, const time_t &later) {
   logDebug("Sleeping for {} seconds ...", sleepTime);
   std::this_thread::sleep_for(std::chrono::seconds(sleepTime));
 }
+
+} // namespace
 
 // ===== Main Loop Logic ===============
 
@@ -332,8 +343,9 @@ DynamicBackgroundData::DynamicBackgroundData(
     std::filesystem::path dataDirectory, BackgroundSetMode mode,
     std::optional<TransitionInfo> transition, BackgroundSetOrder order,
     std::vector<std::string> imageNames, std::vector<time_t> times)
-    : dataDirectory(dataDirectory), mode(mode), transition(transition),
-      order(order), imageNames(imageNames), times(times) {}
+    : dataDirectory(std::move(dataDirectory)), mode(mode),
+      transition(transition), order(order), imageNames(std::move(imageNames)),
+      times(std::move(times)) {}
 
 void DynamicBackgroundData::show(const Config &config) const {
   logTrace("Show dynamic background");
