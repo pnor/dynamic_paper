@@ -1,7 +1,7 @@
 #pragma once
 
 #include <chrono>
-#include <time.h>
+#include <ctime>
 
 #include "config.hpp"
 
@@ -10,9 +10,9 @@
 namespace dynamic_paper {
 
 /** Time used for sunrise when testing using `SunEventPollerMethod::Dummy` */
-constexpr time_t DUMMY_SUNRISE_TIME = 8 * (60 * 60);
+constexpr time_t DUMMY_SUNRISE_TIME = 8L * (60L * 60L);
 /** Time used for sunset when testing using `SunEventPollerMethod::Dummy` */
-constexpr time_t DUMMY_SUNSET_TIME = 20 * (60 * 60);
+constexpr time_t DUMMY_SUNSET_TIME = 20L * (60L * 60L);
 
 /** Potential errors that can arrise when trying to poll for sunset and sunrise
  */

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <regex>
 #include <string>
 
 /** Utility functions to operate on strings */
@@ -8,30 +9,32 @@
 // === string manip ===
 
 // trim from start (in place)
-inline void ltrim(std::string &s) {
-  s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
-            return !std::isspace(ch);
-          }));
+constexpr void ltrim(std::string &text) {
+  text.erase(text.begin(),
+             std::find_if(text.begin(), text.end(), [](unsigned char letter) {
+               return std::isspace(letter) == 0;
+             }));
 }
 
 // trim from end (in place)
-inline void rtrim(std::string &s) {
-  s.erase(std::find_if(s.rbegin(), s.rend(),
-                       [](unsigned char ch) { return !std::isspace(ch); })
-              .base(),
-          s.end());
+constexpr void rtrim(std::string &text) {
+  text.erase(std::find_if(
+                 text.rbegin(), text.rend(),
+                 [](unsigned char letter) { return std::isspace(letter) == 0; })
+                 .base(),
+             text.end());
 }
 
 // trim from both ends (in place)
-inline void trim(std::string &s) {
-  rtrim(s);
-  ltrim(s);
+constexpr void trim(std::string &text) {
+  rtrim(text);
+  ltrim(text);
 }
 
 // trim from both ends (copying)
-inline std::string trim_copy(std::string s) {
-  trim(s);
-  return s;
+constexpr std::string trim_copy(std::string text) {
+  trim(text);
+  return text;
 }
 
 /**
@@ -41,9 +44,24 @@ inline std::string trim_copy(std::string s) {
  * Example:
  * "  Dynamic " => "dynamic"
  * */
-static constexpr std::string normalize(const std::string &s) {
-  std::string sCopy = trim_copy(s);
+constexpr std::string normalize(const std::string &text) {
+  std::string sCopy = trim_copy(text);
   std::transform(sCopy.begin(), sCopy.end(), sCopy.begin(),
-                 [](const char c) { return tolower(c); });
+                 [](const char letter) { return tolower(letter); });
   return sCopy;
+}
+
+/**
+ * Returns `true` if `text` matches any of `regex` or `otherRegexes`, and
+ * `false` otherwise. Stores regex match information in `groupMatches`.
+ */
+template <typename... Ts>
+inline bool tryRegexes(const std::string &text, std::smatch &groupMatches,
+                       const std::regex &regex, Ts... otherRegexes) {
+  if constexpr (sizeof...(Ts) == 0) {
+    return std::regex_match(text, groupMatches, regex);
+  } else {
+    return std::regex_match(text, groupMatches, regex) ||
+           tryRegexes(text, groupMatches, otherRegexes...);
+  }
 }

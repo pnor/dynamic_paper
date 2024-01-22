@@ -1,11 +1,11 @@
 #include "time_util.hpp"
+#include "string_util.hpp"
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <cctype>
 #include <ctime>
 #include <locale>
-#include <regex>
 
 #include <tl/expected.hpp>
 
@@ -18,19 +18,21 @@ namespace dynamic_paper {
 
 // ===== static helper ====================
 
+namespace {
+
 // === string to time objects helper functions ===
 
 /**
  * Converts a string formatted HH:MM to `std::tm`
  */
-static std::tm hourMinuteStringToTM(const std::string &hourMinutes) {
+std::tm hourMinuteStringToTM(const std::string &hourMinutes) {
   std::istringstream time(hourMinutes);
   std::tm timeTm = {};
   time >> std::get_time(&timeTm, "%H:%M");
   return timeTm;
 }
 
-static tl::expected<SunriseAndSunsetTimes, SunriseAndSetErrors>
+tl::expected<SunriseAndSunsetTimes, SunriseAndSetErrors>
 getSunriseAndSetUsingSunwait() {
   const tl::expected<std::string, CommandExecError> sunwaitExpectation =
       runCommandStdout("sunwait list");
@@ -43,30 +45,26 @@ getSunriseAndSetUsingSunwait() {
 
   const std::string &sunwaitResult = sunwaitExpectation.value();
 
-  if (sunwaitResult.size() < 12) {
+  std::smatch groupMatches;
+  const std::regex sunwaitRegex(R"(^(\d\d:\d\d), (\d\d:\d\d))");
+
+  const bool outputMatchResult =
+      tryRegexes(sunwaitResult, groupMatches, sunwaitRegex);
+
+  if (!outputMatchResult) {
     logWarning(
         "return output not expected when getting sunrise/sunset times: {}",
         sunwaitResult);
     return tl::unexpected(SunriseAndSetErrors::BadOutput);
   }
 
-  std::tm sunriseTm = hourMinuteStringToTM(sunwaitResult.substr(0, 5));
-  std::tm sunsetTm = hourMinuteStringToTM(sunwaitResult.substr(7, 5));
+  std::tm sunriseTm = hourMinuteStringToTM(groupMatches[0].str());
+  std::tm sunsetTm = hourMinuteStringToTM(groupMatches[1].str());
 
   return SunriseAndSunsetTimes(mktime(&sunriseTm), mktime(&sunsetTm));
 }
 
-template <typename... Ts>
-static inline bool tryRegexes(const std::string &s, std::smatch &groupMatches,
-                              const std::regex regex, Ts... otherRegexes) {
-  if constexpr (sizeof...(Ts) == 0) {
-    return std::regex_match(s, groupMatches, regex);
-  } else {
-    return std::regex_match(s, groupMatches, regex) ||
-           tryRegexes(s, groupMatches, otherRegexes...);
-  }
-}
-static std::optional<time_t> sunsetOrRiseStringToTimeOffset(
+std::optional<time_t> sunsetOrRiseStringToTimeOffset(
     const SunriseAndSunsetTimes &sunriseAndSunsetTimes,
     const std::smatch &groupMatches) {
   std::string sunsetOrRiseStr = trim_copy(groupMatches[1].str());
@@ -82,7 +80,7 @@ static std::optional<time_t> sunsetOrRiseStringToTimeOffset(
   }
 }
 
-static std::optional<time_t>
+std::optional<time_t>
 sunOffsetStringToTimeOffset(const SunriseAndSunsetTimes &sunriseAndSunsetTimes,
                             const std::smatch &groupMatches) {
   const std::string &addOrSubtractStr = groupMatches[1].str();
@@ -127,6 +125,8 @@ sunOffsetStringToTimeOffset(const SunriseAndSunsetTimes &sunriseAndSunsetTimes,
   }
   }
 }
+
+} // namespace
 
 // ===== header ====================
 
@@ -180,20 +180,19 @@ timeStringToTime(const std::string &s,
                             std::regex_constants::icase);
 
   // (+/-) xx:xx (sunrise/sunset)
-  const std::regex sunOffsetRegex(
-      "^(\\+|-)\\s*(\\d+:\\d\\d)\\s*(sunrise|sunset)",
-      std::regex_constants::icase);
+  const std::regex sunOffsetRegex(R"(^(\+|-)\s*(\d+:\d\d)\s*(sunrise|sunset))",
+                                  std::regex_constants::icase);
 
   // (+/-) xx:xx:xx (sunrise/sunset)
   const std::regex sunOffsetSecondsRegex(
-      "^(\\+|-)\\s*(\\d+:\\d\\d:\\d\\d)\\s*(sunrise|sunset)",
+      R"(^(\+|-)\s*(\d+:\d\d:\d\d)\s*(sunrise|sunset))",
       std::regex_constants::icase);
 
   // xx:xx
-  const std::regex timeRegex("^(\\d+:\\d\\d)", std::regex_constants::icase);
+  const std::regex timeRegex(R"(^(\d+:\d\d))", std::regex_constants::icase);
 
   // xx:xx:xx
-  const std::regex timeWithSecondsRegex("^(\\d+:\\d\\d:\\d\\d)",
+  const std::regex timeWithSecondsRegex(R"(^(\d+:\d\d:\d\d))",
                                         std::regex_constants::icase);
 
   std::smatch groupMatches;

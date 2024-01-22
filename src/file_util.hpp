@@ -14,6 +14,6 @@ bool createDirectoryIfDoesntExist(const std::filesystem::path &dir);
  * exists. Will attempt to create parent directories if needed
  * Returns `true` if created the file/already existed, and `false` otherwise. */
 bool createFileIfDoesntExist(const std::filesystem::path &filePath,
-                             const std::string_view contents);
+                             std::string_view contents);
 
 } // namespace dynamic_paper

@@ -50,7 +50,7 @@ tl::expected<void, BackgroundError> lerpBackgroundBetweenImages(
  * Used to run user defined hooks after the background changes.
  */
 tl::expected<void, HookCommandError>
-runHookCommand(const std::filesystem::path hookScriptPath,
-               const std::filesystem::path imagePath);
+runHookCommand(const std::filesystem::path &hookScriptPath,
+               const std::filesystem::path &imagePath);
 
 } // namespace dynamic_paper

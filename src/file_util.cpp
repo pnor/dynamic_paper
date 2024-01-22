@@ -6,26 +6,6 @@
 
 namespace dynamic_paper {
 
-// ===== Helper ===============
-namespace {
-
-bool createParentDirectories(const std::filesystem::path &filePath) {
-  if (std::filesystem::exists(filePath)) {
-    return true;
-  } else {
-    logTrace("Creating parent directory: {}", filePath.string());
-
-    if (filePath.has_parent_path()) {
-      return createParentDirectories(filePath.parent_path()) &&
-             createDirectoryIfDoesntExist(filePath);
-    } else {
-      return createDirectoryIfDoesntExist(filePath);
-    }
-  }
-}
-
-} // namespace
-
 // ===== Header ===============
 
 bool createDirectoryIfDoesntExist(const std::filesystem::path &dir) {
@@ -36,7 +16,7 @@ bool createDirectoryIfDoesntExist(const std::filesystem::path &dir) {
     return true;
   }
 
-  bool result = std::filesystem::create_directory(dir);
+  bool result = std::filesystem::create_directories(dir);
 
   if (result) {
     logInfo("Succesfully created the directory {}", dir.string());
@@ -56,7 +36,7 @@ bool createFileIfDoesntExist(const std::filesystem::path &filePath,
   }
 
   if (filePath.has_parent_path()) {
-    createParentDirectories(filePath.parent_path());
+    std::filesystem::create_directories(filePath.parent_path());
   }
 
   std::ofstream file(filePath);

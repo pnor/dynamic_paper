@@ -48,10 +48,8 @@ runCommandHandleError(const std::string &command) {
     return tl::unexpected(BackgroundError::CommandError);
   }
 
-  return tl::expected<void, BackgroundError>();
+  return {};
 }
-
-bool createDirectoryIfDoesntExist() {}
 
 } // namespace
 
@@ -104,9 +102,10 @@ tl::expected<void, BackgroundError> lerpBackgroundBetweenImages(
   // TODO create cache dir if doesn't exist
 
   for (unsigned int i = 0; i < numSteps; i++) {
-    const float percentageFloat = i / static_cast<float>(numSteps);
+    const float percentageFloat =
+        static_cast<float>(i) / static_cast<float>(numSteps);
     const unsigned int percentage = std::clamp(
-        static_cast<unsigned int>(percentageFloat * 100.0), 0u, 100u);
+        static_cast<unsigned int>(percentageFloat * 100.0), 0U, 100U);
 
     tl::expected<std::filesystem::path, CompositeImageError>
         expectedCompositedImage =
@@ -127,12 +126,12 @@ tl::expected<void, BackgroundError> lerpBackgroundBetweenImages(
     std::this_thread::sleep_for(std::chrono::milliseconds(duration) / numSteps);
   }
 
-  return tl::expected<void, BackgroundError>();
+  return {};
 }
 
 tl::expected<void, HookCommandError>
-runHookCommand(const std::filesystem::path hookScriptPath,
-               const std::filesystem::path imagePath) {
+runHookCommand(const std::filesystem::path &hookScriptPath,
+               const std::filesystem::path &imagePath) {
   logTrace("Running hook command: ({})", hookScriptPath.string());
 
   const std::string commandStr =
@@ -143,6 +142,6 @@ runHookCommand(const std::filesystem::path hookScriptPath,
     return tl::unexpected(HookCommandError::CommandError);
   }
 
-  return tl::expected<void, HookCommandError>();
+  return {};
 }
 } // namespace dynamic_paper
