@@ -82,17 +82,24 @@ timeStringsToTimes(const std::vector<std::string> &strings,
 
 // ===== constexpr definition =====
 
+constexpr bool isDigit(const char character) {
+  return character == '0' || character == '1' || character == '2' ||
+         character == '3' || character == '4' || character == '5' ||
+         character == '6' || character == '7' || character == '8' ||
+         character == '9';
+}
+
 /**
  * Returns a positive integer contained in `s` or `nullopt` if unable to parse.
  * `s` should contain strictly numbers, no (+/-) or decimals.
  */
 constexpr std::optional<unsigned int>
-stringViewToInt(const std::string_view s) {
+stringViewToInt(const std::string_view text) {
   int res = 0;
-  for (std::string_view::size_type i = 0; i < s.size(); i++) {
+  for (std::string_view::size_type i = 0; i < text.size(); i++) {
     res *= 10;
-    if (std::isdigit(s[i])) {
-      res += (s[i] - '0');
+    if (isDigit(text[i])) {
+      res += (text[i] - '0');
     } else {
       return std::nullopt;
     }

@@ -240,14 +240,14 @@ getCurrentEventAndNextTime(const EventList &eventList, const time_t time) {
 
   if (firstAfterTime == eventList.begin() ||
       firstAfterTime == eventList.end()) {
-    TimeAndEvent current = eventList.back();
-    time_t next = eventList.front().first;
+    const TimeAndEvent current = eventList.back();
+    const time_t next = eventList.front().first;
 
     return std::make_pair(current, next);
   }
 
-  TimeAndEvent current = *(firstAfterTime - 1);
-  time_t next = firstAfterTime->first;
+  const TimeAndEvent current = *(firstAfterTime - 1);
+  const time_t next = firstAfterTime->first;
 
   return std::make_pair(current, next);
 }

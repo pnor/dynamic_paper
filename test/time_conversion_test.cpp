@@ -27,11 +27,12 @@ using namespace dynamic_paper_test;
 // ===== Parsing HH:MM =====
 
 TEST(TimeStringConversion, RawTimeTest) {
-  std::optional<std::vector<time_t>> timesOpt =
+  const std::optional<std::vector<time_t>> timesOpt =
       dynamic_paper::timeStringsToTimes({"00:00", "01:00"},
                                         testSunriseAndSunsetTimes);
 
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
 
   std::vector<time_t> times = timesOpt.value();
 
@@ -44,6 +45,7 @@ TEST(TimeStringConversion, RawTimeTest2) {
                                         testSunriseAndSunsetTimes);
 
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
 
   std::vector<time_t> times = timesOpt.value();
 
@@ -56,6 +58,7 @@ TEST(TimeStringConversion, RawTimeTest3) {
                                         testSunriseAndSunsetTimes);
 
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
 
   std::vector<time_t> times = timesOpt.value();
 
@@ -68,6 +71,7 @@ TEST(TimeStringConversion, RawTimeTest4) {
                                         testSunriseAndSunsetTimes);
 
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
 
   std::vector<time_t> times = timesOpt.value();
 
@@ -80,6 +84,7 @@ TEST(TimeStringConversion, RawTimeTest5) {
                                         testSunriseAndSunsetTimes);
 
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
 
   std::vector<time_t> times = timesOpt.value();
 
@@ -92,6 +97,7 @@ TEST(TimeStringConversion, RawTimeTestSeconds) {
                                         testSunriseAndSunsetTimes);
 
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
 
   std::vector<time_t> times = timesOpt.value();
 
@@ -105,6 +111,7 @@ TEST(TimeStringConversion, RawTimeTestSeconds2) {
                                         testSunriseAndSunsetTimes);
 
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
 
   std::vector<time_t> times = timesOpt.value();
 
@@ -119,6 +126,7 @@ TEST(TimeStringConversion, RawTimeTestSpaces) {
           testSunriseAndSunsetTimes);
 
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
 
   std::vector<time_t> times = timesOpt.value();
 
@@ -128,7 +136,7 @@ TEST(TimeStringConversion, RawTimeTestSpaces) {
 }
 
 TEST(TimeStringConversion, BadRawTimeTestTooManyMinutes) {
-  std::optional<std::vector<time_t>> timesOpt =
+  const std::optional<std::vector<time_t>> timesOpt =
       dynamic_paper::timeStringsToTimes({"01:90", "03:00"},
                                         testSunriseAndSunsetTimes);
 
@@ -136,7 +144,7 @@ TEST(TimeStringConversion, BadRawTimeTestTooManyMinutes) {
 }
 
 TEST(TimeStringConversion, BadRawTimeTestTooLongString) {
-  std::optional<std::vector<time_t>> timesOpt =
+  const std::optional<std::vector<time_t>> timesOpt =
       dynamic_paper::timeStringsToTimes({"001:90", "03:00"},
                                         testSunriseAndSunsetTimes);
 
@@ -144,7 +152,7 @@ TEST(TimeStringConversion, BadRawTimeTestTooLongString) {
 }
 
 TEST(TimeStringConversion, BadRawTimeTestTooLongString2) {
-  std::optional<std::vector<time_t>> timesOpt =
+  const std::optional<std::vector<time_t>> timesOpt =
       dynamic_paper::timeStringsToTimes({"130:900", "03:00"},
                                         testSunriseAndSunsetTimes);
 
@@ -152,7 +160,7 @@ TEST(TimeStringConversion, BadRawTimeTestTooLongString2) {
 }
 
 TEST(TimeStringConversion, BadRawTimeTestAtLeastOneIsBad) {
-  std::optional<std::vector<time_t>> timesOpt =
+  const std::optional<std::vector<time_t>> timesOpt =
       dynamic_paper::timeStringsToTimes(
           {"00:00", "01:00", "2:00", "0003:00000", "4:00"},
           testSunriseAndSunsetTimes);
@@ -161,14 +169,14 @@ TEST(TimeStringConversion, BadRawTimeTestAtLeastOneIsBad) {
 }
 
 TEST(TimeStringConversion, BadRawTimeSecondsTooShort) {
-  std::optional<std::vector<time_t>> timesOpt =
+  const std::optional<std::vector<time_t>> timesOpt =
       dynamic_paper::timeStringsToTimes({"00:00:0"}, testSunriseAndSunsetTimes);
 
   EXPECT_FALSE(timesOpt.has_value());
 }
 
 TEST(TimeStringConversion, BadRawTimeSecondsTooLong) {
-  std::optional<std::vector<time_t>> timesOpt =
+  const std::optional<std::vector<time_t>> timesOpt =
       dynamic_paper::timeStringsToTimes({"00:00:000"},
                                         testSunriseAndSunsetTimes);
 
@@ -176,7 +184,7 @@ TEST(TimeStringConversion, BadRawTimeSecondsTooLong) {
 }
 
 TEST(TimeStringConversion, BadRawTimeNoSeconds) {
-  std::optional<std::vector<time_t>> timesOpt =
+  const std::optional<std::vector<time_t>> timesOpt =
       dynamic_paper::timeStringsToTimes({"00:00:"}, testSunriseAndSunsetTimes);
 
   EXPECT_FALSE(timesOpt.has_value());
@@ -185,11 +193,12 @@ TEST(TimeStringConversion, BadRawTimeNoSeconds) {
 // ===== Parsing +/-HH:MM sunrise/sunset =====
 
 TEST(TimeStringConversion, SunoffsetTimeTestSunrise) {
-  std::optional<std::vector<time_t>> timesOpt =
+  const std::optional<std::vector<time_t>> timesOpt =
       dynamic_paper::timeStringsToTimes({"+00:00 sunrise", "+01:00 sunrise"},
                                         testSunriseAndSunsetTimes);
 
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
 
   std::vector<time_t> times = timesOpt.value();
 
@@ -197,11 +206,12 @@ TEST(TimeStringConversion, SunoffsetTimeTestSunrise) {
 }
 
 TEST(TimeStringConversion, SunoffsetTimeTestSunrise2) {
-  std::optional<std::vector<time_t>> timesOpt =
+  const std::optional<std::vector<time_t>> timesOpt =
       dynamic_paper::timeStringsToTimes({"-00:01 sunrise", "-00:00 sunrise"},
                                         testSunriseAndSunsetTimes);
 
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
 
   std::vector<time_t> times = timesOpt.value();
 
@@ -209,11 +219,12 @@ TEST(TimeStringConversion, SunoffsetTimeTestSunrise2) {
 }
 
 TEST(TimeStringConversion, SunoffsetTimeTestSunrise3) {
-  std::optional<std::vector<time_t>> timesOpt =
+  const std::optional<std::vector<time_t>> timesOpt =
       dynamic_paper::timeStringsToTimes({"sunrise", "+01:30 sunrise"},
                                         testSunriseAndSunsetTimes);
 
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
 
   std::vector<time_t> times = timesOpt.value();
 
@@ -221,11 +232,12 @@ TEST(TimeStringConversion, SunoffsetTimeTestSunrise3) {
 }
 
 TEST(TimeStringConversion, SunoffsetTimeTestSunrise4) {
-  std::optional<std::vector<time_t>> timesOpt =
+  const std::optional<std::vector<time_t>> timesOpt =
       dynamic_paper::timeStringsToTimes({"-2:20 sunrise", "+2:20 sunrise"},
                                         testSunriseAndSunsetTimes);
 
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
 
   std::vector<time_t> times = timesOpt.value();
 
@@ -233,11 +245,12 @@ TEST(TimeStringConversion, SunoffsetTimeTestSunrise4) {
 }
 
 TEST(TimeStringConversion, SunoffsetTimeTestSunset) {
-  std::optional<std::vector<time_t>> timesOpt =
+  const std::optional<std::vector<time_t>> timesOpt =
       dynamic_paper::timeStringsToTimes({"+00:00 sunset", "+01:00 sunset"},
                                         testSunriseAndSunsetTimes);
 
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
 
   std::vector<time_t> times = timesOpt.value();
 
@@ -245,11 +258,12 @@ TEST(TimeStringConversion, SunoffsetTimeTestSunset) {
 }
 
 TEST(TimeStringConversion, SunoffsetTimeTestSunset2) {
-  std::optional<std::vector<time_t>> timesOpt =
+  const std::optional<std::vector<time_t>> timesOpt =
       dynamic_paper::timeStringsToTimes({"-00:01 sunset", "-00:00 sunset"},
                                         testSunriseAndSunsetTimes);
 
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
 
   std::vector<time_t> times = timesOpt.value();
 
@@ -257,11 +271,12 @@ TEST(TimeStringConversion, SunoffsetTimeTestSunset2) {
 }
 
 TEST(TimeStringConversion, SunoffsetTimeTestSunset3) {
-  std::optional<std::vector<time_t>> timesOpt =
+  const std::optional<std::vector<time_t>> timesOpt =
       dynamic_paper::timeStringsToTimes({"sunset", "+01:30 sunset"},
                                         testSunriseAndSunsetTimes);
 
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
 
   std::vector<time_t> times = timesOpt.value();
 
@@ -269,11 +284,12 @@ TEST(TimeStringConversion, SunoffsetTimeTestSunset3) {
 }
 
 TEST(TimeStringConversion, SunoffsetTimeTestSunset4) {
-  std::optional<std::vector<time_t>> timesOpt =
+  const std::optional<std::vector<time_t>> timesOpt =
       dynamic_paper::timeStringsToTimes({"-2:20 sunset", "+2:20 sunset"},
                                         testSunriseAndSunsetTimes);
 
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
 
   std::vector<time_t> times = timesOpt.value();
 
@@ -281,11 +297,12 @@ TEST(TimeStringConversion, SunoffsetTimeTestSunset4) {
 }
 
 TEST(TimeStringConversion, SunoffsetTimeTestSunsetAndSunrise) {
-  std::optional<std::vector<time_t>> timesOpt =
+  const std::optional<std::vector<time_t>> timesOpt =
       dynamic_paper::timeStringsToTimes({"sunrise", "sunset"},
                                         testSunriseAndSunsetTimes);
 
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
 
   std::vector<time_t> times = timesOpt.value();
 
@@ -293,11 +310,12 @@ TEST(TimeStringConversion, SunoffsetTimeTestSunsetAndSunrise) {
 }
 
 TEST(TimeStringConversion, SunoffsetTimeTestSunsetAndSunrise2) {
-  std::optional<std::vector<time_t>> timesOpt =
+  const std::optional<std::vector<time_t>> timesOpt =
       dynamic_paper::timeStringsToTimes({"sunrise", "+3:00 sunset"},
                                         testSunriseAndSunsetTimes);
 
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
 
   std::vector<time_t> times = timesOpt.value();
 
@@ -305,11 +323,12 @@ TEST(TimeStringConversion, SunoffsetTimeTestSunsetAndSunrise2) {
 }
 
 TEST(TimeStringConversion, SunoffsetTimeTestSunsetAndSunrise3) {
-  std::optional<std::vector<time_t>> timesOpt =
+  const std::optional<std::vector<time_t>> timesOpt =
       dynamic_paper::timeStringsToTimes({"-10:11 sunrise", "+1:22 sunset"},
                                         testSunriseAndSunsetTimes);
 
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
 
   std::vector<time_t> times = timesOpt.value();
 
@@ -324,24 +343,28 @@ TEST(TimeStringConversion, SunriseCapitalization) {
                                         testSunriseAndSunsetTimes);
 
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
   std::vector<time_t> times = timesOpt.value();
   EXPECT_EQ(times[1] - times[0], ONE_HOUR);
 
   timesOpt = dynamic_paper::timeStringsToTimes({"sunrise", "+1:00 SUNRISE"},
                                                testSunriseAndSunsetTimes);
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
   times = timesOpt.value();
   EXPECT_EQ(times[1] - times[0], ONE_HOUR);
 
   timesOpt = dynamic_paper::timeStringsToTimes({"SUNRISE", "+1:00 SUNRISE"},
                                                testSunriseAndSunsetTimes);
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
   times = timesOpt.value();
   EXPECT_EQ(times[1] - times[0], ONE_HOUR);
 
   timesOpt = dynamic_paper::timeStringsToTimes({"sUnRiSe", "+1:00 sunRISE"},
                                                testSunriseAndSunsetTimes);
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
   times = timesOpt.value();
   EXPECT_EQ(times[1] - times[0], ONE_HOUR);
 }
@@ -352,34 +375,39 @@ TEST(TimeStringConversion, SunsetCapitalization) {
                                         testSunriseAndSunsetTimes);
 
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
   std::vector<time_t> times = timesOpt.value();
   EXPECT_EQ(times[1] - times[0], ONE_HOUR);
 
   timesOpt = dynamic_paper::timeStringsToTimes({"sunset", "+1:00 SUNSET"},
                                                testSunriseAndSunsetTimes);
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
   times = timesOpt.value();
   EXPECT_EQ(times[1] - times[0], ONE_HOUR);
 
   timesOpt = dynamic_paper::timeStringsToTimes({"SUNSET", "+1:00 SUNSET"},
                                                testSunriseAndSunsetTimes);
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
   times = timesOpt.value();
   EXPECT_EQ(times[1] - times[0], ONE_HOUR);
 
   timesOpt = dynamic_paper::timeStringsToTimes({"sunset", "+1:00 sunset"},
                                                testSunriseAndSunsetTimes);
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
   times = timesOpt.value();
   EXPECT_EQ(times[1] - times[0], ONE_HOUR);
 }
 
 TEST(TimeStringConversion, SunriseEquivalence) {
-  std::optional<std::vector<time_t>> timesOpt =
+  const std::optional<std::vector<time_t>> timesOpt =
       dynamic_paper::timeStringsToTimes({"sunrise", "sunrise"},
                                         testSunriseAndSunsetTimes);
 
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
 
   std::vector<time_t> times = timesOpt.value();
 
@@ -387,11 +415,12 @@ TEST(TimeStringConversion, SunriseEquivalence) {
 }
 
 TEST(TimeStringConversion, SunriseEquivalence2) {
-  std::optional<std::vector<time_t>> timesOpt =
+  const std::optional<std::vector<time_t>> timesOpt =
       dynamic_paper::timeStringsToTimes({"+1:00 sunrise", "+1:00 sunrise"},
                                         testSunriseAndSunsetTimes);
 
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
 
   std::vector<time_t> times = timesOpt.value();
 
@@ -399,11 +428,12 @@ TEST(TimeStringConversion, SunriseEquivalence2) {
 }
 
 TEST(TimeStringConversion, SunriseEquivalence3) {
-  std::optional<std::vector<time_t>> timesOpt =
+  const std::optional<std::vector<time_t>> timesOpt =
       dynamic_paper::timeStringsToTimes({"-1:00 sunrise", "-1:00 sunrise"},
                                         testSunriseAndSunsetTimes);
 
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
 
   std::vector<time_t> times = timesOpt.value();
 
@@ -411,11 +441,12 @@ TEST(TimeStringConversion, SunriseEquivalence3) {
 }
 
 TEST(TimeStringConversion, SunsetEquivalence) {
-  std::optional<std::vector<time_t>> timesOpt =
+  const std::optional<std::vector<time_t>> timesOpt =
       dynamic_paper::timeStringsToTimes({"sunset", "sunset"},
                                         testSunriseAndSunsetTimes);
 
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
 
   std::vector<time_t> times = timesOpt.value();
 
@@ -423,11 +454,12 @@ TEST(TimeStringConversion, SunsetEquivalence) {
 }
 
 TEST(TimeStringConversion, SunsetEquivalence2) {
-  std::optional<std::vector<time_t>> timesOpt =
+  const std::optional<std::vector<time_t>> timesOpt =
       dynamic_paper::timeStringsToTimes({"-1:00 sunset", "-01:00 sunset"},
                                         testSunriseAndSunsetTimes);
 
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
 
   std::vector<time_t> times = timesOpt.value();
 
@@ -435,11 +467,12 @@ TEST(TimeStringConversion, SunsetEquivalence2) {
 }
 
 TEST(TimeStringConversion, SunsetEquivalence3) {
-  std::optional<std::vector<time_t>> timesOpt =
+  const std::optional<std::vector<time_t>> timesOpt =
       dynamic_paper::timeStringsToTimes({"+1:00 sunset", "+01:00 sunset"},
                                         testSunriseAndSunsetTimes);
 
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
 
   std::vector<time_t> times = timesOpt.value();
 
@@ -447,11 +480,12 @@ TEST(TimeStringConversion, SunsetEquivalence3) {
 }
 
 TEST(TimeStringConversion, SunoffsetTimeTestLongHour) {
-  std::optional<std::vector<time_t>> timesOpt =
+  const std::optional<std::vector<time_t>> timesOpt =
       dynamic_paper::timeStringsToTimes({"+000:00 sunrise", "+001:00 sunrise"},
                                         testSunriseAndSunsetTimes);
 
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
 
   std::vector<time_t> times = timesOpt.value();
 
@@ -459,11 +493,12 @@ TEST(TimeStringConversion, SunoffsetTimeTestLongHour) {
 }
 
 TEST(TimeStringConversion, SunoffsetTimeTestLongHour2) {
-  std::optional<std::vector<time_t>> timesOpt =
+  const std::optional<std::vector<time_t>> timesOpt =
       dynamic_paper::timeStringsToTimes({"+000:00 sunrise", "+100:00 sunrise"},
                                         testSunriseAndSunsetTimes);
 
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
 
   std::vector<time_t> times = timesOpt.value();
 
@@ -471,13 +506,14 @@ TEST(TimeStringConversion, SunoffsetTimeTestLongHour2) {
 }
 
 TEST(TimeStringConversion, SunoffsetSeconds) {
-  std::optional<std::vector<time_t>> timesOpt =
+  const std::optional<std::vector<time_t>> timesOpt =
       dynamic_paper::timeStringsToTimes({"+00:00:01 sunrise",
                                          "-00:00:01 sunset",
                                          "+00:00:00 sunrise", "sunrise"},
                                         testSunriseAndSunsetTimes);
 
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
 
   std::vector<time_t> times = timesOpt.value();
 
@@ -488,13 +524,14 @@ TEST(TimeStringConversion, SunoffsetSeconds) {
 }
 
 TEST(TimeStringConversion, SunoffsetSpaces) {
-  std::optional<std::vector<time_t>> timesOpt =
+  const std::optional<std::vector<time_t>> timesOpt =
       dynamic_paper::timeStringsToTimes(
           {"    +00:00:01 sunrise", "-00:00:01     sunset",
            "+00:00:00 sunrise     ", "  sunrise  "},
           testSunriseAndSunsetTimes);
 
   EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
 
   std::vector<time_t> times = timesOpt.value();
 
