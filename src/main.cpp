@@ -34,6 +34,7 @@ void errorMsg(const std::format_string<Ts...> msg, Ts &&...args) {
                            ANSI_COLOR_RESET)
             << std::endl;
 }
+
 // ===== Logging ===============
 void setupLogging(const YAML::Node &config) {
   LogLevel logLevel = loadLoggingLevelFromYAML(config);
@@ -42,7 +43,12 @@ void setupLogging(const YAML::Node &config) {
 
 // ===== Config ===============
 YAML::Node loadConfigFileIntoYAML(const std::filesystem::path &file) {
-  createFileIfDoesntExist(file, DEFAULT_CONFIG_FILE);
+  bool fileCreationResult = createFileIfDoesntExist(file, DEFAULT_CONFIG_FILE);
+
+  if (!fileCreationResult) {
+    errorMsg("Unable to create a default config!");
+    exit(EXIT_FAILURE);
+  }
 
   try {
     return YAML::LoadFile(file);

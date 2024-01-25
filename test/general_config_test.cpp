@@ -7,14 +7,11 @@
 #include <yaml-cpp/yaml.h>
 
 #include "src/config.hpp"
+#include "src/defaults.hpp"
 
 using namespace dynamic_paper;
 
 namespace {
-
-constexpr std::string_view DEFAULT_BACKGROUND_SET_CONFIG =
-    "~/.local/share/dynamic_paper/background_sets.yaml";
-constexpr std::string_view DEFAULT_CACHE_IMAGE_DIR = "~/.cache/dynamic_paper";
 
 constexpr std::string_view GENERAL_CONFIG_YAML = R""""(
 method: "wallutils"
@@ -96,10 +93,10 @@ TEST(GeneralConfig, DefaultValues) {
       BackgroundSetterMethodWallUtils());
   EXPECT_EQ(cfg.sunEventPollerMethod, SunEventPollerMethod::Sunwait);
   EXPECT_EQ(cfg.backgroundSetConfigFile,
-            std::filesystem::path(DEFAULT_BACKGROUND_SET_CONFIG));
+            std::filesystem::path(ConfigDefaults::backgroundSetConfigFile()));
   EXPECT_EQ(cfg.hookScript, std::nullopt);
   EXPECT_EQ(cfg.imageCacheDirectory,
-            std::filesystem::path(DEFAULT_CACHE_IMAGE_DIR));
+            std::filesystem::path(ConfigDefaults::imageCacheDirectory()));
 }
 
 TEST(GeneralConfig, MethodOnly) {
@@ -115,7 +112,7 @@ TEST(GeneralConfig, MethodOnly) {
       BackgroundSetterMethodWallUtils());
   EXPECT_EQ(cfg.sunEventPollerMethod, SunEventPollerMethod::Sunwait);
   EXPECT_EQ(cfg.backgroundSetConfigFile,
-            std::filesystem::path(DEFAULT_BACKGROUND_SET_CONFIG));
+            std::filesystem::path(ConfigDefaults::backgroundSetConfigFile()));
   EXPECT_EQ(cfg.hookScript, std::nullopt);
 }
 

@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
+#include <utility>
 
 #include <yaml-cpp/yaml.h>
 
@@ -24,7 +25,9 @@ static constexpr std::string_view LOGGING_KEY = "logging_level";
 using ExpectedMethod =
     tl::expected<BackgroundSetterMethod, BackgroundSetterMethodError>;
 
-static ExpectedMethod handleMethodError(const ExpectedMethod &expectedMethod) {
+namespace {
+
+ExpectedMethod handleMethodError(const ExpectedMethod &expectedMethod) {
   if (expectedMethod.has_value()) {
     return expectedMethod;
   }
@@ -48,19 +51,22 @@ static ExpectedMethod handleMethodError(const ExpectedMethod &expectedMethod) {
   return tl::unexpected(BackgroundSetterMethodError::InvalidMethod);
 }
 
+} // namespace
+
 // ===== Header ===============
 
 BackgroundSetterMethodScript::BackgroundSetterMethodScript(
-    const std::filesystem::path scriptPath)
-    : script(scriptPath) {}
+    std::filesystem::path scriptPath)
+    : script(std::move(scriptPath)) {}
 
 Config::Config(std::filesystem::path backgroundSetConfigFile,
                BackgroundSetterMethod setMethod, SunEventPollerMethod sunMethod,
                std::optional<std::filesystem::path> hookScript,
                std::filesystem::path imageCacheDirectory)
-    : backgroundSetConfigFile(backgroundSetConfigFile),
-      backgroundSetterMethod(setMethod), sunEventPollerMethod(sunMethod),
-      hookScript(hookScript), imageCacheDirectory(imageCacheDirectory) {}
+    : backgroundSetConfigFile(std::move(backgroundSetConfigFile)),
+      backgroundSetterMethod(std::move(setMethod)),
+      sunEventPollerMethod(sunMethod), hookScript(std::move(hookScript)),
+      imageCacheDirectory(std::move(imageCacheDirectory)) {}
 
 tl::expected<Config, ConfigError> loadConfigFromYAML(const YAML::Node &config) {
 
@@ -71,22 +77,20 @@ tl::expected<Config, ConfigError> loadConfigFromYAML(const YAML::Node &config) {
     return tl::unexpected(ConfigError::MethodParsingError);
   }
 
-  SunEventPollerMethod sunMethod =
-      generalConfigParseOrUseDefault<SunEventPollerMethod>(
-          config, SUN_POLL_METHOD_KEY, ConfigDefaults::sunEventPollerMethod);
+  auto sunMethod = generalConfigParseOrUseDefault<SunEventPollerMethod>(
+      config, SUN_POLL_METHOD_KEY, ConfigDefaults::sunEventPollerMethod);
 
-  std::filesystem::path backgroundSetConfigFile =
+  auto backgroundSetConfigFile =
       generalConfigParseOrUseDefault<std::filesystem::path>(
           config, BACKGROUND_SET_CONFIG_FILE,
-          ConfigDefaults::backgroundSetConfigFile);
+          ConfigDefaults::backgroundSetConfigFile());
 
-  std::optional<std::filesystem::path> hookScript =
+  auto hookScript =
       generalConfigParseOrUseDefault<std::optional<std::filesystem::path>>(
           config, HOOK_SCRIPT_KEY, std::nullopt);
 
-  std::filesystem::path imageCacheDir =
-      generalConfigParseOrUseDefault<std::filesystem::path>(
-          config, IMAGE_CACHE_DIR_KEY, ConfigDefaults::imageCacheDirectory);
+  auto imageCacheDir = generalConfigParseOrUseDefault<std::filesystem::path>(
+      config, IMAGE_CACHE_DIR_KEY, ConfigDefaults::imageCacheDirectory());
 
   return Config(backgroundSetConfigFile, expectedMethod.value(), sunMethod,
                 hookScript, imageCacheDir);

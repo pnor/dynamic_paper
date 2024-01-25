@@ -1,10 +1,16 @@
 #pragma once
 
 #include <filesystem>
+#include <optional>
 
 /** Utility functions to work with the filesystem */
 
 namespace dynamic_paper {
+
+/** Returns the path to the user's home directory, as described by the
+ * environement variable $HOME. If $HOME is unset, or is unable to get a valid
+ * value from $HOME, will default to root's home, `/root` */
+std::filesystem::path getHomeDirectory();
 
 /** Creates directory called `dir`. Does nothing if it already exists. Returns
  * `true` if created the directory/it already exist, and `false` otherwise */

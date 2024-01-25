@@ -8,6 +8,14 @@ namespace dynamic_paper {
 
 // ===== Header ===============
 
+std::filesystem::path getHomeDirectory() {
+  const char *envHomeDir = std::getenv("HOME");
+  if (envHomeDir == nullptr) {
+    return {"/root"};
+  }
+  return {std::string(envHomeDir)};
+}
+
 bool createDirectoryIfDoesntExist(const std::filesystem::path &dir) {
   logTrace("Attempting to create directory {}", dir.string());
 
@@ -16,7 +24,7 @@ bool createDirectoryIfDoesntExist(const std::filesystem::path &dir) {
     return true;
   }
 
-  bool result = std::filesystem::create_directories(dir);
+  const bool result = std::filesystem::create_directories(dir);
 
   if (result) {
     logInfo("Succesfully created the directory {}", dir.string());
