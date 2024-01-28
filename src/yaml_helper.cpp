@@ -5,14 +5,15 @@ namespace dynamic_paper {
 tl::expected<BackgroundSetterMethod, BackgroundSetterMethodError>
 parseBackgroundSetterMethod(YAML::Node config, const std::string_view methodKey,
                             const std::string_view scriptKey) {
-  YAML::Node node = config[methodKey];
+  const YAML::Node node = config[methodKey];
 
   if (!node.IsDefined()) {
     return tl::unexpected(BackgroundSetterMethodError::NoMethodInYAML);
   }
 
-  const std::string &s = node.as<std::string>();
-  if (s == SCRIPT_STRING) {
+  const std::string &nodeString = node.as<std::string>();
+
+  if (nodeString == SCRIPT_STRING) {
     const YAML::Node scriptNode = config[scriptKey];
 
     if (!scriptNode.IsDefined()) {
@@ -22,7 +23,7 @@ parseBackgroundSetterMethod(YAML::Node config, const std::string_view methodKey,
     }
 
     std::optional<std::filesystem::path> methodScriptPath =
-        stringTo<std::filesystem::path>(scriptNode.as<std::string>());
+        yamlStringTo<std::filesystem::path>(scriptNode.as<std::string>());
 
     if (!methodScriptPath.has_value()) {
       logError("Method was 'script' but no script was able to be parsed");
@@ -30,12 +31,14 @@ parseBackgroundSetterMethod(YAML::Node config, const std::string_view methodKey,
     }
 
     return BackgroundSetterMethodScript(methodScriptPath.value());
-  } else if (s == WALLUTILS_STRING) {
-    return BackgroundSetterMethodWallUtils();
-  } else {
-    logError("String '{}' doesn't correspond to valid method", s);
-    return tl::unexpected(BackgroundSetterMethodError::InvalidMethod);
   }
+
+  if (nodeString == WALLUTILS_STRING) {
+    return BackgroundSetterMethodWallUtils();
+  }
+
+  logError("String '{}' doesn't correspond to valid method", nodeString);
+  return tl::unexpected(BackgroundSetterMethodError::InvalidMethod);
 }
 
 } // namespace dynamic_paper

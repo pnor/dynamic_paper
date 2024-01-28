@@ -165,8 +165,6 @@ auto main(int argc, char *argv[]) -> int {
     return EXIT_FAILURE;
   }
 
-  // TODO get actual home directory from env instead of ~
-  // TODO create cache dir if not existing  already
   // TODO create default dirs like .local/share and .cache/dynamic_paper if
   // they don't exist
 

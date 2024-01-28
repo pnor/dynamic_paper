@@ -1,5 +1,4 @@
-#ifndef CONSTANTS_H_
-#define CONSTANTS_H_
+#pragma once
 
 #include "src/time_util.hpp"
 
@@ -20,5 +19,3 @@ const time_t SUNRISE_SUNSET_GAP =
     testSunriseAndSunsetTimes.sunset - testSunriseAndSunsetTimes.sunrise;
 
 } // namespace dynamic_paper_test
-
-#endif // CONSTANTS_H_

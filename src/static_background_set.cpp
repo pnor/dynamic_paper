@@ -5,6 +5,7 @@
 #include <random>
 
 #include <tl/expected.hpp>
+#include <utility>
 
 #include "background_setter.hpp"
 #include "config.hpp"
@@ -13,9 +14,11 @@
 
 namespace dynamic_paper {
 
-static void printDebugInfo(const StaticBackgroundData *data,
-                           const std::string &imageName,
-                           const BackgroundSetterMethod &method) {
+namespace {
+
+void printDebugInfo(const StaticBackgroundData *data,
+                    const std::string &imageName,
+                    const BackgroundSetterMethod &method) {
   std::string modeString = backgroundSetModeString(data->mode);
   std::string methodString = backgroundSetterMethodString(method);
   logWarning("Encountered error in attempting to set the background for static "
@@ -24,17 +27,22 @@ static void printDebugInfo(const StaticBackgroundData *data,
 }
 
 /** Returns a random number in range [0..max)*/
-static int randomNumber(const int max) {
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  std::uniform_int_distribution<> distrib(0, max - 1);
+size_t randomNumber(const size_t max) {
+  std::random_device randomDevice;
+  std::mt19937 gen(randomDevice());
+  std::uniform_int_distribution<> distrib(0, static_cast<int>(max) - 1);
   return distrib(gen);
 }
+
+} // namespace
+
+// ===== Header ===============
 
 StaticBackgroundData::StaticBackgroundData(std::filesystem::path dataDirectory,
                                            BackgroundSetMode mode,
                                            std::vector<std::string> imageNames)
-    : dataDirectory(dataDirectory), mode(mode), imageNames(imageNames) {}
+    : dataDirectory(std::move(dataDirectory)), mode(mode),
+      imageNames(std::move(imageNames)) {}
 
 void StaticBackgroundData::show(const Config &config) const {
   logTrace("Showing static background");
@@ -43,7 +51,7 @@ void StaticBackgroundData::show(const Config &config) const {
   const std::string imageName = imageNames.at(randomNumber(imageNames.size()));
   const std::filesystem::path imagePath = dataDirectory / imageName;
 
-  tl::expected<void, BackgroundError> result =
+  const tl::expected<void, BackgroundError> result =
       setBackgroundToImage(imagePath, mode, config.backgroundSetterMethod);
 
   if (!result.has_value()) {

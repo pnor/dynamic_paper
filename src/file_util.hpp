@@ -12,6 +12,10 @@ namespace dynamic_paper {
  * value from $HOME, will default to root's home, `/root` */
 std::filesystem::path getHomeDirectory();
 
+/** Expands `path` so that a leading "~" is replaced with the user's home
+ * directory. */
+std::filesystem::path expandPath(std::filesystem::path path);
+
 /** Creates directory called `dir`. Does nothing if it already exists. Returns
  * `true` if created the directory/it already exist, and `false` otherwise */
 bool createDirectoryIfDoesntExist(const std::filesystem::path &dir);

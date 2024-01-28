@@ -88,8 +88,14 @@ void describeError(const BackgroundError error) {
     break;
   }
   case BackgroundError::SetBackgroundError: {
-    logError("Ero occured when trying to interpolate the background: unable to "
-             "set the background");
+    logError(
+        "Error occured when trying to interpolate the background: unable to "
+        "set the background");
+    break;
+  }
+  case BackgroundError::NoCacheDir: {
+    logError("Error occured when trying to interpolate the background: unable "
+             "to access or create a cache directory");
     break;
   }
   }
@@ -240,7 +246,7 @@ getCurrentEventAndNextTime(const EventList &eventList, const time_t time) {
 
   if (firstAfterTime == eventList.begin() ||
       firstAfterTime == eventList.end()) {
-    const TimeAndEvent current = eventList.back();
+    const TimeAndEvent &current = eventList.back();
     const time_t next = eventList.front().first;
 
     return std::make_pair(current, next);
@@ -320,7 +326,7 @@ void doBackgroundLoop(const DynamicBackgroundData *backgroundData,
 
     const time_t currentTime = getCurrentTime();
 
-    EventList eventList = getEventList(backgroundData);
+    const EventList eventList = getEventList(backgroundData);
     logAssert(eventLsitIsSortedByTime(eventList),
               "Event list is not sorted by time from earliest to latest");
 

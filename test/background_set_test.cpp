@@ -9,6 +9,7 @@
 
 #include "src/background_set.hpp"
 #include "src/config.hpp"
+#include "src/file_util.hpp"
 
 #include "constants.hpp"
 
@@ -19,9 +20,8 @@ using namespace testing;
 namespace {
 
 Config getConfig() {
-  return Config("./images", BackgroundSetterMethodWallUtils(),
-                SunEventPollerMethod::Dummy, std::nullopt,
-                "~/.cache/backgrounds");
+  return {"./images", BackgroundSetterMethodWallUtils(),
+          SunEventPollerMethod::Dummy, std::nullopt, "~/.cache/backgrounds"};
 }
 
 // Static
@@ -63,7 +63,7 @@ dynamic_paper:
     - "sunset"
 )"""";
 
-static const std::string_view DYNAMIC_BACKGROUND_SET_RANDOM = R""""(
+const std::string_view DYNAMIC_BACKGROUND_SET_RANDOM = R""""(
 dynamic_paper:
   data_directory: "./backgrounds/dynamic"
   type: dynamic
@@ -178,13 +178,13 @@ suntimes:
 
 // ===== Helper ===================
 BackgroundSet getBackgroundSetFrom(const std::string_view yamlString) {
-  YAML::Node yaml = YAML::Load(std::string(yamlString));
+  const YAML::Node yaml = YAML::Load(std::string(yamlString));
   auto yamlMap = yaml.as<std::unordered_map<std::string, YAML::Node>>();
 
   // yamlMap only has 1 entry; mapping the name to all the yaml info
-  for (const auto &kv : yamlMap) {
+  for (const auto &keyValue : yamlMap) {
     tl::expected<BackgroundSet, BackgroundSetParseErrors> expBackgroundSet =
-        parseFromYAML(kv.first, kv.second, getConfig());
+        parseFromYAML(keyValue.first, keyValue.second, getConfig());
     EXPECT_TRUE(expBackgroundSet.has_value());
     return expBackgroundSet.value();
   }
@@ -204,7 +204,8 @@ TEST(BackgroundSetTests, StaticBackgroundSetOneImage) {
 
   const StaticBackgroundData *staticData =
       std::get_if<StaticBackgroundData>(&backgroundSet.type);
-  EXPECT_EQ(staticData->dataDirectory, std::filesystem::path("~/backgrounds"));
+  EXPECT_EQ(staticData->dataDirectory,
+            getHomeDirectory() / std::filesystem::path("backgrounds"));
   EXPECT_EQ(staticData->imageNames, std::vector<std::string>({"1.jpg"}));
   EXPECT_EQ(staticData->mode, BackgroundSetMode::Center);
 }
@@ -216,7 +217,8 @@ TEST(BackgroundSetTests, StaticBackgroundSetImageList) {
 
   const StaticBackgroundData *staticData =
       std::get_if<StaticBackgroundData>(&backgroundSet.type);
-  EXPECT_EQ(staticData->dataDirectory, std::filesystem::path("~/backgrounds2"));
+  EXPECT_EQ(staticData->dataDirectory,
+            getHomeDirectory() / std::filesystem::path("backgrounds2"));
   EXPECT_EQ(staticData->imageNames,
             std::vector<std::string>({"1.jpg", "2.jpg"}));
   EXPECT_EQ(staticData->mode, BackgroundSetMode::Fill);
@@ -236,6 +238,9 @@ TEST(BackgroundSetTests, DynamicBackgroundSet) {
 
   EXPECT_EQ(dynamicData->mode, BackgroundSetMode::Center);
 
+  EXPECT_EQ(dynamicData->transition.has_value(), true);
+  assert(dynamicData->transition.has_value());
+  // TODO fix this testing thing
   EXPECT_EQ(dynamicData->transition->duration, std::chrono::seconds(55));
 
   EXPECT_EQ(dynamicData->order, BackgroundSetOrder::Linear);

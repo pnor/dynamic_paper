@@ -4,53 +4,86 @@
 #include <cassert>
 #include <format>
 #include <type_traits>
+#include <utility>
 
+#include "file_util.hpp"
 #include "time_util.hpp"
 #include "type_helper.hpp"
 #include "variant_visitor_templ.hpp"
 #include "yaml_helper.hpp"
 
+// TODO make this easier to add and remove keys; should be able to just list it
+// in a struct that specifies the key parsed, into a type
+
 namespace dynamic_paper {
 
+namespace {
+
 // YAML Dict Key
-static constexpr std::string_view DATA_DIRECTORY = "data_directory";
-static constexpr std::string_view IMAGES = "images";
-static constexpr std::string_view IMAGE = "image";
-static constexpr std::string_view MODE = "mode";
-static constexpr std::string_view ORDER = "order";
-static constexpr std::string_view TIMES = "times";
-static constexpr std::string_view TRANSITION_LENGTH = "transition_length";
-static constexpr std::string_view TYPE = "type";
-static constexpr std::string_view NUM_TRANSITION_STEPS =
-    "number_transition_steps";
+constexpr std::string_view DATA_DIRECTORY = "data_directory";
+constexpr std::string_view IMAGES = "images";
+constexpr std::string_view IMAGE = "image";
+constexpr std::string_view MODE = "mode";
+constexpr std::string_view ORDER = "order";
+constexpr std::string_view TIMES = "times";
+constexpr std::string_view TRANSITION_LENGTH = "transition_length";
+constexpr std::string_view TYPE = "type";
+constexpr std::string_view NUM_TRANSITION_STEPS = "number_transition_steps";
 
 // Default value
-static constexpr BackgroundSetMode DEFAULT_MODE = BackgroundSetMode::Center;
-static constexpr BackgroundSetOrder DEFAULT_ORDER = BackgroundSetOrder::Linear;
-static constexpr unsigned int DEFAULT_TRANSITION_STEPS = 5;
+constexpr BackgroundSetMode DEFAULT_MODE = BackgroundSetMode::Center;
+constexpr BackgroundSetOrder DEFAULT_ORDER = BackgroundSetOrder::Linear;
+constexpr unsigned int DEFAULT_TRANSITION_STEPS = 5;
 
 // ===== Helper ===============
 
+/** Parses a field from `yaml` and puts it into `field`. */
 template <typename T>
-static void insertIntoParsingInfo(const YAML::Node &yaml,
-                                  std::optional<T> &field) {
-  if constexpr (std::is_same_v<T, std::string>) {
-    T yamlData = yaml.as<T>();
-    field = std::make_optional(yamlData);
-  } else if constexpr (is_vector<T>::value) {
-    T yamlData;
-    yamlData.reserve(yaml.size());
+void insertIntoParsingInfo(const YAML::Node &yaml, std::optional<T> &field);
 
-    for (std::size_t i = 0; i < yaml.size(); i++) {
-      yamlData.push_back(yaml[i].as<typename T::value_type>());
-    }
+// String
+template <typename T>
+  requires(std::is_same_v<T, std::string>)
+void insertIntoParsingInfo(const YAML::Node &yaml, std::optional<T> &field) {
+  auto yamlData = yaml.as<std::string>();
+  field = std::make_optional(yamlData);
+}
 
-    field = std::make_optional(yamlData);
-  } else {
-    std::optional<T> optData = stringTo<T>(yaml.as<std::string>());
-    if (optData.has_value()) {
-      field = optData;
-    }
+// Vector
+template <typename T>
+  requires(is_vector<T>::value)
+void insertIntoParsingInfo(const YAML::Node &yaml, std::optional<T> &field) {
+  T yamlData;
+  yamlData.reserve(yaml.size());
+
+  for (const auto &yamlField : yaml) {
+    yamlData.push_back(yamlField.as<typename T::value_type>());
+  }
+
+  field = std::make_optional(yamlData);
+}
+
+// Path
+template <typename T>
+  requires(std::is_same_v<T, std::filesystem::path>)
+void insertIntoParsingInfo(const YAML::Node &yaml, std::optional<T> &field) {
+  using path = std::filesystem::path;
+
+  const std::optional<path> optData =
+      yamlStringTo<path>(yaml.as<std::string>());
+
+  if (optData.has_value()) {
+    const path expandedPath = expandPath(optData.value());
+    field = expandedPath;
+  }
+}
+
+// Default
+template <typename T>
+void insertIntoParsingInfo(const YAML::Node &yaml, std::optional<T> &field) {
+  std::optional<T> optData = yamlStringTo<T>(yaml.as<std::string>());
+  if (optData.has_value()) {
+    field = std::move(optData);
   }
 }
 
@@ -69,9 +102,9 @@ struct ParsingInfo {
   std::optional<unsigned int> numberTransitionSteps = std::nullopt;
 };
 
-static void updateParsingInfoWithYamlNode(const std::string &key,
-                                          const YAML::Node &value,
-                                          ParsingInfo &parsingInfo) {
+void updateParsingInfoWithYamlNode(const std::string &key,
+                                   const YAML::Node &value,
+                                   ParsingInfo &parsingInfo) {
   if (key == DATA_DIRECTORY && value.IsScalar()) {
     insertIntoParsingInfo<std::filesystem::path>(value,
                                                  parsingInfo.dataDirectory);
@@ -96,7 +129,7 @@ static void updateParsingInfoWithYamlNode(const std::string &key,
   }
 }
 
-static std::optional<TransitionInfo>
+std::optional<TransitionInfo>
 tryCreateTransitionInfoFrom(const ParsingInfo &parsingInfo) {
   if (parsingInfo.transitionLength.has_value() &&
       parsingInfo.numberTransitionSteps.has_value()) {
@@ -120,7 +153,7 @@ tryCreateTransitionInfoFrom(const ParsingInfo &parsingInfo) {
   return std::nullopt;
 }
 
-static tl::expected<BackgroundSet, BackgroundSetParseErrors>
+tl::expected<BackgroundSet, BackgroundSetParseErrors>
 createStaticBackgroundSetFromInfo(const ParsingInfo &parsingInfo) {
   assert((void("Parsing info should have name by time this helper function "
                "is called"),
@@ -131,7 +164,8 @@ createStaticBackgroundSetFromInfo(const ParsingInfo &parsingInfo) {
   if (!(parsingInfo.image.has_value() || parsingInfo.images.has_value())) {
     if (parsingInfo.images.has_value() && parsingInfo.images->empty()) {
       return tl::unexpected(BackgroundSetParseErrors::NoImages);
-    } else if (!parsingInfo.image.has_value()) {
+    }
+    if (!parsingInfo.image.has_value()) {
       return tl::unexpected(BackgroundSetParseErrors::NoImages);
     }
   }
@@ -148,18 +182,20 @@ createStaticBackgroundSetFromInfo(const ParsingInfo &parsingInfo) {
         name, StaticBackgroundData(parsingInfo.dataDirectory.value(),
                                    parsingInfo.mode.value_or(DEFAULT_MODE),
                                    parsingInfo.images.value()));
-  } else if (parsingInfo.image.has_value()) {
+  }
+
+  if (parsingInfo.image.has_value()) {
     return BackgroundSet(
         name, StaticBackgroundData(parsingInfo.dataDirectory.value(),
                                    parsingInfo.mode.value_or(DEFAULT_MODE),
                                    {parsingInfo.image.value()}));
-  } else {
-    throw std::logic_error("Got to end of Static BackgroundSet with both "
-                           "image and images unset");
   }
+
+  throw std::logic_error("Got to end of Static BackgroundSet with both "
+                         "image and images unset");
 }
 
-static tl::expected<BackgroundSet, BackgroundSetParseErrors>
+tl::expected<BackgroundSet, BackgroundSetParseErrors>
 createDynamicBackgroundSetFromInfo(const ParsingInfo &parsingInfo,
                                    const Config &config) {
   assert((void("Parsing info should have name by time this helper function "
@@ -193,7 +229,7 @@ createDynamicBackgroundSetFromInfo(const ParsingInfo &parsingInfo,
     return tl::unexpected(BackgroundSetParseErrors::BadTimes);
   }
 
-  std::optional<TransitionInfo> transition =
+  const std::optional<TransitionInfo> transition =
       tryCreateTransitionInfoFrom(parsingInfo);
 
   return BackgroundSet(name,
@@ -204,7 +240,7 @@ createDynamicBackgroundSetFromInfo(const ParsingInfo &parsingInfo,
                            parsingInfo.images.value(), optTimeOffsets.value()));
 }
 
-static tl::expected<BackgroundSet, BackgroundSetParseErrors>
+tl::expected<BackgroundSet, BackgroundSetParseErrors>
 createBackgroundSetFromInfo(const ParsingInfo &parsingInfo,
                             const Config &config) {
   if (!parsingInfo.name.has_value()) {
@@ -227,13 +263,15 @@ createBackgroundSetFromInfo(const ParsingInfo &parsingInfo,
   throw std::logic_error("Unhandled background set type");
 }
 
+} // namespace
+
 // ===== Header ===============
 BackgroundSet::BackgroundSet(std::string name, StaticBackgroundData data)
-    : name(name),
+    : name(std::move(name)),
       type(std::variant<StaticBackgroundData, DynamicBackgroundData>(data)) {}
 
 BackgroundSet::BackgroundSet(std::string name, DynamicBackgroundData data)
-    : name(name),
+    : name(std::move(name)),
       type(std::variant<StaticBackgroundData, DynamicBackgroundData>(data)) {}
 
 void BackgroundSet::show(const Config &config) const {
@@ -252,13 +290,13 @@ parseFromYAML(const std::string &name, const YAML::Node &yaml,
               const Config &config) {
   ParsingInfo parsingInfo;
 
-  std::unordered_map<std::string, YAML::Node> yamlMap =
-      yaml.as<std::unordered_map<std::string, YAML::Node>>();
+  const auto yamlMap = yaml.as<std::unordered_map<std::string, YAML::Node>>();
 
   parsingInfo.name = std::make_optional(name);
 
-  for (const auto &kv : yamlMap) {
-    updateParsingInfoWithYamlNode(kv.first, kv.second, parsingInfo);
+  for (const auto &keyYamlVal : yamlMap) {
+    updateParsingInfoWithYamlNode(keyYamlVal.first, keyYamlVal.second,
+                                  parsingInfo);
   }
 
   return createBackgroundSetFromInfo(parsingInfo, config);

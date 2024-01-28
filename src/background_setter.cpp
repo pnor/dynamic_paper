@@ -7,6 +7,7 @@
 #include <tl/expected.hpp>
 
 #include "command_executor.hpp"
+#include "file_util.hpp"
 #include "image_compositor.hpp"
 #include "logger.hpp"
 #include "variant_visitor_templ.hpp"
@@ -99,7 +100,10 @@ tl::expected<void, BackgroundError> lerpBackgroundBetweenImages(
     const std::chrono::seconds duration, const unsigned int numSteps,
     const BackgroundSetMode mode, const BackgroundSetterMethod &method) {
 
-  // TODO create cache dir if doesn't exist
+  bool dirCreationResult = createDirectoryIfDoesntExist(cacheDirectory);
+  if (!dirCreationResult) {
+    return tl::make_unexpected(BackgroundError::NoCacheDir);
+  }
 
   for (unsigned int i = 0; i < numSteps; i++) {
     const float percentageFloat =

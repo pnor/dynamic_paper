@@ -1,6 +1,7 @@
 #include "file_util.hpp"
 
 #include <fstream>
+#include <ranges>
 
 #include "logger.hpp"
 
@@ -14,6 +15,20 @@ std::filesystem::path getHomeDirectory() {
     return {"/root"};
   }
   return {std::string(envHomeDir)};
+}
+
+std::filesystem::path expandPath(std::filesystem::path path) {
+  std::filesystem::path unexpandedPath = std::move(path);
+
+  if (unexpandedPath.begin()->string() == "~") {
+    std::filesystem::path newPath = getHomeDirectory();
+    for (const auto &dir : unexpandedPath | std::views::drop(1)) {
+      newPath /= dir;
+    }
+    return newPath;
+  }
+
+  return unexpandedPath;
 }
 
 bool createDirectoryIfDoesntExist(const std::filesystem::path &dir) {

@@ -77,20 +77,25 @@ tl::expected<Config, ConfigError> loadConfigFromYAML(const YAML::Node &config) {
     return tl::unexpected(ConfigError::MethodParsingError);
   }
 
-  auto sunMethod = generalConfigParseOrUseDefault<SunEventPollerMethod>(
+  const auto sunMethod = generalConfigParseOrUseDefault<SunEventPollerMethod>(
       config, SUN_POLL_METHOD_KEY, ConfigDefaults::sunEventPollerMethod);
 
   auto backgroundSetConfigFile =
       generalConfigParseOrUseDefault<std::filesystem::path>(
           config, BACKGROUND_SET_CONFIG_FILE,
           ConfigDefaults::backgroundSetConfigFile());
+  backgroundSetConfigFile = expandPath(backgroundSetConfigFile);
 
   auto hookScript =
       generalConfigParseOrUseDefault<std::optional<std::filesystem::path>>(
           config, HOOK_SCRIPT_KEY, std::nullopt);
+  if (hookScript.has_value()) {
+    hookScript = expandPath(hookScript.value());
+  }
 
   auto imageCacheDir = generalConfigParseOrUseDefault<std::filesystem::path>(
       config, IMAGE_CACHE_DIR_KEY, ConfigDefaults::imageCacheDirectory());
+  imageCacheDir = expandPath(imageCacheDir);
 
   return Config(backgroundSetConfigFile, expectedMethod.value(), sunMethod,
                 hookScript, imageCacheDir);

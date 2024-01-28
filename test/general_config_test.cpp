@@ -77,7 +77,7 @@ TEST(GeneralConfig, AllFilled) {
   EXPECT_EQ(cfg.hookScript,
             std::make_optional(std::filesystem::path("./hook_script.sh")));
   EXPECT_EQ(cfg.imageCacheDirectory,
-            std::filesystem::path("~/.cache/backgrounds"));
+            getHomeDirectory() / std::filesystem::path(".cache/backgrounds"));
 }
 
 TEST(GeneralConfig, DefaultValues) {

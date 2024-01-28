@@ -14,7 +14,8 @@ namespace dynamic_paper {
 enum class BackgroundError {
   CommandError,
   CompositeImageError,
-  SetBackgroundError
+  SetBackgroundError,
+  NoCacheDir,
 };
 enum class HookCommandError { CommandError };
 
