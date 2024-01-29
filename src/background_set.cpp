@@ -5,11 +5,11 @@
 #include <format>
 #include <type_traits>
 #include <utility>
+#include <variant>
 
 #include "file_util.hpp"
 #include "time_util.hpp"
 #include "type_helper.hpp"
-#include "variant_visitor_templ.hpp"
 #include "yaml_helper.hpp"
 
 // TODO make this easier to add and remove keys; should be able to just list it
@@ -266,6 +266,7 @@ createBackgroundSetFromInfo(const ParsingInfo &parsingInfo,
 } // namespace
 
 // ===== Header ===============
+
 BackgroundSet::BackgroundSet(std::string name, StaticBackgroundData data)
     : name(std::move(name)),
       type(std::variant<StaticBackgroundData, DynamicBackgroundData>(data)) {}
@@ -274,15 +275,24 @@ BackgroundSet::BackgroundSet(std::string name, DynamicBackgroundData data)
     : name(std::move(name)),
       type(std::variant<StaticBackgroundData, DynamicBackgroundData>(data)) {}
 
-void BackgroundSet::show(const Config &config) const {
-  logTrace("show in BackgroundSet");
+std::string_view BackgroundSet::getName() const { return this->name; }
 
-  std::visit(
-      overloaded{
-          [&config](const StaticBackgroundData &data) { data.show(config); },
-          [&config](const DynamicBackgroundData &data) { data.show(config); },
-      },
-      this->type);
+std::optional<StaticBackgroundData> BackgroundSet::getStaticBackgroundData() {
+  auto *staticDataPtr = std::get_if<StaticBackgroundData>(&this->type);
+
+  if (staticDataPtr == nullptr) {
+    return std::nullopt;
+  }
+  return *staticDataPtr;
+}
+
+std::optional<DynamicBackgroundData> BackgroundSet::getDynamicBackgroundData() {
+  auto *dynamicDataPtr = std::get_if<DynamicBackgroundData>(&this->type);
+
+  if (dynamicDataPtr == nullptr) {
+    return std::nullopt;
+  }
+  return *dynamicDataPtr;
 }
 
 tl::expected<BackgroundSet, BackgroundSetParseErrors>

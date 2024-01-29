@@ -290,7 +290,7 @@ void doEvent(const Event &event, const DynamicBackgroundData *backgroundData,
       event);
 }
 
-void sleepUntilNextTime(const time_t &now, const time_t &later) {
+std::chrono::seconds timeUntilNext(const time_t &now, const time_t &later) {
   std::chrono::seconds sleepTime;
 
   if (now < later) {
@@ -305,43 +305,38 @@ void sleepUntilNextTime(const time_t &now, const time_t &later) {
                                      (later - midnight));
   }
 
-  logDebug("Sleeping for {} seconds ...", sleepTime);
-  std::this_thread::sleep_for(std::chrono::seconds(sleepTime));
+  return sleepTime;
 }
-
-} // namespace
 
 // ===== Main Loop Logic ===============
 
-void doBackgroundLoop(const DynamicBackgroundData *backgroundData,
-                      const Config &config) {
-  const unsigned int seed = chooseRandomSeed();
+std::chrono::seconds updateBackgroundAndReturnTimeTillNext(
+    const DynamicBackgroundData *backgroundData, const Config &config,
+    const unsigned int seed) {
+  // Reset the random seed on each iteration of the loop to ensure the order
+  // of `random` dynamic backgrounds is consistent between each reconstruction
+  // of the event list.
+  std::srand(seed);
 
-  while (true) {
+  const time_t currentTime = getCurrentTime();
 
-    // Reset the random seed on each iteration of the loop to ensure the order
-    // of `random` dynamic backgrounds is consistent between each reconstruction
-    // of the event list.
-    std::srand(seed);
+  const EventList eventList = getEventList(backgroundData);
+  logAssert(eventLsitIsSortedByTime(eventList),
+            "Event list is not sorted by time from earliest to latest");
 
-    const time_t currentTime = getCurrentTime();
+  const std::pair<TimeAndEvent, time_t> currentEventAndNextTime =
+      getCurrentEventAndNextTime(eventList, currentTime);
 
-    const EventList eventList = getEventList(backgroundData);
-    logAssert(eventLsitIsSortedByTime(eventList),
-              "Event list is not sorted by time from earliest to latest");
+  const Event &currentEvent = currentEventAndNextTime.first.second;
 
-    std::pair<TimeAndEvent, time_t> currentEventAndNextTime =
-        getCurrentEventAndNextTime(eventList, currentTime);
+  doEvent(currentEvent, backgroundData, config);
 
-    const Event &currentEvent = currentEventAndNextTime.first.second;
+  const time_t &nextTime = currentEventAndNextTime.second;
 
-    doEvent(currentEvent, backgroundData, config);
-
-    const time_t &nextTime = currentEventAndNextTime.second;
-
-    sleepUntilNextTime(currentTime, nextTime);
-  }
+  return timeUntilNext(currentTime, nextTime);
 }
+
+} // namespace
 
 // ===== Header ===============
 
@@ -353,10 +348,14 @@ DynamicBackgroundData::DynamicBackgroundData(
       transition(transition), order(order), imageNames(std::move(imageNames)),
       times(std::move(times)) {}
 
-void DynamicBackgroundData::show(const Config &config) const {
+std::chrono::seconds
+DynamicBackgroundData::updateBackground(const Config &config) const {
   logTrace("Show dynamic background");
 
-  doBackgroundLoop(this, config);
+  const unsigned int seed = chooseRandomSeed();
+  logTrace("Random seed is {}", seed);
+
+  return updateBackgroundAndReturnTimeTillNext(this, config, seed);
 }
 
 } // namespace dynamic_paper

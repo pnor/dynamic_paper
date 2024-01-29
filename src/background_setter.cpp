@@ -100,7 +100,7 @@ tl::expected<void, BackgroundError> lerpBackgroundBetweenImages(
     const std::chrono::seconds duration, const unsigned int numSteps,
     const BackgroundSetMode mode, const BackgroundSetterMethod &method) {
 
-  bool dirCreationResult = createDirectoryIfDoesntExist(cacheDirectory);
+  const bool dirCreationResult = createDirectoryIfDoesntExist(cacheDirectory);
   if (!dirCreationResult) {
     return tl::make_unexpected(BackgroundError::NoCacheDir);
   }
@@ -111,7 +111,7 @@ tl::expected<void, BackgroundError> lerpBackgroundBetweenImages(
     const unsigned int percentage = std::clamp(
         static_cast<unsigned int>(percentageFloat * 100.0), 0U, 100U);
 
-    tl::expected<std::filesystem::path, CompositeImageError>
+    const tl::expected<std::filesystem::path, CompositeImageError>
         expectedCompositedImage =
             getCompositedImage(commonImageDirectory, beforeImageName,
                                afterImageName, cacheDirectory, percentage);
@@ -120,7 +120,7 @@ tl::expected<void, BackgroundError> lerpBackgroundBetweenImages(
       return tl::unexpected(BackgroundError::CompositeImageError);
     }
 
-    tl::expected<void, BackgroundError> backgroundResult =
+    const tl::expected<void, BackgroundError> backgroundResult =
         setBackgroundToImage(expectedCompositedImage.value(), mode, method);
 
     if (!backgroundResult.has_value()) {

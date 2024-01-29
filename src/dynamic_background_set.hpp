@@ -19,10 +19,12 @@ struct TransitionInfo {
   std::chrono::seconds duration;
   unsigned int steps;
 
-  explicit TransitionInfo(const unsigned int duration, const unsigned int steps)
+  explicit TransitionInfo(unsigned int duration, unsigned int steps)
       : duration(duration), steps(steps) {}
 };
 
+/** Type of `BackgroundSet` that shows different wallpapers at different times,
+ * and changes over time*/
 struct DynamicBackgroundData {
   std::filesystem::path dataDirectory;
   BackgroundSetMode mode;
@@ -41,7 +43,10 @@ struct DynamicBackgroundData {
                         std::vector<std::string> imageNames,
                         std::vector<time_t> times);
 
-  void show(const Config &config) const;
+  /** Updates the background shown for the current time, and returns the amount
+   * of seconds until the next event will be shown. */
+  [[nodiscard]] std::chrono::seconds
+  updateBackground(const Config &config) const;
 };
 
 } // namespace dynamic_paper

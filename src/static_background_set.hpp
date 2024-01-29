@@ -12,6 +12,7 @@
 
 namespace dynamic_paper {
 
+/** Type of `BackgroundSet` that shows a wallpaper once and exits */
 struct StaticBackgroundData {
   std::filesystem::path dataDirectory;
   BackgroundSetMode mode;

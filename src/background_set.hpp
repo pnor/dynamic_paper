@@ -16,15 +16,22 @@
 /** Object that represents a static/dynamic background to be shown */
 namespace dynamic_paper {
 
+/** Collection of information used to determine how to display a background.
+ * Identified by its `name` */
 class BackgroundSet {
 public:
-  std::string name;
-  std::variant<StaticBackgroundData, DynamicBackgroundData> type;
+  [[nodiscard]] std::string_view getName() const;
+
+  [[nodiscard]] std::optional<StaticBackgroundData> getStaticBackgroundData();
+
+  [[nodiscard]] std::optional<DynamicBackgroundData> getDynamicBackgroundData();
 
   BackgroundSet(std::string name, StaticBackgroundData data);
   BackgroundSet(std::string name, DynamicBackgroundData data);
 
-  void show(const Config &config) const;
+private:
+  std::string name;
+  std::variant<StaticBackgroundData, DynamicBackgroundData> type;
 };
 
 enum class BackgroundSetParseErrors {

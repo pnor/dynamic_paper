@@ -198,25 +198,30 @@ BackgroundSet getBackgroundSetFrom(const std::string_view yamlString) {
 // ===== Tests ====================
 
 TEST(BackgroundSetTests, StaticBackgroundSetOneImage) {
-  const BackgroundSet backgroundSet =
-      getBackgroundSetFrom(STATIC_BACKGROUND_SET);
-  EXPECT_EQ(backgroundSet.name, "static_paper");
+  BackgroundSet backgroundSet = getBackgroundSetFrom(STATIC_BACKGROUND_SET);
+  EXPECT_EQ(backgroundSet.getName(), "static_paper");
 
-  const StaticBackgroundData *staticData =
-      std::get_if<StaticBackgroundData>(&backgroundSet.type);
-  EXPECT_EQ(staticData->dataDirectory,
+  std::optional<StaticBackgroundData> staticDataOpt =
+      backgroundSet.getStaticBackgroundData();
+  EXPECT_TRUE(staticDataOpt.has_value());
+  assert(staticDataOpt.has_value());
+
+  EXPECT_EQ(staticDataOpt->dataDirectory,
             getHomeDirectory() / std::filesystem::path("backgrounds"));
-  EXPECT_EQ(staticData->imageNames, std::vector<std::string>({"1.jpg"}));
-  EXPECT_EQ(staticData->mode, BackgroundSetMode::Center);
+  EXPECT_EQ(staticDataOpt->imageNames, std::vector<std::string>({"1.jpg"}));
+  EXPECT_EQ(staticDataOpt->mode, BackgroundSetMode::Center);
 }
 
 TEST(BackgroundSetTests, StaticBackgroundSetImageList) {
-  const BackgroundSet backgroundSet =
+  BackgroundSet backgroundSet =
       getBackgroundSetFrom(STATIC_BACKGROUND_IMAGE_LIST_SET);
-  EXPECT_EQ(backgroundSet.name, "static_paper");
+  EXPECT_EQ(backgroundSet.getName(), "static_paper");
 
-  const StaticBackgroundData *staticData =
-      std::get_if<StaticBackgroundData>(&backgroundSet.type);
+  const std::optional<StaticBackgroundData> staticData =
+      backgroundSet.getStaticBackgroundData();
+  EXPECT_TRUE(staticData.has_value());
+  assert(staticData.has_value());
+
   EXPECT_EQ(staticData->dataDirectory,
             getHomeDirectory() / std::filesystem::path("backgrounds2"));
   EXPECT_EQ(staticData->imageNames,
@@ -225,13 +230,14 @@ TEST(BackgroundSetTests, StaticBackgroundSetImageList) {
 }
 
 TEST(BackgroundSetTests, DynamicBackgroundSet) {
-  const BackgroundSet backgroundSet =
-      getBackgroundSetFrom(DYNAMIC_BACKGROUND_SET);
+  BackgroundSet backgroundSet = getBackgroundSetFrom(DYNAMIC_BACKGROUND_SET);
 
-  EXPECT_EQ(backgroundSet.name, "dynamic_paper");
+  EXPECT_EQ(backgroundSet.getName(), "dynamic_paper");
 
-  const DynamicBackgroundData *dynamicData =
-      std::get_if<DynamicBackgroundData>(&backgroundSet.type);
+  const std::optional<DynamicBackgroundData> dynamicData =
+      backgroundSet.getDynamicBackgroundData();
+  EXPECT_TRUE(dynamicData.has_value());
+  assert(dynamicData.has_value());
 
   EXPECT_EQ(dynamicData->dataDirectory,
             std::filesystem::path("./backgrounds/dynamic"));
@@ -240,7 +246,6 @@ TEST(BackgroundSetTests, DynamicBackgroundSet) {
 
   EXPECT_EQ(dynamicData->transition.has_value(), true);
   assert(dynamicData->transition.has_value());
-  // TODO fix this testing thing
   EXPECT_EQ(dynamicData->transition->duration, std::chrono::seconds(55));
 
   EXPECT_EQ(dynamicData->order, BackgroundSetOrder::Linear);
@@ -254,19 +259,23 @@ TEST(BackgroundSetTests, DynamicBackgroundSet) {
 }
 
 TEST(BackgroundSetTests, DynamicBackgroundSetRandom) {
-  const BackgroundSet backgroundSet =
+  BackgroundSet backgroundSet =
       getBackgroundSetFrom(DYNAMIC_BACKGROUND_SET_RANDOM);
 
-  EXPECT_EQ(backgroundSet.name, "dynamic_paper");
+  EXPECT_EQ(backgroundSet.getName(), "dynamic_paper");
 
-  const DynamicBackgroundData *dynamicData =
-      std::get_if<DynamicBackgroundData>(&backgroundSet.type);
+  const std::optional<DynamicBackgroundData> dynamicData =
+      backgroundSet.getDynamicBackgroundData();
+  EXPECT_TRUE(dynamicData.has_value());
+  assert(dynamicData.has_value());
 
   EXPECT_EQ(dynamicData->dataDirectory,
             std::filesystem::path("./backgrounds/dynamic"));
 
   EXPECT_EQ(dynamicData->mode, BackgroundSetMode::Center);
 
+  EXPECT_TRUE(dynamicData->transition.has_value());
+  assert(dynamicData->transition.has_value());
   EXPECT_EQ(dynamicData->transition->duration, std::chrono::seconds(55));
   EXPECT_EQ(dynamicData->transition->steps, 10);
 
@@ -281,13 +290,15 @@ TEST(BackgroundSetTests, DynamicBackgroundSetRandom) {
 }
 
 TEST(BackgroundSetTests, DynamicBackgroundSetEmptyDefaults) {
-  const BackgroundSet backgroundSet =
+  BackgroundSet backgroundSet =
       getBackgroundSetFrom(DYNAMIC_BACKGROUND_SET_EMPTY);
 
-  EXPECT_EQ(backgroundSet.name, "dynamic_paper");
+  EXPECT_EQ(backgroundSet.getName(), "dynamic_paper");
 
-  const DynamicBackgroundData *dynamicData =
-      std::get_if<DynamicBackgroundData>(&backgroundSet.type);
+  const std::optional<DynamicBackgroundData> dynamicData =
+      backgroundSet.getDynamicBackgroundData();
+  EXPECT_TRUE(dynamicData.has_value());
+  assert(dynamicData.has_value());
 
   EXPECT_EQ(dynamicData->dataDirectory,
             std::filesystem::path("./backgrounds/dynamic"));
@@ -304,13 +315,15 @@ TEST(BackgroundSetTests, DynamicBackgroundSetEmptyDefaults) {
 }
 
 TEST(BackgroundSetTests, DynamicBackgroundSetSunTimes) {
-  const BackgroundSet backgroundSet =
+  BackgroundSet backgroundSet =
       getBackgroundSetFrom(DYNAMIC_BACKGROUND_SUNTIMES);
 
-  EXPECT_EQ(backgroundSet.name, "suntimes");
+  EXPECT_EQ(backgroundSet.getName(), "suntimes");
 
-  const DynamicBackgroundData *dynamicData =
-      std::get_if<DynamicBackgroundData>(&backgroundSet.type);
+  const std::optional<DynamicBackgroundData> dynamicData =
+      backgroundSet.getDynamicBackgroundData();
+  EXPECT_TRUE(dynamicData.has_value());
+  assert(dynamicData.has_value());
 
   EXPECT_EQ(dynamicData->dataDirectory,
             std::filesystem::path("./backgrounds/dynamic"));
@@ -343,13 +356,15 @@ TEST(BackgroundSetTests, DynamicBackgroundSetSunTimes) {
 }
 
 TEST(BackgroundSetTests, DynamicBackgroundSetStrictTimes) {
-  const BackgroundSet backgroundSet =
+  BackgroundSet backgroundSet =
       getBackgroundSetFrom(DYNAMIC_BACKGROUND_STRICT_TIMES);
 
-  EXPECT_EQ(backgroundSet.name, "suntimes");
+  EXPECT_EQ(backgroundSet.getName(), "suntimes");
 
-  const DynamicBackgroundData *dynamicData =
-      std::get_if<DynamicBackgroundData>(&backgroundSet.type);
+  const std::optional<DynamicBackgroundData> dynamicData =
+      backgroundSet.getDynamicBackgroundData();
+  EXPECT_TRUE(dynamicData.has_value());
+  assert(dynamicData.has_value());
 
   EXPECT_EQ(dynamicData->dataDirectory,
             std::filesystem::path("./backgrounds/dynamic"));
@@ -376,26 +391,28 @@ TEST(BackgroundSetTests, DynamicBackgroundSetStrictTimes) {
 }
 
 TEST(BackgroundSetTests, DynamicBackgroundSetNoImagesOrTimes) {
-  YAML::Node yaml =
+  const YAML::Node yaml =
       YAML::Load(std::string(DYNAMIC_BACKGROUND_NO_IMAGES_OR_TIMES));
   auto yamlMap = yaml.as<std::unordered_map<std::string, YAML::Node>>();
 
-  for (const auto &kv : yamlMap) {
+  for (const auto &keyValue : yamlMap) {
     tl::expected<BackgroundSet, BackgroundSetParseErrors> expBackgroundSet =
-        parseFromYAML(kv.first, kv.second, getConfig());
+        parseFromYAML(keyValue.first, keyValue.second, getConfig());
     EXPECT_FALSE(expBackgroundSet.has_value());
     EXPECT_EQ(expBackgroundSet.error(), BackgroundSetParseErrors::NoImages);
   }
 }
 
 TEST(BackgroundSetTests, DynamicBackgroundSetTransitionStepsNoLength) {
-  const BackgroundSet backgroundSet =
+  BackgroundSet backgroundSet =
       getBackgroundSetFrom(DYNAMIC_BACKGROUND_SET_STEPS_NO_LENGTH);
 
-  EXPECT_EQ(backgroundSet.name, "dynamic_paper");
+  EXPECT_EQ(backgroundSet.getName(), "dynamic_paper");
 
-  const DynamicBackgroundData *dynamicData =
-      std::get_if<DynamicBackgroundData>(&backgroundSet.type);
+  const std::optional<DynamicBackgroundData> dynamicData =
+      backgroundSet.getDynamicBackgroundData();
+  EXPECT_TRUE(dynamicData.has_value());
+  assert(dynamicData.has_value());
 
   EXPECT_EQ(dynamicData->transition, std::nullopt);
 }

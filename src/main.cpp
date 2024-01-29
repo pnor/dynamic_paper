@@ -36,14 +36,17 @@ void errorMsg(const std::format_string<Ts...> msg, Ts &&...args) {
 }
 
 // ===== Logging ===============
+
 void setupLogging(const YAML::Node &config) {
-  LogLevel logLevel = loadLoggingLevelFromYAML(config);
+  const LogLevel logLevel = loadLoggingLevelFromYAML(config);
   setupLogging(logLevel);
 }
 
 // ===== Config ===============
+
 YAML::Node loadConfigFileIntoYAML(const std::filesystem::path &file) {
-  bool fileCreationResult = createFileIfDoesntExist(file, DEFAULT_CONFIG_FILE);
+  const bool fileCreationResult =
+      createFileIfDoesntExist(file, DEFAULT_CONFIG_FILE);
 
   if (!fileCreationResult) {
     errorMsg("Unable to create a default config!");
@@ -78,11 +81,34 @@ Config getConfigAndSetupLogging(const argparse::ArgumentParser &program) {
   const std::filesystem::path configFilePath =
       std::filesystem::path(program.get("--config"));
 
-  YAML::Node configYaml = loadConfigFileIntoYAML(configFilePath);
+  const YAML::Node configYaml = loadConfigFileIntoYAML(configFilePath);
 
   setupLogging(configYaml);
 
   return createConfigFromYAML(configYaml);
+}
+
+// ===== h ===============
+
+inline void showBackgroundSet(BackgroundSet &backgroundSet,
+                              const Config &config) {
+  std::optional<StaticBackgroundData> staticData =
+      backgroundSet.getStaticBackgroundData();
+  if (staticData.has_value()) {
+    staticData->show(config);
+  }
+
+  std::optional<DynamicBackgroundData> dynamicData =
+      backgroundSet.getDynamicBackgroundData();
+  if (dynamicData.has_value()) {
+    while (true) {
+      const std::chrono::seconds sleepTime =
+          dynamicData->updateBackground(config) + std::chrono::seconds(1);
+
+      logDebug("Sleeping for {} seconds...", sleepTime);
+      std::this_thread::sleep_for(sleepTime);
+    }
+  }
 }
 
 // ===== Command Line Arguements ===============
@@ -100,7 +126,7 @@ void handleShowCommand(argparse::ArgumentParser &showCommand,
     return;
   }
 
-  optBackgroundSet->show(config);
+  showBackgroundSet(optBackgroundSet.value(), config);
 }
 
 void handleRandomCommand(const Config &config) {
@@ -113,16 +139,17 @@ void handleRandomCommand(const Config &config) {
     return;
   }
 
-  optBackgroundSet->show(config);
+  showBackgroundSet(optBackgroundSet.value(), config);
 }
 
 void handleListCommand(const Config &config) {
-  std::vector<BackgroundSet> backgroundSets = getBackgroundSetsFromFile(config);
+  const std::vector<BackgroundSet> backgroundSets =
+      getBackgroundSetsFromFile(config);
   std::cout << "Available Background sets are: "
             << "\n"
             << std::endl;
   for (const auto &backgroundSet : backgroundSets) {
-    std::cout << backgroundSet.name << std::endl;
+    std::cout << backgroundSet.getName() << std::endl;
   }
 }
 
@@ -169,13 +196,13 @@ auto main(int argc, char *argv[]) -> int {
   // they don't exist
 
   if (program.is_subcommand_used(showCommand)) {
-    Config config = getConfigAndSetupLogging(program);
+    const Config config = getConfigAndSetupLogging(program);
     handleShowCommand(showCommand, config);
   } else if (program.is_subcommand_used(listCommand)) {
-    Config config = getConfigAndSetupLogging(program);
+    const Config config = getConfigAndSetupLogging(program);
     handleListCommand(config);
   } else if (program.is_subcommand_used(randomCommand)) {
-    Config config = getConfigAndSetupLogging(program);
+    const Config config = getConfigAndSetupLogging(program);
     handleRandomCommand(config);
   } else if (program.is_subcommand_used(helpCommand)) {
     showHelp(program);

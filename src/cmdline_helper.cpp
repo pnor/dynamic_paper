@@ -10,11 +10,13 @@ namespace dynamic_paper {
 
 // ===== Helper ===================
 
+namespace {
+
 /**
  *  Parses yaml info in `backgroundSetFile` into a pair that maps the name of
  * each `BackgroundSet` to YAML info that describes it
  */
-static std::unordered_map<std::string, YAML::Node>
+std::unordered_map<std::string, YAML::Node>
 nameAndYAMLInfoFromFile(const std::filesystem::path &backgroundSetFile) {
   YAML::Node yaml;
 
@@ -32,8 +34,8 @@ nameAndYAMLInfoFromFile(const std::filesystem::path &backgroundSetFile) {
 /**
  * Prints a relevant error message for `error` caused from parsing `name`
  */
-static void printParsingError(const std::string &name,
-                              const BackgroundSetParseErrors error) {
+void printParsingError(const std::string &name,
+                       const BackgroundSetParseErrors error) {
   switch (error) {
   case BackgroundSetParseErrors::MissingSunpollInfo: {
     logError("Unable to parse background {} due to not being able "
@@ -73,6 +75,8 @@ static void printParsingError(const std::string &name,
   }
 }
 
+} // namespace
+
 // ===== Header ====================
 
 /**
@@ -80,22 +84,22 @@ static void printParsingError(const std::string &name,
  * to parse one
  */
 std::vector<BackgroundSet> getBackgroundSetsFromFile(const Config &config) {
-  std::unordered_map<std::string, YAML::Node> yamlMap =
+  const std::unordered_map<std::string, YAML::Node> yamlMap =
       nameAndYAMLInfoFromFile(config.backgroundSetConfigFile);
 
   std::vector<BackgroundSet> backgroundSets;
   backgroundSets.reserve(yamlMap.size());
 
-  for (const auto &kv : yamlMap) {
+  for (const auto &keyValue : yamlMap) {
     tl::expected<BackgroundSet, BackgroundSetParseErrors> expBackgroundSet =
-        parseFromYAML(kv.first, kv.second, config);
+        parseFromYAML(keyValue.first, keyValue.second, config);
 
     if (expBackgroundSet.has_value()) {
       const BackgroundSet &backgroundSet = expBackgroundSet.value();
       backgroundSets.push_back(backgroundSet);
-      logInfo("Added background: {}", backgroundSet.name);
+      logInfo("Added background: {}", backgroundSet.getName());
     } else {
-      printParsingError(kv.first, expBackgroundSet.error());
+      printParsingError(keyValue.first, expBackgroundSet.error());
     }
   }
 
@@ -105,19 +109,19 @@ std::vector<BackgroundSet> getBackgroundSetsFromFile(const Config &config) {
 std::optional<BackgroundSet>
 getBackgroundSetWithNameFromFile(const std::string_view name,
                                  const Config &config) {
-  std::unordered_map<std::string, YAML::Node> yamlMap =
+  const std::unordered_map<std::string, YAML::Node> yamlMap =
       nameAndYAMLInfoFromFile(config.backgroundSetConfigFile);
 
-  for (const auto &kv : yamlMap) {
-    if (kv.first == name) {
+  for (const auto &keyValue : yamlMap) {
+    if (keyValue.first == name) {
       tl::expected<BackgroundSet, BackgroundSetParseErrors> expBackgroundSet =
-          parseFromYAML(kv.first, kv.second, config);
+          parseFromYAML(keyValue.first, keyValue.second, config);
 
       if (expBackgroundSet.has_value()) {
         return expBackgroundSet.value();
-      } else {
-        printParsingError(kv.first, expBackgroundSet.error());
       }
+
+      printParsingError(keyValue.first, expBackgroundSet.error());
     }
   }
 
@@ -132,9 +136,9 @@ std::optional<BackgroundSet> getRandomBackgroundSet(const Config &config) {
   std::ranges::copy(yamlMap.begin(), yamlMap.end(),
                     std::back_inserter(yamlPairs));
 
-  std::random_device rd;
-  std::mt19937 g(rd());
-  std::shuffle(yamlPairs.begin(), yamlPairs.end(), g);
+  std::random_device randomDevice;
+  std::mt19937 generator(randomDevice());
+  std::shuffle(yamlPairs.begin(), yamlPairs.end(), generator);
 
   for (const auto &nameYaml : yamlPairs) {
     tl::expected<BackgroundSet, BackgroundSetParseErrors> expBackgroundSet =
@@ -142,9 +146,9 @@ std::optional<BackgroundSet> getRandomBackgroundSet(const Config &config) {
 
     if (expBackgroundSet.has_value()) {
       return expBackgroundSet.value();
-    } else {
-      printParsingError(nameYaml.first, expBackgroundSet.error());
     }
+
+    printParsingError(nameYaml.first, expBackgroundSet.error());
   }
 
   return std::nullopt;
