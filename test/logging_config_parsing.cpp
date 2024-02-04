@@ -85,49 +85,49 @@ logging_level: "off"
 } // namespace
 
 TEST(GeneralConfigLogging, ConfigNoLogging) {
-  LogLevel level =
+  const LogLevel level =
       loadLoggingLevelFromYAML(YAML::Load(std::string(CONFIG_NO_LOGGING)));
   EXPECT_EQ(level, ConfigDefaults::logLevel);
 }
 
 TEST(GeneralConfigLogging, ConfigLoggingInfo) {
-  LogLevel level =
+  const LogLevel level =
       loadLoggingLevelFromYAML(YAML::Load(std::string(CONFIG_INFO_LOGGING)));
   EXPECT_EQ(level, LogLevel::INFO);
 }
 
 TEST(GeneralConfigLogging, ConfigLoggingWarning) {
-  LogLevel level =
+  const LogLevel level =
       loadLoggingLevelFromYAML(YAML::Load(std::string(CONFIG_WARNING_LOGGING)));
   EXPECT_EQ(level, LogLevel::WARNING);
 }
 
 TEST(GeneralConfigLogging, ConfigLoggingError) {
-  LogLevel level =
+  const LogLevel level =
       loadLoggingLevelFromYAML(YAML::Load(std::string(CONFIG_ERROR_LOGGING)));
   EXPECT_EQ(level, LogLevel::ERROR);
 }
 
 TEST(GeneralConfigLogging, ConfigLoggingDebug) {
-  LogLevel level =
+  const LogLevel level =
       loadLoggingLevelFromYAML(YAML::Load(std::string(CONFIG_DEBUG_LOGGING)));
   EXPECT_EQ(level, LogLevel::DEBUG);
 }
 
 TEST(GeneralConfigLogging, ConfigLoggingCritical) {
-  LogLevel level = loadLoggingLevelFromYAML(
+  const LogLevel level = loadLoggingLevelFromYAML(
       YAML::Load(std::string(CONFIG_CRITICAL_LOGGING)));
   EXPECT_EQ(level, LogLevel::CRITICAL);
 }
 
 TEST(GeneralConfigLogging, ConfigLoggingTrace) {
-  LogLevel level =
+  const LogLevel level =
       loadLoggingLevelFromYAML(YAML::Load(std::string(CONFIG_TRACE_LOGGING)));
   EXPECT_EQ(level, LogLevel::TRACE);
 }
 
 TEST(GeneralConfigLogging, ConfigLoggingOff) {
-  LogLevel level =
+  const LogLevel level =
       loadLoggingLevelFromYAML(YAML::Load(std::string(CONFIG_OFF_LOGGING)));
   EXPECT_EQ(level, LogLevel::OFF);
 }

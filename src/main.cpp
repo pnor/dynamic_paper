@@ -44,12 +44,11 @@ void setupLogging(const YAML::Node &config) {
 
 // ===== Config ===============
 
+/** Loads config from `file`. Prints an error and crashes if `file` doesn't
+ * exist. */
 YAML::Node loadConfigFileIntoYAML(const std::filesystem::path &file) {
-  const bool fileCreationResult =
-      createFileIfDoesntExist(file, DEFAULT_CONFIG_FILE);
-
-  if (!fileCreationResult) {
-    errorMsg("Unable to create a default config!");
+  if (!std::filesystem::exists(file)) {
+    errorMsg("Cannot create config from non-existant file: {}", file.string());
     exit(EXIT_FAILURE);
   }
 
@@ -78,8 +77,20 @@ Config createConfigFromYAML(const YAML::Node &configYaml) {
 }
 
 Config getConfigAndSetupLogging(const argparse::ArgumentParser &program) {
+  const std::filesystem::path conf = program.get("--config");
   const std::filesystem::path configFilePath =
-      std::filesystem::path(program.get("--config"));
+      std::filesystem::path(expandPath(conf));
+
+  if (configFilePath == expandPath(DEFAULT_CONFIG_FILE_NAME)) {
+    const bool fileCreationResult =
+        createFileIfDoesntExist(configFilePath, DEFAULT_CONFIG_FILE_CONTENTS);
+
+    if (!fileCreationResult) {
+      errorMsg("Error creating default config file: {}",
+               configFilePath.string());
+      exit(EXIT_FAILURE);
+    }
+  }
 
   const YAML::Node configYaml = loadConfigFileIntoYAML(configFilePath);
 
@@ -88,10 +99,9 @@ Config getConfigAndSetupLogging(const argparse::ArgumentParser &program) {
   return createConfigFromYAML(configYaml);
 }
 
-// ===== h ===============
+// ===== Background Set ===============
 
-inline void showBackgroundSet(BackgroundSet &backgroundSet,
-                              const Config &config) {
+void showBackgroundSet(BackgroundSet &backgroundSet, const Config &config) {
   std::optional<StaticBackgroundData> staticData =
       backgroundSet.getStaticBackgroundData();
   if (staticData.has_value()) {
@@ -143,6 +153,12 @@ void handleRandomCommand(const Config &config) {
 }
 
 void handleListCommand(const Config &config) {
+  if (!std::filesystem::exists(config.backgroundSetConfigFile)) {
+    errorMsg("No config file exists for background sets at path: {}",
+             config.backgroundSetConfigFile.string());
+    exit(EXIT_FAILURE);
+  }
+
   const std::vector<BackgroundSet> backgroundSets =
       getBackgroundSetsFromFile(config);
   std::cout << "Available Background sets are: "
@@ -164,9 +180,9 @@ void showHelp(const argparse::ArgumentParser &program) {
 auto main(int argc, char *argv[]) -> int {
   argparse::ArgumentParser program("dynamicpaper");
   program.add_argument("--config")
-      .help("Show optional config")
-      .default_value("~/.config/dynamic_paper/config.yaml")
-      .implicit_value("");
+      .default_value<std::string>(std::string(DEFAULT_CONFIG_FILE_NAME))
+      .required()
+      .help("Show optional config");
 
   argparse::ArgumentParser showCommand("show");
   showCommand.add_description("Show wallpaper set with name");

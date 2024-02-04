@@ -7,6 +7,34 @@
 
 namespace dynamic_paper {
 
+// ===== Helper ======
+
+namespace {
+
+/** Creates `filePath` and fills it with `contents`, making directories on the
+ * way to its path if they don't exist. */
+bool createFile(const std::filesystem::path &filePath,
+                const std::string_view contents) {
+  logTrace("Attempting to create file {}", filePath.string());
+
+  if (std::filesystem::exists(filePath)) {
+    logInfo("Skipped creating {} because it already exists", filePath.string());
+    return true;
+  }
+
+  if (filePath.has_parent_path()) {
+    std::filesystem::create_directories(filePath.parent_path());
+  }
+
+  std::ofstream file(filePath);
+
+  file << contents << std::flush;
+
+  return true;
+}
+
+} // namespace
+
 // ===== Header ===============
 
 std::filesystem::path getHomeDirectory() {
@@ -51,22 +79,7 @@ bool createDirectoryIfDoesntExist(const std::filesystem::path &dir) {
 
 bool createFileIfDoesntExist(const std::filesystem::path &filePath,
                              const std::string_view contents) {
-  logTrace("Attempting to create file {}", filePath.string());
-
-  if (std::filesystem::exists(filePath)) {
-    logInfo("Skipped creating {} because it already exists", filePath.string());
-    return true;
-  }
-
-  if (filePath.has_parent_path()) {
-    std::filesystem::create_directories(filePath.parent_path());
-  }
-
-  std::ofstream file(filePath);
-
-  file << contents << std::flush;
-
-  return true;
+  return createFile(expandPath(filePath), contents);
 }
 
 } // namespace dynamic_paper
