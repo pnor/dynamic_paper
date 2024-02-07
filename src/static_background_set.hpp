@@ -3,6 +3,7 @@
 #include <expected>
 #include <filesystem>
 #include <optional>
+#include <random>
 #include <vector>
 
 #include "background_set_enums.hpp"
@@ -22,6 +23,45 @@ struct StaticBackgroundData {
                        BackgroundSetMode mode,
                        std::vector<std::string> imageNames);
 
-  void show(const Config &config) const;
+  /** Shows a background that is provided in this struct based on one of the
+   * `imageNames`*/
+  template <CanSetBackgroundTrait T> void show(const Config &config) const;
 };
+
+// ===== Definition ===============
+
+namespace _helper {
+
+/** Returns a random number in range [0..max)*/
+size_t randomNumber(size_t max);
+
+} // namespace _helper
+
+template <CanSetBackgroundTrait T>
+void StaticBackgroundData::show(const Config &config) const {
+  logTrace("Showing static background");
+  logAssert(imageNames.empty(), "Static background cannot show with no images");
+
+  const std::string imageName =
+      imageNames.at(_helper::randomNumber(imageNames.size()));
+  const std::filesystem::path imagePath = dataDirectory / imageName;
+
+  const tl::expected<void, BackgroundError> result =
+      T::setBackgroundToImage(imagePath, mode, config.backgroundSetterMethod);
+
+  if (!result.has_value()) {
+    std::string modeString = backgroundSetModeString(this->mode);
+    std::string methodString =
+        backgroundSetterMethodString(config.backgroundSetterMethod);
+    logWarning(
+        "Encountered error in attempting to set the background for static "
+        "background set. Image name was {} with mode {} using method {}",
+        imageName, modeString, methodString);
+  }
+
+  if (config.hookScript.has_value()) {
+    runHookCommand(config.hookScript.value(), imagePath);
+  }
+}
+
 } // namespace dynamic_paper

@@ -8,6 +8,8 @@
 #include "background_set_enums.hpp"
 #include "background_setter.hpp"
 #include "config.hpp"
+#include "time_util.hpp"
+#include "variant_visitor_templ.hpp"
 
 /** Dynamic Background sets change wallpaper depending on the time of day. They
  * sleep until the next time to show a wallpaper is hit
@@ -45,8 +47,147 @@ struct DynamicBackgroundData {
 
   /** Updates the background shown for the current time, and returns the amount
    * of seconds until the next event will be shown. */
+  template <CanSetBackgroundTrait T>
   [[nodiscard]] std::chrono::seconds
-  updateBackground(const Config &config) const;
+  updateBackground(time_t currentTime, const Config &config) const;
 };
+
+// ===== Header Helper ===============
+
+namespace _helper {
+
+// --- Types ---
+
+struct SetBackgroundEvent;
+struct LerpBackgroundEvent;
+
+using Event = std::variant<SetBackgroundEvent, LerpBackgroundEvent>;
+using TimeAndEvent = std::pair<time_t, Event>;
+using EventList = std::vector<TimeAndEvent>;
+
+// --- Structs ---
+
+/** Information needed for the event to change the background to an image */
+struct SetBackgroundEvent {
+  std::filesystem::path imagePath;
+
+  explicit SetBackgroundEvent(std::filesystem::path imagePath)
+      : imagePath(std::move(imagePath)) {}
+};
+
+/** Information needed for the event to gradually interpolate between one image
+ * and the next */
+struct LerpBackgroundEvent {
+  std::filesystem::path commonImageDirectory;
+  std::string startImageName;
+  std::string endImageName;
+  std::chrono::seconds duration;
+  unsigned int numSteps;
+
+  LerpBackgroundEvent(std::filesystem::path commonImageDirectory,
+                      std::string startImageName, std::string endImageName,
+                      const std::chrono::seconds duration,
+                      const unsigned int numSteps)
+      : commonImageDirectory(std::move(commonImageDirectory)),
+        startImageName(std::move(startImageName)),
+        endImageName(std::move(endImageName)), duration(duration),
+        numSteps(numSteps) {}
+};
+
+// --- Helper Function Declarations ---
+
+/** Describes `error` in a log message */
+void describeError(BackgroundError error);
+
+/** Returns number of seconds until `later`, assuming the time is `now` */
+std::chrono::seconds timeUntilNext(const time_t &now, const time_t &later);
+
+EventList getEventList(const DynamicBackgroundData *dynamicData);
+
+std::pair<TimeAndEvent, time_t>
+getCurrentEventAndNextTime(const EventList &eventList, time_t time);
+
+bool eventListIsSortedByTime(const EventList &eventList);
+
+unsigned int chooseRandomSeed();
+
+// --- Event Processing ---
+
+template <CanSetBackgroundTrait T>
+void doEvent(const Event &event, const DynamicBackgroundData *backgroundData,
+             const Config &config) {
+  std::visit(
+      overloaded{[&config, backgroundData](const SetBackgroundEvent &event) {
+                   tl::expected<void, BackgroundError> result =
+                       T::setBackgroundToImage(event.imagePath,
+                                               backgroundData->mode,
+                                               config.backgroundSetterMethod);
+
+                   if (!result.has_value()) {
+                     describeError(result.error());
+                   }
+
+                   if (config.hookScript.has_value()) {
+                     runHookCommand(config.hookScript.value(), event.imagePath);
+                   }
+                 },
+                 [&config, backgroundData](const LerpBackgroundEvent &event) {
+                   tl::expected<void, BackgroundError> result =
+                       lerpBackgroundBetweenImages<T>(
+                           event.commonImageDirectory, event.startImageName,
+                           event.endImageName, config.imageCacheDirectory,
+                           event.duration, event.numSteps, backgroundData->mode,
+                           config.backgroundSetterMethod);
+
+                   if (!result.has_value()) {
+                     describeError(result.error());
+                   }
+                 }},
+      event);
+}
+
+// --- Main Loop Logic ---
+
+template <CanSetBackgroundTrait T>
+std::chrono::seconds updateBackgroundAndReturnTimeTillNext(
+    const time_t currentTime, const DynamicBackgroundData *backgroundData,
+    const Config &config, const unsigned int seed) {
+  // Reset the random seed on each iteration of the loop to ensure the order
+  // of `random` dynamic backgrounds is consistent between each reconstruction
+  // of the event list.
+  std::srand(seed);
+
+  const EventList eventList = getEventList(backgroundData);
+  logAssert(eventListIsSortedByTime(eventList),
+            "Event list is not sorted by time from earliest to latest");
+
+  const std::pair<TimeAndEvent, time_t> currentEventAndNextTime =
+      getCurrentEventAndNextTime(eventList, currentTime);
+
+  const Event &currentEvent = currentEventAndNextTime.first.second;
+
+  _helper::doEvent<T>(currentEvent, backgroundData, config);
+
+  const time_t &nextTime = currentEventAndNextTime.second;
+
+  return timeUntilNext(currentTime, nextTime);
+}
+
+} // namespace _helper
+
+// ===== Definition =====
+
+template <CanSetBackgroundTrait T>
+[[nodiscard]] std::chrono::seconds
+DynamicBackgroundData::updateBackground(const time_t currentTime,
+                                        const Config &config) const {
+  logTrace("Show dynamic background");
+
+  const unsigned int seed = _helper::chooseRandomSeed();
+  logTrace("Random seed is {}", seed);
+
+  return _helper::updateBackgroundAndReturnTimeTillNext<T>(currentTime, this,
+                                                           config, seed);
+}
 
 } // namespace dynamic_paper

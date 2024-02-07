@@ -56,10 +56,9 @@ runCommandHandleError(const std::string &command) {
 
 // ===== Header ===============
 
-tl::expected<void, BackgroundError>
-setBackgroundToImage(const std::filesystem::path &imagePath,
-                     const BackgroundSetMode mode,
-                     const BackgroundSetterMethod &method) {
+tl::expected<void, BackgroundError> BackgroundSetterTrait::setBackgroundToImage(
+    const std::filesystem::path &imagePath, const BackgroundSetMode mode,
+    const BackgroundSetterMethod &method) {
   logTrace("Setting background to image ({})", imagePath.string());
 
   const std::string imageName = imagePath.string();
@@ -91,46 +90,6 @@ setBackgroundToImage(const std::filesystem::path &imagePath,
             return tl::expected<void, BackgroundError>();
           }},
       method);
-}
-
-tl::expected<void, BackgroundError> lerpBackgroundBetweenImages(
-    const std::filesystem::path &commonImageDirectory,
-    const std::string &beforeImageName, const std::string &afterImageName,
-    const std::filesystem::path &cacheDirectory,
-    const std::chrono::seconds duration, const unsigned int numSteps,
-    const BackgroundSetMode mode, const BackgroundSetterMethod &method) {
-
-  const bool dirCreationResult = createDirectoryIfDoesntExist(cacheDirectory);
-  if (!dirCreationResult) {
-    return tl::make_unexpected(BackgroundError::NoCacheDir);
-  }
-
-  for (unsigned int i = 0; i < numSteps; i++) {
-    const float percentageFloat =
-        static_cast<float>(i) / static_cast<float>(numSteps);
-    const unsigned int percentage = std::clamp(
-        static_cast<unsigned int>(percentageFloat * 100.0), 0U, 100U);
-
-    const tl::expected<std::filesystem::path, CompositeImageError>
-        expectedCompositedImage =
-            getCompositedImage(commonImageDirectory, beforeImageName,
-                               afterImageName, cacheDirectory, percentage);
-
-    if (!expectedCompositedImage.has_value()) {
-      return tl::unexpected(BackgroundError::CompositeImageError);
-    }
-
-    const tl::expected<void, BackgroundError> backgroundResult =
-        setBackgroundToImage(expectedCompositedImage.value(), mode, method);
-
-    if (!backgroundResult.has_value()) {
-      return tl::unexpected(BackgroundError::SetBackgroundError);
-    }
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(duration) / numSteps);
-  }
-
-  return {};
 }
 
 tl::expected<void, HookCommandError>

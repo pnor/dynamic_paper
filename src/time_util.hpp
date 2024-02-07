@@ -32,6 +32,11 @@ struct SunriseAndSunsetTimes {
 };
 
 /**
+ * Returns the current time using the system clock
+ */
+time_t getCurrentTime();
+
+/**
  * Returns the time of sunrise and sunset by querying another program specified
  * by the Config.
  *
@@ -50,7 +55,7 @@ getSunriseAndSetString(const Config &config);
  *  10:00:01 -> 36001
  */
 constexpr std::optional<time_t>
-convertRawTimeStringToTimeOffset(const std::string_view timeString);
+convertRawTimeStringToTimeOffset(std::string_view timeString);
 
 /**
  * Converts a string formatted either a raw time
@@ -80,7 +85,7 @@ std::optional<std::vector<time_t>>
 timeStringsToTimes(const std::vector<std::string> &strings,
                    const SunriseAndSunsetTimes &sunriseAndSunsetTimes);
 
-// ===== constexpr definition =====
+// ===== constexpr definition =======
 
 constexpr bool isDigit(const char character) {
   return character == '0' || character == '1' || character == '2' ||

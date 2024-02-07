@@ -1,6 +1,3 @@
-#include "time_util.hpp"
-#include "string_util.hpp"
-
 #include <algorithm>
 #include <cassert>
 #include <cctype>
@@ -13,6 +10,7 @@
 #include "config.hpp"
 #include "logger.hpp"
 #include "string_util.hpp"
+#include "time_util.hpp"
 
 namespace dynamic_paper {
 
@@ -129,6 +127,22 @@ sunOffsetStringToTimeOffset(const SunriseAndSunsetTimes &sunriseAndSunsetTimes,
 } // namespace
 
 // ===== header ====================
+
+time_t getCurrentTime() {
+  // HH:MM
+  constexpr size_t HOURS_MINUTES_SIZE = 5;
+
+  const std::string timeString =
+      std::format("{:%T}", std::chrono::floor<std::chrono::seconds>(
+                               std::chrono::system_clock::now()));
+  std::optional<time_t> optTime = convertRawTimeStringToTimeOffset(
+      timeString.substr(0, HOURS_MINUTES_SIZE));
+
+  logAssert(optTime.has_value(), "Unable to parse valid time from return "
+                                 "result of current time as string");
+
+  return optTime.value();
+}
 
 std::optional<SunriseAndSunsetTimes>
 getSunriseAndSetString(const Config &config) {

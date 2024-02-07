@@ -12,6 +12,7 @@
 #include "defaults.hpp"
 #include "file_util.hpp"
 #include "logger.hpp"
+#include "time_util.hpp"
 
 using namespace dynamic_paper;
 
@@ -105,15 +106,18 @@ void showBackgroundSet(BackgroundSet &backgroundSet, const Config &config) {
   std::optional<StaticBackgroundData> staticData =
       backgroundSet.getStaticBackgroundData();
   if (staticData.has_value()) {
-    staticData->show(config);
+    staticData->show<BackgroundSetterTrait>(config);
   }
 
   std::optional<DynamicBackgroundData> dynamicData =
       backgroundSet.getDynamicBackgroundData();
   if (dynamicData.has_value()) {
     while (true) {
+      const time_t currentTime = getCurrentTime();
       const std::chrono::seconds sleepTime =
-          dynamicData->updateBackground(config) + std::chrono::seconds(1);
+          dynamicData->updateBackground<BackgroundSetterTrait>(currentTime,
+                                                               config) +
+          std::chrono::seconds(1);
 
       logDebug("Sleeping for {} seconds...", sleepTime);
       std::this_thread::sleep_for(sleepTime);

@@ -1,56 +1,13 @@
 #include "dynamic_background_set.hpp"
 
-#include <algorithm>
-#include <chrono>
-#include <cstdlib>
-#include <format>
-#include <limits>
 #include <random>
-#include <ranges>
-#include <thread>
-#include <utility>
-
-#include "background_setter.hpp"
-#include "globals.hpp"
-#include "time_util.hpp"
-#include "variant_visitor_templ.hpp"
 
 namespace dynamic_paper {
 
-struct SetBackgroundEvent;
-struct LerpBackgroundEvent;
+namespace _helper {
 
-using Event = std::variant<SetBackgroundEvent, LerpBackgroundEvent>;
-using TimeAndEvent = std::pair<time_t, Event>;
-using EventList = std::vector<TimeAndEvent>;
-
-// ===== Helper Objects ===============
-/** Information needed for the event to change the background to an image */
-struct SetBackgroundEvent {
-  std::filesystem::path imagePath;
-
-  explicit SetBackgroundEvent(std::filesystem::path imagePath)
-      : imagePath(std::move(imagePath)) {}
-};
-
-/** Information needed for the event to gradually interpolate between one image
- * and the next */
-struct LerpBackgroundEvent {
-  std::filesystem::path commonImageDirectory;
-  std::string startImageName;
-  std::string endImageName;
-  std::chrono::seconds duration;
-  unsigned int numSteps;
-
-  LerpBackgroundEvent(std::filesystem::path commonImageDirectory,
-                      std::string startImageName, std::string endImageName,
-                      const std::chrono::seconds duration,
-                      const unsigned int numSteps)
-      : commonImageDirectory(std::move(commonImageDirectory)),
-        startImageName(std::move(startImageName)),
-        endImageName(std::move(endImageName)), duration(duration),
-        numSteps(numSteps) {}
-};
+// ===== Helper =====
+namespace {
 
 /**
  * Class to be used by `std::shuffle` that uses `std::rand`.
@@ -71,9 +28,51 @@ public:
   result_type operator()() { return g(); }
 };
 
-// ===== Helper ===============
+using namespace _helper;
 
-namespace {
+EventList createEventListFromTimesAndNames(
+    const DynamicBackgroundData *dynamicData,
+    const std::vector<std::pair<time_t, std::string>> &timesAndNames) {
+  EventList eventList;
+
+  logAssert(!timesAndNames.empty(), "Times and names cannot be empty");
+
+  eventList.emplace_back(
+      timesAndNames[0].first,
+      SetBackgroundEvent(dynamicData->dataDirectory / timesAndNames[0].second));
+
+  for (EventList::size_type i = 1; i < eventList.size(); i++) {
+    // transition event
+    if (dynamicData->transition.has_value()) {
+      const LerpBackgroundEvent lerpEvent(
+          dynamicData->dataDirectory, timesAndNames[i - 1].second,
+          timesAndNames[i].second, dynamicData->transition->duration,
+          dynamicData->transition->steps);
+
+      const time_t transitionTime =
+          timesAndNames[i].first - dynamicData->transition->duration.count();
+
+      eventList.emplace_back(transitionTime, lerpEvent);
+    }
+    // set background event
+    eventList.emplace_back(timesAndNames[i].first,
+                           SetBackgroundEvent(dynamicData->dataDirectory /
+                                              timesAndNames[i].second));
+  }
+
+  return eventList;
+}
+
+/**
+ * Shuffles a vector using `std::rand()` as the source of randomness
+ */
+template <typename T> void shuffleVector(std::vector<T> &vec) {
+  std::shuffle(vec.begin(), vec.end(), RandUniformRandomBitGenerator());
+}
+
+} // namespace
+
+// ===== Header ===============
 
 void describeError(const BackgroundError error) {
   switch (error) {
@@ -101,7 +100,7 @@ void describeError(const BackgroundError error) {
   }
 }
 
-inline unsigned int chooseRandomSeed() {
+unsigned int chooseRandomSeed() {
   std::random_device random_device;
   std::mt19937 generator(random_device());
 
@@ -112,36 +111,13 @@ inline unsigned int chooseRandomSeed() {
   return uniformDist(generator);
 }
 
-/**
- * Shuffles a vector using `std::rand()` as the source of randomness
- */
-template <typename T> void shuffleVector(std::vector<T> &vec) {
-  std::shuffle(vec.begin(), vec.end(), RandUniformRandomBitGenerator());
-}
-
-inline bool eventLsitIsSortedByTime(const EventList &eventList) {
+bool eventListIsSortedByTime(const EventList &eventList) {
   for (size_t i = 0; i < eventList.size() - 1; i++) {
     if (!(eventList[i].first < eventList[i + 1].first)) {
       return false;
     }
   }
   return true;
-}
-
-time_t getCurrentTime() {
-  // HH:MM
-  constexpr size_t HOURS_MINUTES_SIZE = 5;
-
-  const std::string timeString =
-      std::format("{:%T}", std::chrono::floor<std::chrono::seconds>(
-                               std::chrono::system_clock::now()));
-  std::optional<time_t> optTime = convertRawTimeStringToTimeOffset(
-      timeString.substr(0, HOURS_MINUTES_SIZE));
-
-  logAssert(optTime.has_value(), "Unable to parse valid time from return "
-                                 "result of current time as string");
-
-  return optTime.value();
 }
 
 /**
@@ -181,39 +157,6 @@ timesAndRandomNamesSortedByTime(const DynamicBackgroundData *dynamicData) {
   }
 
   return timesAndNames;
-}
-
-EventList createEventListFromTimesAndNames(
-    const DynamicBackgroundData *dynamicData,
-    const std::vector<std::pair<time_t, std::string>> &timesAndNames) {
-  EventList eventList;
-
-  logAssert(!timesAndNames.empty(), "Times and names cannot be empty");
-
-  eventList.emplace_back(
-      timesAndNames[0].first,
-      SetBackgroundEvent(dynamicData->dataDirectory / timesAndNames[0].second));
-
-  for (EventList::size_type i = 1; i < eventList.size(); i++) {
-    // transition event
-    if (dynamicData->transition.has_value()) {
-      const LerpBackgroundEvent lerpEvent(
-          dynamicData->dataDirectory, timesAndNames[i - 1].second,
-          timesAndNames[i].second, dynamicData->transition->duration,
-          dynamicData->transition->steps);
-
-      const time_t transitionTime =
-          timesAndNames[i].first - dynamicData->transition->duration.count();
-
-      eventList.emplace_back(transitionTime, lerpEvent);
-    }
-    // set background event
-    eventList.emplace_back(timesAndNames[i].first,
-                           SetBackgroundEvent(dynamicData->dataDirectory /
-                                              timesAndNames[i].second));
-  }
-
-  return eventList;
 }
 
 EventList getEventList(const DynamicBackgroundData *dynamicData) {
@@ -258,38 +201,6 @@ getCurrentEventAndNextTime(const EventList &eventList, const time_t time) {
   return std::make_pair(current, next);
 }
 
-void doEvent(const Event &event, const DynamicBackgroundData *backgroundData,
-             const Config &config) {
-  std::visit(
-      overloaded{[&config, backgroundData](const SetBackgroundEvent &event) {
-                   tl::expected<void, BackgroundError> result =
-                       setBackgroundToImage(event.imagePath,
-                                            backgroundData->mode,
-                                            config.backgroundSetterMethod);
-
-                   if (!result.has_value()) {
-                     describeError(result.error());
-                   }
-
-                   if (config.hookScript.has_value()) {
-                     runHookCommand(config.hookScript.value(), event.imagePath);
-                   }
-                 },
-                 [&config, backgroundData](const LerpBackgroundEvent &event) {
-                   tl::expected<void, BackgroundError> result =
-                       lerpBackgroundBetweenImages(
-                           event.commonImageDirectory, event.startImageName,
-                           event.endImageName, config.imageCacheDirectory,
-                           event.duration, event.numSteps, backgroundData->mode,
-                           config.backgroundSetterMethod);
-
-                   if (!result.has_value()) {
-                     describeError(result.error());
-                   }
-                 }},
-      event);
-}
-
 std::chrono::seconds timeUntilNext(const time_t &now, const time_t &later) {
   std::chrono::seconds sleepTime;
 
@@ -308,37 +219,7 @@ std::chrono::seconds timeUntilNext(const time_t &now, const time_t &later) {
   return sleepTime;
 }
 
-// ===== Main Loop Logic ===============
-
-std::chrono::seconds updateBackgroundAndReturnTimeTillNext(
-    const DynamicBackgroundData *backgroundData, const Config &config,
-    const unsigned int seed) {
-  // Reset the random seed on each iteration of the loop to ensure the order
-  // of `random` dynamic backgrounds is consistent between each reconstruction
-  // of the event list.
-  std::srand(seed);
-
-  const time_t currentTime = getCurrentTime();
-
-  const EventList eventList = getEventList(backgroundData);
-  logAssert(eventLsitIsSortedByTime(eventList),
-            "Event list is not sorted by time from earliest to latest");
-
-  const std::pair<TimeAndEvent, time_t> currentEventAndNextTime =
-      getCurrentEventAndNextTime(eventList, currentTime);
-
-  const Event &currentEvent = currentEventAndNextTime.first.second;
-
-  doEvent(currentEvent, backgroundData, config);
-
-  const time_t &nextTime = currentEventAndNextTime.second;
-
-  return timeUntilNext(currentTime, nextTime);
-}
-
-} // namespace
-
-// ===== Header ===============
+} // namespace _helper
 
 DynamicBackgroundData::DynamicBackgroundData(
     std::filesystem::path dataDirectory, BackgroundSetMode mode,
@@ -347,15 +228,4 @@ DynamicBackgroundData::DynamicBackgroundData(
     : dataDirectory(std::move(dataDirectory)), mode(mode),
       transition(transition), order(order), imageNames(std::move(imageNames)),
       times(std::move(times)) {}
-
-std::chrono::seconds
-DynamicBackgroundData::updateBackground(const Config &config) const {
-  logTrace("Show dynamic background");
-
-  const unsigned int seed = chooseRandomSeed();
-  logTrace("Random seed is {}", seed);
-
-  return updateBackgroundAndReturnTimeTillNext(this, config, seed);
-}
-
 } // namespace dynamic_paper

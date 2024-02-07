@@ -22,5 +22,5 @@ enum class CompositeImageError { UnableToCreatePath, CommandError };
 tl::expected<std::filesystem::path, CompositeImageError> getCompositedImage(
     const std::filesystem::path &commonImageDirectory,
     const std::string &startImageName, const std::string &endImageName,
-    const std::filesystem::path &cacheDirectory, const unsigned int percentage);
+    const std::filesystem::path &cacheDirectory, unsigned int percentage);
 } // namespace dynamic_paper
