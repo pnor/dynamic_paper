@@ -67,7 +67,7 @@ convertRawTimeStringToTimeOffset(std::string_view timeString);
  * based on the string.
  */
 std::optional<time_t>
-timeStringToTime(const std::string &strings,
+timeStringToTime(const std::string &origString,
                  const SunriseAndSunsetTimes &sunriseAndSunsetTimes);
 
 /**

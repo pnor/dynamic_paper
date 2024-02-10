@@ -13,11 +13,11 @@ namespace dynamic_paper {
 tl::expected<std::string, CommandExecError>
 runCommandStdout(const std::string &cmd) {
   logTrace("Running command (returning stdout): {}", cmd);
-
-  std::array<char, 128> buffer;
+  constexpr size_t BUFFER_SIZE = 128;
+  std::array<char, BUFFER_SIZE> buffer{};
   std::string result;
-  std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"),
-                                                pclose);
+  const std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"),
+                                                      pclose);
   if (!pipe) {
     logError("Unable to open pipe when running the command: {}", cmd);
     return tl::unexpected(CommandExecError::PopenFail);
@@ -31,12 +31,11 @@ runCommandStdout(const std::string &cmd) {
 int runCommandExitCode(const std::string &cmd) {
   logTrace("Running command (returning exit code): {}", cmd);
 
-  int ret = system(cmd.c_str());
+  const int ret = system(cmd.c_str());
   if (WEXITSTATUS(ret) == 0) {
     return EXIT_SUCCESS;
-  } else {
-    return EXIT_FAILURE;
   }
+  return EXIT_FAILURE;
 }
 
 } // namespace dynamic_paper

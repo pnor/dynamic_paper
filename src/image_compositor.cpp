@@ -9,26 +9,31 @@ namespace dynamic_paper {
 
 // ===== Helper ===============
 
-static std::optional<std::string> basename(const std::filesystem::path &p) {
-  if (std::distance(p.begin(), p.end()) == 0) {
+namespace {
+
+constexpr unsigned int EMPTY_PERCENT = 0;
+constexpr unsigned int MAX_PERCENT = 100;
+
+std::optional<std::string> basename(const std::filesystem::path &path) {
+  if (std::distance(path.begin(), path.end()) == 0) {
     return std::nullopt;
   }
 
   std::string basename;
-  std::filesystem::path::iterator pathIterator = p.end();
-  while (basename == "") {
+  std::filesystem::path::iterator pathIterator = path.end();
+  while (basename.empty()) {
     basename = *(--pathIterator);
   }
   return basename;
 }
 
-static bool filesHaveSameExtension(const std::string &name1,
-                                   const std::string &name2) {
+bool filesHaveSameExtension(const std::string &name1,
+                            const std::string &name2) {
   return std::filesystem::path(name1).extension() ==
          std::filesystem::path(name2).extension();
 }
 
-static tl::expected<std::filesystem::path, CompositeImageError>
+tl::expected<std::filesystem::path, CompositeImageError>
 pathForCompositeImage(const std::filesystem::path &commonImageDirectory,
                       const std::string &startImageName,
                       const std::string &endImageName,
@@ -47,7 +52,7 @@ pathForCompositeImage(const std::filesystem::path &commonImageDirectory,
     logWarning("{} and {} are not the same type of image!", startImageName,
                endImageName);
   }
-  if (extension == "") {
+  if (extension.empty()) {
     logWarning("will use {} for the file extension but it does not "
                "have a filetype extension!",
                startImageName);
@@ -60,7 +65,7 @@ pathForCompositeImage(const std::filesystem::path &commonImageDirectory,
   return cacheDirectory / compositeName;
 }
 
-static tl::expected<std::filesystem::path, CompositeImageError>
+tl::expected<std::filesystem::path, CompositeImageError>
 createCompositeImage(const std::filesystem::path &startImagePath,
                      const std::filesystem::path &endImagePath,
                      const std::filesystem::path &destinationImagePath,
@@ -86,10 +91,11 @@ createCompositeImage(const std::filesystem::path &startImagePath,
 
   if (exitCode == EXIT_SUCCESS) {
     return destinationImagePath;
-  } else {
-    return tl::unexpected(CompositeImageError::CommandError);
   }
+  return tl::unexpected(CompositeImageError::CommandError);
 }
+
+} // namespace
 
 // ===== Header ===============
 
@@ -99,13 +105,13 @@ getCompositedImage(const std::filesystem::path &commonImageDirectory,
                    const std::string &endImageName,
                    const std::filesystem::path &cacheDirectory,
                    const unsigned int percentage) {
-  logAssert(percentage <= 100,
+  logAssert(percentage <= MAX_PERCENT,
             "percentage must be in range [0..100] but was {}", percentage);
 
-  if (percentage == 0) {
+  if (percentage == EMPTY_PERCENT) {
     return commonImageDirectory / startImageName;
   }
-  if (percentage == 100) {
+  if (percentage == MAX_PERCENT) {
     return commonImageDirectory / endImageName;
   }
 

@@ -56,9 +56,10 @@ runCommandHandleError(const std::string &command) {
 
 // ===== Header ===============
 
-tl::expected<void, BackgroundError> BackgroundSetterTrait::setBackgroundToImage(
-    const std::filesystem::path &imagePath, const BackgroundSetMode mode,
-    const BackgroundSetterMethod &method) {
+tl::expected<void, BackgroundError>
+setBackgroundToImage(const std::filesystem::path &imagePath,
+                     const BackgroundSetMode mode,
+                     const BackgroundSetterMethod &method) {
   logTrace("Setting background to image ({})", imagePath.string());
 
   const std::string imageName = imagePath.string();

@@ -25,7 +25,8 @@ struct StaticBackgroundData {
 
   /** Shows a background that is provided in this struct based on one of the
    * `imageNames`*/
-  template <CanSetBackgroundTrait T> void show(const Config &config) const;
+  template <CanSetBackgroundTrait T>
+  void show(const Config &config, T &&backgroundSetFunction) const;
 };
 
 // ===== Definition ===============
@@ -38,16 +39,18 @@ size_t randomNumber(size_t max);
 } // namespace _helper
 
 template <CanSetBackgroundTrait T>
-void StaticBackgroundData::show(const Config &config) const {
+void StaticBackgroundData::show(const Config &config,
+                                T &&backgroundSetFunction) const {
   logTrace("Showing static background");
-  logAssert(imageNames.empty(), "Static background cannot show with no images");
+  logAssert(!imageNames.empty(),
+            "Static background cannot show with no images");
 
   const std::string imageName =
       imageNames.at(_helper::randomNumber(imageNames.size()));
   const std::filesystem::path imagePath = dataDirectory / imageName;
 
   const tl::expected<void, BackgroundError> result =
-      T::setBackgroundToImage(imagePath, mode, config.backgroundSetterMethod);
+      backgroundSetFunction(imagePath, mode, config.backgroundSetterMethod);
 
   if (!result.has_value()) {
     std::string modeString = backgroundSetModeString(this->mode);

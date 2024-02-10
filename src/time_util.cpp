@@ -66,16 +66,19 @@ std::optional<time_t> sunsetOrRiseStringToTimeOffset(
     const SunriseAndSunsetTimes &sunriseAndSunsetTimes,
     const std::smatch &groupMatches) {
   std::string sunsetOrRiseStr = trim_copy(groupMatches[1].str());
-  std::ranges::transform(sunsetOrRiseStr.begin(), sunsetOrRiseStr.end(),
-                         sunsetOrRiseStr.begin(),
-                         [](const char c) { return std::tolower(c); });
+  std::ranges::transform(
+      sunsetOrRiseStr.begin(), sunsetOrRiseStr.end(), sunsetOrRiseStr.begin(),
+      [](const char letter) { return std::tolower(letter); });
+
   if (sunsetOrRiseStr == "sunrise") {
     return sunriseAndSunsetTimes.sunrise;
-  } else if (sunsetOrRiseStr == "sunset") {
-    return sunriseAndSunsetTimes.sunset;
-  } else {
-    return std::nullopt;
   }
+
+  if (sunsetOrRiseStr == "sunset") {
+    return sunriseAndSunsetTimes.sunset;
+  }
+
+  return std::nullopt;
 }
 
 std::optional<time_t>
@@ -84,9 +87,9 @@ sunOffsetStringToTimeOffset(const SunriseAndSunsetTimes &sunriseAndSunsetTimes,
   const std::string &addOrSubtractStr = groupMatches[1].str();
   const std::string &offsetStr = groupMatches[2].str();
   std::string sunsetOrRiseStr = trim_copy(groupMatches[3].str());
-  std::ranges::transform(sunsetOrRiseStr.begin(), sunsetOrRiseStr.end(),
-                         sunsetOrRiseStr.begin(),
-                         [](const char c) { return std::tolower(c); });
+  std::ranges::transform(
+      sunsetOrRiseStr.begin(), sunsetOrRiseStr.end(), sunsetOrRiseStr.begin(),
+      [](const char letter) { return std::tolower(letter); });
 
   std::optional<time_t> timeOffset =
       convertRawTimeStringToTimeOffset(offsetStr);
@@ -106,9 +109,9 @@ sunOffsetStringToTimeOffset(const SunriseAndSunsetTimes &sunriseAndSunsetTimes,
     return std::nullopt;
   }
 
-  time_t baseSunTime = sunsetOrRiseStr == "sunrise"
-                           ? sunriseAndSunsetTimes.sunrise
-                           : sunriseAndSunsetTimes.sunset;
+  const time_t baseSunTime = sunsetOrRiseStr == "sunrise"
+                                 ? sunriseAndSunsetTimes.sunrise
+                                 : sunriseAndSunsetTimes.sunset;
 
   switch (addOrSubtractStr[0]) {
   case '+': {
@@ -153,27 +156,28 @@ getSunriseAndSetString(const Config &config) {
 
     if (expectation.has_value()) {
       return std::make_optional(expectation.value());
-    } else {
-      switch (expectation.error()) {
-      case SunriseAndSetErrors::BadOutput: {
-        logWarning("Unable to determine time of sunset or sunrise due to bad "
-                   "output from the sunpolling program");
-        break;
-      }
-      case SunriseAndSetErrors::CommandNotFound: {
-        logWarning("Unable to determine time of sunset or sunrise due to bad "
-                   "output from the sunpolling program");
-        break;
-      }
-      case SunriseAndSetErrors::UnableExecuteCommand: {
-        logWarning("Unable to determine time of sunset or sunrise due to not "
-                   "being able to execute the sunpolling program");
-        break;
-      }
-      }
-      return std::nullopt;
     }
+
+    switch (expectation.error()) {
+    case SunriseAndSetErrors::BadOutput: {
+      logWarning("Unable to determine time of sunset or sunrise due to bad "
+                 "output from the sunpolling program");
+      break;
+    }
+    case SunriseAndSetErrors::CommandNotFound: {
+      logWarning("Unable to determine time of sunset or sunrise due a "
+                 "command not found error");
+      break;
+    }
+    case SunriseAndSetErrors::UnableExecuteCommand: {
+      logWarning("Unable to determine time of sunset or sunrise due to not "
+                 "being able to execute the sunpolling program");
+      break;
+    }
+    }
+    return std::nullopt;
   };
+
   case SunEventPollerMethod::Dummy: {
     return SunriseAndSunsetTimes(DUMMY_SUNRISE_TIME, DUMMY_SUNSET_TIME);
   };
@@ -184,10 +188,10 @@ getSunriseAndSetString(const Config &config) {
 }
 
 std::optional<time_t>
-timeStringToTime(const std::string &s,
+timeStringToTime(const std::string &origString,
                  const SunriseAndSunsetTimes &sunriseAndSunsetTimes) {
 
-  std::string timeString = trim_copy(s);
+  std::string timeString = trim_copy(origString);
 
   // "sunrise" or "sunset"
   const std::regex sunRegex("\\s*(sunrise|sunset)\\s*",
@@ -213,17 +217,20 @@ timeStringToTime(const std::string &s,
 
   if (tryRegexes(timeString, groupMatches, sunRegex)) {
     return sunsetOrRiseStringToTimeOffset(sunriseAndSunsetTimes, groupMatches);
-  } else if (tryRegexes(timeString, groupMatches, sunOffsetRegex,
-                        sunOffsetSecondsRegex)) {
+  }
+
+  if (tryRegexes(timeString, groupMatches, sunOffsetRegex,
+                 sunOffsetSecondsRegex)) {
     return sunOffsetStringToTimeOffset(sunriseAndSunsetTimes, groupMatches);
-  } else if (tryRegexes(timeString, groupMatches, timeRegex,
-                        timeWithSecondsRegex)) {
+  }
+
+  if (tryRegexes(timeString, groupMatches, timeRegex, timeWithSecondsRegex)) {
     const std::string &offsetStr = groupMatches[0].str();
     return convertRawTimeStringToTimeOffset(offsetStr);
-  } else {
-    logWarning("Unable to parse/match the time string: {}", timeString);
-    return std::nullopt;
   }
+
+  logWarning("Unable to parse/match the time string: {}", timeString);
+  return std::nullopt;
 }
 
 std::optional<std::vector<time_t>>
@@ -232,13 +239,13 @@ timeStringsToTimes(const std::vector<std::string> &strings,
   std::vector<time_t> times;
   times.reserve(strings.size());
 
-  for (const auto &s : strings) {
-    std::optional<time_t> optTime = timeStringToTime(s, sunriseAndSunsetTimes);
+  for (const auto &timeString : strings) {
+    std::optional<time_t> optTime =
+        timeStringToTime(timeString, sunriseAndSunsetTimes);
     if (!optTime.has_value()) {
       return std::nullopt;
-    } else {
-      times.push_back(optTime.value());
     }
+    times.push_back(optTime.value());
   }
 
   return times;

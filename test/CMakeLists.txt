@@ -47,6 +47,8 @@ add_executable(
   background_set_test.cpp
   time_conversion_test.cpp
   logging_config_parsing.cpp
+  background_test_setter.cpp
+  static_background_test.cpp
   ${dynamic_paper_SOURCE_DIR}/src/background_set.cpp
   ${dynamic_paper_SOURCE_DIR}/src/background_setter.cpp
   ${dynamic_paper_SOURCE_DIR}/src/command_executor.cpp

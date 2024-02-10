@@ -33,7 +33,7 @@ struct BackgroundSetterMethodBase {};
  */
 struct BackgroundSetterMethodScript : BackgroundSetterMethodBase {
   const std::filesystem::path script;
-  explicit BackgroundSetterMethodScript(const std::filesystem::path script);
+  explicit BackgroundSetterMethodScript(std::filesystem::path script);
   bool operator==(const BackgroundSetterMethodScript &other) const {
     return script == other.script;
   };
@@ -44,7 +44,7 @@ struct BackgroundSetterMethodScript : BackgroundSetterMethodBase {
  * This uses an external program called "wallutils"
  */
 struct BackgroundSetterMethodWallUtils : BackgroundSetterMethodBase {
-  bool operator==(const BackgroundSetterMethodWallUtils &) const {
+  bool operator==(const BackgroundSetterMethodWallUtils & /*unused*/) const {
     return true;
   }
 };

@@ -119,9 +119,9 @@ yamlStringTo(const std::string &text) {
 
   if (configString == SUNWAIT_STRING) {
     return std::make_optional(SunEventPollerMethod::Sunwait);
-  } else {
-    return std::nullopt;
   }
+
+  return std::nullopt;
 }
 
 // - BackgroundSetMode
@@ -132,11 +132,11 @@ yamlStringTo(const std::string &text) {
 
   if (configString == CENTER_STRING) {
     return std::make_optional(BackgroundSetMode::Center);
-  } else if (configString == FILL_STRING) {
-    return std::make_optional(BackgroundSetMode::Fill);
-  } else {
-    return std::nullopt;
   }
+  if (configString == FILL_STRING) {
+    return std::make_optional(BackgroundSetMode::Fill);
+  }
+  return std::nullopt;
 }
 
 // - BackgroundSetOrder
@@ -147,11 +147,11 @@ yamlStringTo(const std::string &text) {
 
   if (configString == LINEAR_STRING) {
     return std::make_optional(BackgroundSetOrder::Linear);
-  } else if (configString == RANDOM_STRING) {
-    return std::make_optional(BackgroundSetOrder::Random);
-  } else {
-    return std::nullopt;
   }
+  if (configString == RANDOM_STRING) {
+    return std::make_optional(BackgroundSetOrder::Random);
+  }
+  return std::nullopt;
 }
 
 // - BackgroundSetType
@@ -162,11 +162,11 @@ yamlStringTo(const std::string &text) {
 
   if (configString == DYNAMIC_STRING) {
     return std::make_optional(BackgroundSetType::Dynamic);
-  } else if (configString == STATIC_STRING) {
-    return std::make_optional(BackgroundSetType::Static);
-  } else {
-    return std::nullopt;
   }
+  if (configString == STATIC_STRING) {
+    return std::make_optional(BackgroundSetType::Static);
+  }
+  return std::nullopt;
 }
 
 // - LogLevel
@@ -217,8 +217,8 @@ constexpr std::optional<LogLevel> yamlStringTo(const std::string &text) {
  *  If no method is specified, defaults to 'Wallutils'
  */
 tl::expected<BackgroundSetterMethod, BackgroundSetterMethodError>
-parseBackgroundSetterMethod(YAML::Node config, const std::string_view methodKey,
-                            const std::string_view criptKey);
+parseBackgroundSetterMethod(YAML::Node config, std::string_view methodKey,
+                            std::string_view criptKey);
 
 // ===== Parsing yaml ===============
 

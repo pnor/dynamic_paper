@@ -49,7 +49,8 @@ struct DynamicBackgroundData {
    * of seconds until the next event will be shown. */
   template <CanSetBackgroundTrait T>
   [[nodiscard]] std::chrono::seconds
-  updateBackground(time_t currentTime, const Config &config) const;
+  updateBackground(time_t currentTime, const Config &config,
+                   T &&backgroundSetterFunc) const;
 };
 
 // ===== Header Helper ===============
@@ -115,13 +116,14 @@ unsigned int chooseRandomSeed();
 
 template <CanSetBackgroundTrait T>
 void doEvent(const Event &event, const DynamicBackgroundData *backgroundData,
-             const Config &config) {
+             const Config &config, T &&backgroundSetterFunc) {
   std::visit(
-      overloaded{[&config, backgroundData](const SetBackgroundEvent &event) {
+      overloaded{[&config, backgroundData,
+                  backgroundSetterFunc](const SetBackgroundEvent &event) {
                    tl::expected<void, BackgroundError> result =
-                       T::setBackgroundToImage(event.imagePath,
-                                               backgroundData->mode,
-                                               config.backgroundSetterMethod);
+                       backgroundSetterFunc(event.imagePath,
+                                            backgroundData->mode,
+                                            config.backgroundSetterMethod);
 
                    if (!result.has_value()) {
                      describeError(result.error());
@@ -131,13 +133,14 @@ void doEvent(const Event &event, const DynamicBackgroundData *backgroundData,
                      runHookCommand(config.hookScript.value(), event.imagePath);
                    }
                  },
-                 [&config, backgroundData](const LerpBackgroundEvent &event) {
+                 [&config, backgroundData,
+                  backgroundSetterFunc](const LerpBackgroundEvent &event) {
                    tl::expected<void, BackgroundError> result =
                        lerpBackgroundBetweenImages<T>(
                            event.commonImageDirectory, event.startImageName,
                            event.endImageName, config.imageCacheDirectory,
                            event.duration, event.numSteps, backgroundData->mode,
-                           config.backgroundSetterMethod);
+                           config.backgroundSetterMethod, backgroundSetterFunc);
 
                    if (!result.has_value()) {
                      describeError(result.error());
@@ -151,7 +154,7 @@ void doEvent(const Event &event, const DynamicBackgroundData *backgroundData,
 template <CanSetBackgroundTrait T>
 std::chrono::seconds updateBackgroundAndReturnTimeTillNext(
     const time_t currentTime, const DynamicBackgroundData *backgroundData,
-    const Config &config, const unsigned int seed) {
+    const Config &config, const unsigned int seed, T &&backgroundSetterFunc) {
   // Reset the random seed on each iteration of the loop to ensure the order
   // of `random` dynamic backgrounds is consistent between each reconstruction
   // of the event list.
@@ -166,7 +169,8 @@ std::chrono::seconds updateBackgroundAndReturnTimeTillNext(
 
   const Event &currentEvent = currentEventAndNextTime.first.second;
 
-  _helper::doEvent<T>(currentEvent, backgroundData, config);
+  _helper::doEvent<T>(currentEvent, backgroundData, config,
+                      backgroundSetterFunc);
 
   const time_t &nextTime = currentEventAndNextTime.second;
 
@@ -180,14 +184,15 @@ std::chrono::seconds updateBackgroundAndReturnTimeTillNext(
 template <CanSetBackgroundTrait T>
 [[nodiscard]] std::chrono::seconds
 DynamicBackgroundData::updateBackground(const time_t currentTime,
-                                        const Config &config) const {
+                                        const Config &config,
+                                        T &&backgroundSetterFunc) const {
   logTrace("Show dynamic background");
 
   const unsigned int seed = _helper::chooseRandomSeed();
   logTrace("Random seed is {}", seed);
 
-  return _helper::updateBackgroundAndReturnTimeTillNext<T>(currentTime, this,
-                                                           config, seed);
+  return _helper::updateBackgroundAndReturnTimeTillNext<T>(
+      currentTime, this, config, seed, backgroundSetterFunc);
 }
 
 } // namespace dynamic_paper

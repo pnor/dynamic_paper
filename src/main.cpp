@@ -106,7 +106,7 @@ void showBackgroundSet(BackgroundSet &backgroundSet, const Config &config) {
   std::optional<StaticBackgroundData> staticData =
       backgroundSet.getStaticBackgroundData();
   if (staticData.has_value()) {
-    staticData->show<BackgroundSetterTrait>(config);
+    staticData->show(config, setBackgroundToImage);
   }
 
   std::optional<DynamicBackgroundData> dynamicData =
@@ -115,8 +115,8 @@ void showBackgroundSet(BackgroundSet &backgroundSet, const Config &config) {
     while (true) {
       const time_t currentTime = getCurrentTime();
       const std::chrono::seconds sleepTime =
-          dynamicData->updateBackground<BackgroundSetterTrait>(currentTime,
-                                                               config) +
+          dynamicData->updateBackground(currentTime, config,
+                                        setBackgroundToImage) +
           std::chrono::seconds(1);
 
       logDebug("Sleeping for {} seconds...", sleepTime);

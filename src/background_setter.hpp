@@ -31,26 +31,18 @@ enum class HookCommandError { CommandError };
  */
 template <typename T>
 concept CanSetBackgroundTrait =
-    requires(const std::filesystem::path &imagePath, BackgroundSetMode mode,
+    requires(T &&func, const std::filesystem::path &imagePath,
+             const BackgroundSetMode mode,
              const BackgroundSetterMethod &method) {
       {
-        T::setBackgroundToImage(imagePath, mode, method)
+        func(imagePath, mode, method)
       } -> std::convertible_to<tl::expected<void, BackgroundError>>;
     };
 
-/** Contains Functions that change the background of the system using
- * commands/function calls */
-class BackgroundSetterTrait {
-public:
-  /**
-   * Using a program specified by `method`, sets the background to the image in
-   * `imagePath` using a display mode of `mode`
-   */
-  static tl::expected<void, BackgroundError>
-  setBackgroundToImage(const std::filesystem::path &imagePath,
-                       BackgroundSetMode mode,
-                       const BackgroundSetterMethod &method);
-};
+tl::expected<void, BackgroundError>
+setBackgroundToImage(const std::filesystem::path &imagePath,
+                     BackgroundSetMode mode,
+                     const BackgroundSetterMethod &method);
 
 /**
  * Using a program specified by `method`, changes the background from
@@ -62,14 +54,13 @@ public:
  *
  * Uses the external program imagemagick to create interpolated images.
  */
-template <typename T>
-  requires CanSetBackgroundTrait<T>
+template <CanSetBackgroundTrait T>
 tl::expected<void, BackgroundError> lerpBackgroundBetweenImages(
     const std::filesystem::path &commonImageDirectory,
     const std::string &beforeImageName, const std::string &afterImageName,
     const std::filesystem::path &cacheDirectory, std::chrono::seconds duration,
-    const unsigned int numSteps, BackgroundSetMode mode,
-    const BackgroundSetterMethod &method);
+    unsigned int numSteps, BackgroundSetMode mode,
+    const BackgroundSetterMethod &method, T &&backgroundSetterFunc);
 
 /**
  * Runs the script at `hookScriptPath` on the image at `imagePath`.
@@ -82,14 +73,14 @@ runHookCommand(const std::filesystem::path &hookScriptPath,
 
 // ===== Definition ==========
 
-template <typename T>
-  requires CanSetBackgroundTrait<T>
+template <CanSetBackgroundTrait T>
 tl::expected<void, BackgroundError> lerpBackgroundBetweenImages(
     const std::filesystem::path &commonImageDirectory,
     const std::string &beforeImageName, const std::string &afterImageName,
     const std::filesystem::path &cacheDirectory,
     const std::chrono::seconds duration, const unsigned int numSteps,
-    const BackgroundSetMode mode, const BackgroundSetterMethod &method) {
+    const BackgroundSetMode mode, const BackgroundSetterMethod &method,
+    T &&backgroundSetterFunc) {
 
   const bool dirCreationResult = createDirectoryIfDoesntExist(cacheDirectory);
   if (!dirCreationResult) {
@@ -112,7 +103,7 @@ tl::expected<void, BackgroundError> lerpBackgroundBetweenImages(
     }
 
     const tl::expected<void, BackgroundError> backgroundResult =
-        T::setBackgroundToImage(expectedCompositedImage.value(), mode, method);
+        backgroundSetterFunc(expectedCompositedImage.value(), mode, method);
 
     if (!backgroundResult.has_value()) {
       return tl::unexpected(BackgroundError::SetBackgroundError);
