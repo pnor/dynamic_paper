@@ -47,7 +47,9 @@ struct DynamicBackgroundData {
 
   /** Updates the background shown for the current time, and returns the amount
    * of seconds until the next event will be shown. */
-  template <CanSetBackgroundTrait T>
+  template <CanSetBackgroundTrait T,
+            ChangesFilesystem Files = FilesystemHandler,
+            GetsCompositeImages CompositeImages = ImageCompositor>
   [[nodiscard]] std::chrono::seconds
   updateBackground(time_t currentTime, const Config &config,
                    T &&backgroundSetterFunc) const;
@@ -114,7 +116,8 @@ unsigned int chooseRandomSeed();
 
 // --- Event Processing ---
 
-template <CanSetBackgroundTrait T>
+template <CanSetBackgroundTrait T, ChangesFilesystem Files,
+          GetsCompositeImages CompositeImages>
 void doEvent(const Event &event, const DynamicBackgroundData *backgroundData,
              const Config &config, T &&backgroundSetterFunc) {
   std::visit(
@@ -151,7 +154,8 @@ void doEvent(const Event &event, const DynamicBackgroundData *backgroundData,
 
 // --- Main Loop Logic ---
 
-template <CanSetBackgroundTrait T>
+template <CanSetBackgroundTrait T, ChangesFilesystem Files,
+          GetsCompositeImages CompositeImages>
 std::chrono::seconds updateBackgroundAndReturnTimeTillNext(
     const time_t currentTime, const DynamicBackgroundData *backgroundData,
     const Config &config, const unsigned int seed, T &&backgroundSetterFunc) {
@@ -169,8 +173,8 @@ std::chrono::seconds updateBackgroundAndReturnTimeTillNext(
 
   const Event &currentEvent = currentEventAndNextTime.first.second;
 
-  _helper::doEvent<T>(currentEvent, backgroundData, config,
-                      backgroundSetterFunc);
+  _helper::doEvent<T, Files, CompositeImages>(currentEvent, backgroundData,
+                                              config, backgroundSetterFunc);
 
   const time_t &nextTime = currentEventAndNextTime.second;
 
@@ -181,7 +185,8 @@ std::chrono::seconds updateBackgroundAndReturnTimeTillNext(
 
 // ===== Definition =====
 
-template <CanSetBackgroundTrait T>
+template <CanSetBackgroundTrait T, ChangesFilesystem Files,
+          GetsCompositeImages CompositeImages>
 [[nodiscard]] std::chrono::seconds
 DynamicBackgroundData::updateBackground(const time_t currentTime,
                                         const Config &config,
@@ -191,7 +196,8 @@ DynamicBackgroundData::updateBackground(const time_t currentTime,
   const unsigned int seed = _helper::chooseRandomSeed();
   logTrace("Random seed is {}", seed);
 
-  return _helper::updateBackgroundAndReturnTimeTillNext<T>(
+  return _helper::updateBackgroundAndReturnTimeTillNext<T, Files,
+                                                        CompositeImages>(
       currentTime, this, config, seed, backgroundSetterFunc);
 }
 

@@ -100,11 +100,11 @@ createCompositeImage(const std::filesystem::path &startImagePath,
 // ===== Header ===============
 
 tl::expected<std::filesystem::path, CompositeImageError>
-getCompositedImage(const std::filesystem::path &commonImageDirectory,
-                   const std::string &startImageName,
-                   const std::string &endImageName,
-                   const std::filesystem::path &cacheDirectory,
-                   const unsigned int percentage) {
+ImageCompositor::getCompositedImage(
+    const std::filesystem::path &commonImageDirectory,
+    const std::string &startImageName, const std::string &endImageName,
+    const std::filesystem::path &cacheDirectory,
+    const unsigned int percentage) {
   logAssert(percentage <= MAX_PERCENT,
             "percentage must be in range [0..100] but was {}", percentage);
 

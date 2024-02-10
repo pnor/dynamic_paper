@@ -83,8 +83,8 @@ Config getConfigAndSetupLogging(const argparse::ArgumentParser &program) {
       std::filesystem::path(expandPath(conf));
 
   if (configFilePath == expandPath(DEFAULT_CONFIG_FILE_NAME)) {
-    const bool fileCreationResult =
-        createFileIfDoesntExist(configFilePath, DEFAULT_CONFIG_FILE_CONTENTS);
+    const bool fileCreationResult = FilesystemHandler::createFileIfDoesntExist(
+        configFilePath, DEFAULT_CONFIG_FILE_CONTENTS);
 
     if (!fileCreationResult) {
       errorMsg("Error creating default config file: {}",

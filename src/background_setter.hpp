@@ -54,7 +54,8 @@ setBackgroundToImage(const std::filesystem::path &imagePath,
  *
  * Uses the external program imagemagick to create interpolated images.
  */
-template <CanSetBackgroundTrait T>
+template <CanSetBackgroundTrait T, ChangesFilesystem Files = FilesystemHandler,
+          GetsCompositeImages CompositeImages = ImageCompositor>
 tl::expected<void, BackgroundError> lerpBackgroundBetweenImages(
     const std::filesystem::path &commonImageDirectory,
     const std::string &beforeImageName, const std::string &afterImageName,
@@ -73,7 +74,8 @@ runHookCommand(const std::filesystem::path &hookScriptPath,
 
 // ===== Definition ==========
 
-template <CanSetBackgroundTrait T>
+template <CanSetBackgroundTrait T, ChangesFilesystem Files,
+          GetsCompositeImages CompositeImages>
 tl::expected<void, BackgroundError> lerpBackgroundBetweenImages(
     const std::filesystem::path &commonImageDirectory,
     const std::string &beforeImageName, const std::string &afterImageName,
@@ -82,7 +84,8 @@ tl::expected<void, BackgroundError> lerpBackgroundBetweenImages(
     const BackgroundSetMode mode, const BackgroundSetterMethod &method,
     T &&backgroundSetterFunc) {
 
-  const bool dirCreationResult = createDirectoryIfDoesntExist(cacheDirectory);
+  const bool dirCreationResult =
+      Files::createDirectoryIfDoesntExist(cacheDirectory);
   if (!dirCreationResult) {
     return tl::make_unexpected(BackgroundError::NoCacheDir);
   }
@@ -95,8 +98,9 @@ tl::expected<void, BackgroundError> lerpBackgroundBetweenImages(
 
     const tl::expected<std::filesystem::path, CompositeImageError>
         expectedCompositedImage =
-            getCompositedImage(commonImageDirectory, beforeImageName,
-                               afterImageName, cacheDirectory, percentage);
+            CompositeImages::getCompositedImage(commonImageDirectory,
+                                                beforeImageName, afterImageName,
+                                                cacheDirectory, percentage);
 
     if (!expectedCompositedImage.has_value()) {
       return tl::unexpected(BackgroundError::CompositeImageError);

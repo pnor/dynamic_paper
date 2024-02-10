@@ -59,7 +59,8 @@ std::filesystem::path expandPath(std::filesystem::path path) {
   return unexpandedPath;
 }
 
-bool createDirectoryIfDoesntExist(const std::filesystem::path &dir) {
+bool FilesystemHandler::createDirectoryIfDoesntExist(
+    const std::filesystem::path &dir) {
   logTrace("Attempting to create directory {}", dir.string());
 
   if (std::filesystem::exists(dir)) {
@@ -77,8 +78,8 @@ bool createDirectoryIfDoesntExist(const std::filesystem::path &dir) {
   return result;
 }
 
-bool createFileIfDoesntExist(const std::filesystem::path &filePath,
-                             const std::string_view contents) {
+bool FilesystemHandler::createFileIfDoesntExist(
+    const std::filesystem::path &filePath, const std::string_view contents) {
   return createFile(expandPath(filePath), contents);
 }
 
