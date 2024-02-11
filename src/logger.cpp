@@ -7,7 +7,9 @@
 
 namespace dynamic_paper {
 
-static void setShouldShowDebugLogs(const LogLevel logLevel) {
+namespace {
+
+void setShouldShowDebugLogs(const LogLevel logLevel) {
   switch (logLevel) {
   case LogLevel::DEBUG: {
     spdlog::set_level(spdlog::level::debug);
@@ -39,6 +41,8 @@ static void setShouldShowDebugLogs(const LogLevel logLevel) {
   }
   }
 }
+
+} // namespace
 
 // ===== Header ===============
 

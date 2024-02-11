@@ -26,9 +26,6 @@ enum class SunriseAndSetErrors {
 struct SunriseAndSunsetTimes {
   time_t sunrise;
   time_t sunset;
-
-  SunriseAndSunsetTimes(const time_t sunrise, const time_t sunset)
-      : sunrise(sunrise), sunset(sunset) {}
 };
 
 /**
@@ -101,10 +98,10 @@ constexpr bool isDigit(const char character) {
 constexpr std::optional<unsigned int>
 stringViewToInt(const std::string_view text) {
   int res = 0;
-  for (std::string_view::size_type i = 0; i < text.size(); i++) {
+  for (const char character : text) {
     res *= 10;
-    if (isDigit(text[i])) {
-      res += (text[i] - '0');
+    if (isDigit(character)) {
+      res += (character - '0');
     } else {
       return std::nullopt;
     }

@@ -20,9 +20,6 @@ namespace dynamic_paper {
 struct TransitionInfo {
   std::chrono::seconds duration;
   unsigned int steps;
-
-  explicit TransitionInfo(unsigned int duration, unsigned int steps)
-      : duration(duration), steps(steps) {}
 };
 
 /** Type of `BackgroundSet` that shows different wallpapers at different times,
@@ -52,7 +49,7 @@ struct DynamicBackgroundData {
             GetsCompositeImages CompositeImages = ImageCompositor>
   [[nodiscard]] std::chrono::seconds
   updateBackground(time_t currentTime, const Config &config,
-                   T &&backgroundSetterFunc) const;
+                   T &&backgroundSetFunction) const;
 };
 
 // ===== Header Helper ===============
@@ -119,14 +116,15 @@ unsigned int chooseRandomSeed();
 template <CanSetBackgroundTrait T, ChangesFilesystem Files,
           GetsCompositeImages CompositeImages>
 void doEvent(const Event &event, const DynamicBackgroundData *backgroundData,
-             const Config &config, T &&backgroundSetterFunc) {
+             const Config &config, T &&backgroundSetFunction) {
+
   std::visit(
       overloaded{[&config, backgroundData,
-                  backgroundSetterFunc](const SetBackgroundEvent &event) {
+                  backgroundSetFunction](const SetBackgroundEvent &event) {
                    tl::expected<void, BackgroundError> result =
-                       backgroundSetterFunc(event.imagePath,
-                                            backgroundData->mode,
-                                            config.backgroundSetterMethod);
+                       backgroundSetFunction(event.imagePath,
+                                             backgroundData->mode,
+                                             config.backgroundSetterMethod);
 
                    if (!result.has_value()) {
                      describeError(result.error());
@@ -137,13 +135,14 @@ void doEvent(const Event &event, const DynamicBackgroundData *backgroundData,
                    }
                  },
                  [&config, backgroundData,
-                  backgroundSetterFunc](const LerpBackgroundEvent &event) {
+                  backgroundSetFunction](const LerpBackgroundEvent &event) {
                    tl::expected<void, BackgroundError> result =
-                       lerpBackgroundBetweenImages<T>(
+                       lerpBackgroundBetweenImages<T, Files, CompositeImages>(
                            event.commonImageDirectory, event.startImageName,
                            event.endImageName, config.imageCacheDirectory,
                            event.duration, event.numSteps, backgroundData->mode,
-                           config.backgroundSetterMethod, backgroundSetterFunc);
+                           config.backgroundSetterMethod,
+                           backgroundSetFunction);
 
                    if (!result.has_value()) {
                      describeError(result.error());
@@ -158,7 +157,7 @@ template <CanSetBackgroundTrait T, ChangesFilesystem Files,
           GetsCompositeImages CompositeImages>
 std::chrono::seconds updateBackgroundAndReturnTimeTillNext(
     const time_t currentTime, const DynamicBackgroundData *backgroundData,
-    const Config &config, const unsigned int seed, T &&backgroundSetterFunc) {
+    const Config &config, const unsigned int seed, T &&backgroundSetFunction) {
   // Reset the random seed on each iteration of the loop to ensure the order
   // of `random` dynamic backgrounds is consistent between each reconstruction
   // of the event list.
@@ -173,8 +172,9 @@ std::chrono::seconds updateBackgroundAndReturnTimeTillNext(
 
   const Event &currentEvent = currentEventAndNextTime.first.second;
 
-  _helper::doEvent<T, Files, CompositeImages>(currentEvent, backgroundData,
-                                              config, backgroundSetterFunc);
+  _helper::doEvent<T, Files, CompositeImages>(
+      currentEvent, backgroundData, config,
+      std::forward<T>(backgroundSetFunction));
 
   const time_t &nextTime = currentEventAndNextTime.second;
 
@@ -190,7 +190,7 @@ template <CanSetBackgroundTrait T, ChangesFilesystem Files,
 [[nodiscard]] std::chrono::seconds
 DynamicBackgroundData::updateBackground(const time_t currentTime,
                                         const Config &config,
-                                        T &&backgroundSetterFunc) const {
+                                        T &&backgroundSetFunction) const {
   logTrace("Show dynamic background");
 
   const unsigned int seed = _helper::chooseRandomSeed();
@@ -198,7 +198,7 @@ DynamicBackgroundData::updateBackground(const time_t currentTime,
 
   return _helper::updateBackgroundAndReturnTimeTillNext<T, Files,
                                                         CompositeImages>(
-      currentTime, this, config, seed, backgroundSetterFunc);
+      currentTime, this, config, seed, std::forward<T>(backgroundSetFunction));
 }
 
 } // namespace dynamic_paper

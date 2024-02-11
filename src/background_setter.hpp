@@ -61,7 +61,7 @@ tl::expected<void, BackgroundError> lerpBackgroundBetweenImages(
     const std::string &beforeImageName, const std::string &afterImageName,
     const std::filesystem::path &cacheDirectory, std::chrono::seconds duration,
     unsigned int numSteps, BackgroundSetMode mode,
-    const BackgroundSetterMethod &method, T &&backgroundSetterFunc);
+    const BackgroundSetterMethod &method, T backgroundSetFunction);
 
 /**
  * Runs the script at `hookScriptPath` on the image at `imagePath`.
@@ -82,7 +82,7 @@ tl::expected<void, BackgroundError> lerpBackgroundBetweenImages(
     const std::filesystem::path &cacheDirectory,
     const std::chrono::seconds duration, const unsigned int numSteps,
     const BackgroundSetMode mode, const BackgroundSetterMethod &method,
-    T &&backgroundSetterFunc) {
+    T backgroundSetFunction) {
 
   const bool dirCreationResult =
       Files::createDirectoryIfDoesntExist(cacheDirectory);
@@ -107,7 +107,7 @@ tl::expected<void, BackgroundError> lerpBackgroundBetweenImages(
     }
 
     const tl::expected<void, BackgroundError> backgroundResult =
-        backgroundSetterFunc(expectedCompositedImage.value(), mode, method);
+        backgroundSetFunction(expectedCompositedImage.value(), mode, method);
 
     if (!backgroundResult.has_value()) {
       return tl::unexpected(BackgroundError::SetBackgroundError);

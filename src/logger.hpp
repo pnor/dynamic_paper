@@ -15,7 +15,7 @@ enum class LogLevel { INFO, WARNING, ERROR, DEBUG, CRITICAL, TRACE, OFF };
 
 /** Sets up logging library, by setting the format and pattern of logs, and what
  * logs should be shown. */
-void setupLogging(const LogLevel logLevel);
+void setupLogging(LogLevel logLevel);
 
 /** Prints a debug log message saying `msg`. Accepts `args` for use in a format
  * string. */
@@ -34,28 +34,29 @@ void logInfo(const std::format_string<Ts...> &msg, Ts &&...args) {
 /** Prints a trace log message saying `msg`. Accepts `args` for use in a format
  * string. */
 template <typename... Ts>
-void logTrace(const std::format_string<Ts...> &msg, Ts &&...args) {
+constexpr void logTrace(const std::format_string<Ts...> &msg, Ts &&...args) {
   spdlog::trace(std::format(msg, std::forward<Ts>(args)...));
 }
 
 /** Prints a warning log message saying `msg`. Accepts `args` for use in a
  * format string.*/
 template <typename... Ts>
-void logWarning(const std::format_string<Ts...> &msg, Ts &&...args) {
+constexpr void logWarning(const std::format_string<Ts...> &msg, Ts &&...args) {
   spdlog::warn(std::format(msg, std::forward<Ts>(args)...));
 }
 
 /** Prints an error log message saying `msg`. Accepts `args` for use in a format
  * string. */
 template <typename... Ts>
-void logError(const std::format_string<Ts...> &msg, Ts &&...args) {
+constexpr void logError(const std::format_string<Ts...> &msg, Ts &&...args) {
   spdlog::error(std::format(msg, std::forward<Ts>(args)...));
 }
 
 /** Prints a fatal error log message saying `msg`. Accepts `args` for use in a
  * format string. */
 template <typename... Ts>
-void logFatalError(const std::format_string<Ts...> &msg, Ts &&...args) {
+constexpr void logFatalError(const std::format_string<Ts...> &msg,
+                             Ts &&...args) {
   spdlog::critical(std::format(msg, std::forward<Ts>(args)...));
 }
 
@@ -64,8 +65,8 @@ void logFatalError(const std::format_string<Ts...> &msg, Ts &&...args) {
  * Accepts `args` for use in a format string.
  */
 template <typename... Ts>
-void logAssert(const bool condition, const std::format_string<Ts...> &msg,
-               Ts &&...args) {
+constexpr void logAssert(const bool condition,
+                         const std::format_string<Ts...> &msg, Ts &&...args) {
   if (condition) {
     return;
   }

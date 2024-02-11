@@ -59,7 +59,7 @@ getSunriseAndSetUsingSunwait() {
   std::tm sunriseTm = hourMinuteStringToTM(groupMatches[0].str());
   std::tm sunsetTm = hourMinuteStringToTM(groupMatches[1].str());
 
-  return SunriseAndSunsetTimes(mktime(&sunriseTm), mktime(&sunsetTm));
+  return {{.sunrise = mktime(&sunriseTm), .sunset = mktime(&sunsetTm)}};
 }
 
 std::optional<time_t> sunsetOrRiseStringToTimeOffset(
@@ -179,7 +179,8 @@ getSunriseAndSetString(const Config &config) {
   };
 
   case SunEventPollerMethod::Dummy: {
-    return SunriseAndSunsetTimes(DUMMY_SUNRISE_TIME, DUMMY_SUNSET_TIME);
+    return std::make_optional<SunriseAndSunsetTimes>(
+        {.sunrise = DUMMY_SUNRISE_TIME, .sunset = DUMMY_SUNSET_TIME});
   };
   default: {
     return std::nullopt;

@@ -11,6 +11,14 @@ namespace dynamic_paper {
 
 enum class CompositeImageError { UnableToCreatePath, CommandError };
 
+/** Returns the path location of where a composited image created from
+ * `startImageName` and `endImageName` with a ratio of `percentage` would be. */
+tl::expected<std::filesystem::path, CompositeImageError>
+pathForCompositeImage(const std::filesystem::path &commonImageDirectory,
+                      const std::string &startImageName,
+                      const std::string &endImageName, unsigned int percentage,
+                      const std::filesystem::path &cacheDirectory);
+
 /**
  * Type used to create interpolated images
  */

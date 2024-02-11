@@ -34,38 +34,6 @@ bool filesHaveSameExtension(const std::string &name1,
 }
 
 tl::expected<std::filesystem::path, CompositeImageError>
-pathForCompositeImage(const std::filesystem::path &commonImageDirectory,
-                      const std::string &startImageName,
-                      const std::string &endImageName,
-                      const unsigned int percentage,
-                      const std::filesystem::path &cacheDirectory) {
-  const std::optional<std::string> optDirName = basename(commonImageDirectory);
-  if (!optDirName.has_value()) {
-    return tl::unexpected(CompositeImageError::UnableToCreatePath);
-  }
-
-  const std::string &dirName = optDirName.value();
-  const std::string extension =
-      std::filesystem::path(startImageName).extension();
-
-  if (!filesHaveSameExtension(startImageName, endImageName)) {
-    logWarning("{} and {} are not the same type of image!", startImageName,
-               endImageName);
-  }
-  if (extension.empty()) {
-    logWarning("will use {} for the file extension but it does not "
-               "have a filetype extension!",
-               startImageName);
-  }
-
-  const std::string compositeName =
-      std::format("{}-{}-{}-{}{}", dirName, startImageName, endImageName,
-                  percentage, extension);
-
-  return cacheDirectory / compositeName;
-}
-
-tl::expected<std::filesystem::path, CompositeImageError>
 createCompositeImage(const std::filesystem::path &startImagePath,
                      const std::filesystem::path &endImagePath,
                      const std::filesystem::path &destinationImagePath,
@@ -98,6 +66,38 @@ createCompositeImage(const std::filesystem::path &startImagePath,
 } // namespace
 
 // ===== Header ===============
+
+tl::expected<std::filesystem::path, CompositeImageError>
+pathForCompositeImage(const std::filesystem::path &commonImageDirectory,
+                      const std::string &startImageName,
+                      const std::string &endImageName,
+                      const unsigned int percentage,
+                      const std::filesystem::path &cacheDirectory) {
+  const std::optional<std::string> optDirName = basename(commonImageDirectory);
+  if (!optDirName.has_value()) {
+    return tl::unexpected(CompositeImageError::UnableToCreatePath);
+  }
+
+  const std::string &dirName = optDirName.value();
+  const std::string extension =
+      std::filesystem::path(startImageName).extension();
+
+  if (!filesHaveSameExtension(startImageName, endImageName)) {
+    logWarning("{} and {} are not the same type of image!", startImageName,
+               endImageName);
+  }
+  if (extension.empty()) {
+    logWarning("will use {} for the file extension but it does not "
+               "have a filetype extension!",
+               startImageName);
+  }
+
+  const std::string compositeName =
+      std::format("{}-{}-{}-{}{}", dirName, startImageName, endImageName,
+                  percentage, extension);
+
+  return cacheDirectory / compositeName;
+}
 
 tl::expected<std::filesystem::path, CompositeImageError>
 ImageCompositor::getCompositedImage(

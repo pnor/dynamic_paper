@@ -8,14 +8,13 @@
 
 namespace dynamic_paper_test {
 
-using namespace dynamic_paper;
-
 /** An example of an action to set the background */
 struct SetEvent {
   std::filesystem::path imagePath;
-  BackgroundSetMode mode;
+  dynamic_paper::BackgroundSetMode mode;
 
-  SetEvent(std::filesystem::path imagePath, BackgroundSetMode mode);
+  SetEvent(std::filesystem::path imagePath,
+           dynamic_paper::BackgroundSetMode mode);
 
   friend bool operator==(const SetEvent &lhs, const SetEvent &rhs) = default;
 };

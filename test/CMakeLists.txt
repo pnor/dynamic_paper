@@ -49,6 +49,7 @@ add_executable(
   logging_config_parsing.cpp
   background_test_setter.cpp
   static_background_test.cpp
+  dynamic_background_test.cpp
   ${dynamic_paper_SOURCE_DIR}/src/background_set.cpp
   ${dynamic_paper_SOURCE_DIR}/src/background_setter.cpp
   ${dynamic_paper_SOURCE_DIR}/src/command_executor.cpp
@@ -81,6 +82,6 @@ target_include_directories(
 )
 
 # clang tidy
-find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
-set(CLANG_TIDY_COMMAND "${CLANG_TIDY_EXE}")
-set_target_properties(dynamic_paper_test PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND}")
+# find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
+# set(CLANG_TIDY_COMMAND "${CLANG_TIDY_EXE}")
+# set_target_properties(dynamic_paper_test PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND}")
