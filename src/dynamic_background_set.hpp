@@ -136,13 +136,15 @@ void doEvent(const Event &event, const DynamicBackgroundData *backgroundData,
                  },
                  [&config, backgroundData,
                   backgroundSetFunction](const LerpBackgroundEvent &event) {
+                   std::decay_t<T> func = backgroundSetFunction;
+
                    tl::expected<void, BackgroundError> result =
-                       lerpBackgroundBetweenImages<T, Files, CompositeImages>(
+                       lerpBackgroundBetweenImages<std::decay_t<T>, Files,
+                                                   CompositeImages>(
                            event.commonImageDirectory, event.startImageName,
                            event.endImageName, config.imageCacheDirectory,
                            event.duration, event.numSteps, backgroundData->mode,
-                           config.backgroundSetterMethod,
-                           backgroundSetFunction);
+                           config.backgroundSetterMethod, func);
 
                    if (!result.has_value()) {
                      describeError(result.error());

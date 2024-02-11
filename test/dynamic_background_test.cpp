@@ -130,9 +130,10 @@ TEST_F(DynamicBackgroundTest, ShowBasic) {
       dynamicData.updateBackground<LambdaType, TestFilesystemHandler,
                                    TestCompositeImages>(
           TIME_ARRAY[1], config, std::forward<LambdaType>(setBackgroundFunc));
-  // const std::chrono::seconds secondWaitTime =
-  //     dynamicData.updateBackground(TIME_ARRAY[3], config, setBackgroundFunc);
 
-  // EXPECT_EQ(firstWaitTime, std::chrono::seconds(ONE_HOUR));
-  // EXPECT_EQ(secondWaitTime, std::chrono::seconds(ONE_HOUR * 22));
+  const std::chrono::seconds secondWaitTime =
+      dynamicData.updateBackground(TIME_ARRAY[3], config, setBackgroundFunc);
+
+  EXPECT_EQ(firstWaitTime, std::chrono::seconds(ONE_HOUR));
+  EXPECT_EQ(secondWaitTime, std::chrono::seconds(ONE_HOUR * 22));
 }
