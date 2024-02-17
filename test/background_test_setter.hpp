@@ -13,11 +13,10 @@ struct SetEvent {
   std::filesystem::path imagePath;
   dynamic_paper::BackgroundSetMode mode;
 
-  SetEvent(std::filesystem::path imagePath,
-           dynamic_paper::BackgroundSetMode mode);
-
   friend bool operator==(const SetEvent &lhs, const SetEvent &rhs) = default;
 };
+
+std::ostream &operator<<(std::ostream &osStream, const SetEvent &value);
 
 /** Test class that stores a global history of backgrounds that were set
  * */

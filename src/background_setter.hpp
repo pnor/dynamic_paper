@@ -9,6 +9,7 @@
 #include "config.hpp"
 #include "file_util.hpp"
 #include "image_compositor.hpp"
+#include "transition_info.hpp"
 
 /** Handles the logic of how the bckground is actually changed */
 
@@ -80,9 +81,8 @@ tl::expected<void, BackgroundError> lerpBackgroundBetweenImages(
     const std::filesystem::path &commonImageDirectory,
     const std::string &beforeImageName, const std::string &afterImageName,
     const std::filesystem::path &cacheDirectory,
-    const std::chrono::seconds duration, const unsigned int numSteps,
-    const BackgroundSetMode mode, const BackgroundSetterMethod &method,
-    T backgroundSetFunction) {
+    const TransitionInfo &transition, const BackgroundSetMode mode,
+    const BackgroundSetterMethod &method, T backgroundSetFunction) {
 
   const bool dirCreationResult =
       Files::createDirectoryIfDoesntExist(cacheDirectory);
@@ -90,9 +90,15 @@ tl::expected<void, BackgroundError> lerpBackgroundBetweenImages(
     return tl::make_unexpected(BackgroundError::NoCacheDir);
   }
 
-  for (unsigned int i = 0; i < numSteps; i++) {
+  for (unsigned int i = 0; i < transition.steps; i++) {
+
+    // modifies `i` so is more in the middle of the range, to avoid
+    // interpolating 0% and 100% images
+    const unsigned int numerator = i + 1;
+    const unsigned int denominator = transition.steps + 1;
+
     const float percentageFloat =
-        static_cast<float>(i) / static_cast<float>(numSteps);
+        static_cast<float>(numerator) / static_cast<float>(denominator);
     const unsigned int percentage = std::clamp(
         static_cast<unsigned int>(percentageFloat * 100.0), 0U, 100U);
 
@@ -113,7 +119,12 @@ tl::expected<void, BackgroundError> lerpBackgroundBetweenImages(
       return tl::unexpected(BackgroundError::SetBackgroundError);
     }
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(duration) / numSteps);
+    // TODO should check `CompositeImages` is not a testing class instead of
+    // checking exactly `ImageCompositor`
+    if constexpr (std::is_same_v<CompositeImages, ImageCompositor>) {
+      std::this_thread::sleep_for(
+          std::chrono::milliseconds(transition.duration) / transition.steps);
+    }
   }
 
   return {};

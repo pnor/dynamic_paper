@@ -87,14 +87,16 @@ pathForCompositeImage(const std::filesystem::path &commonImageDirectory,
                endImageName);
   }
   if (extension.empty()) {
-    logWarning("will use {} for the file extension but it does not "
+    logWarning("will use '{}' for the file extension but it does not "
                "have a filetype extension!",
                startImageName);
   }
 
-  const std::string compositeName =
-      std::format("{}-{}-{}-{}{}", dirName, startImageName, endImageName,
-                  percentage, extension);
+  const std::string startStem = std::filesystem::path(startImageName).stem();
+  const std::string endStem = std::filesystem::path(endImageName).stem();
+
+  const std::string compositeName = std::format(
+      "{}-{}-{}-{}{}", dirName, startStem, endStem, percentage, extension);
 
   return cacheDirectory / compositeName;
 }

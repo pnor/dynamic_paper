@@ -75,7 +75,7 @@ TEST_F(StaticBackgroundTest, ShowBasic) {
   showBackgroundOnStaticData(*this, history, {"1.jpg"}, mode);
 
   EXPECT_THAT(history.getHistory(),
-              ElementsAre(SetEvent(image("1.jpg"), mode)));
+              ElementsAre(SetEvent{.imagePath = image("1.jpg"), .mode = mode}));
 }
 
 TEST_F(StaticBackgroundTest, ShowOneOfMultiple) {
@@ -84,8 +84,9 @@ TEST_F(StaticBackgroundTest, ShowOneOfMultiple) {
 
   showBackgroundOnStaticData(*this, history, {"1.jpg", "2.jpg", "3.jpg"}, mode);
 
-  EXPECT_THAT(history.getHistory(),
-              IsSubsetOf({SetEvent(image("1.jpg"), mode),
-                          SetEvent(image("2.jpg"), mode),
-                          SetEvent(image("3.jpg"), mode)}));
+  EXPECT_THAT(
+      history.getHistory(),
+      IsSubsetOf({SetEvent{.imagePath = image("1.jpg"), .mode = mode},
+                  SetEvent{.imagePath = image("2.jpg"), .mode = mode},
+                  SetEvent{.imagePath = image("3.jpg"), .mode = mode}}));
 }

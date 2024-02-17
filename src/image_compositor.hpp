@@ -12,7 +12,14 @@ namespace dynamic_paper {
 enum class CompositeImageError { UnableToCreatePath, CommandError };
 
 /** Returns the path location of where a composited image created from
- * `startImageName` and `endImageName` with a ratio of `percentage` would be. */
+ * `startImageName` and `endImageName` with a ratio of `percentage` would be.
+ *
+ * The path is formatted:
+ * {common image dir basename}-{start img}-{end img}-{percentage}{extension}`
+ * Start and End Image is the name without the extension.
+ * Extension is decided by the extension of the
+ * `startImageName`. Is possible for extension to be blank ('')
+ */
 tl::expected<std::filesystem::path, CompositeImageError>
 pathForCompositeImage(const std::filesystem::path &commonImageDirectory,
                       const std::string &startImageName,

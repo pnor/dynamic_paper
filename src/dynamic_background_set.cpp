@@ -30,35 +30,93 @@ public:
 
 using namespace _helper;
 
+template <typename T> constexpr T mod(const T n, const T M) {
+  return ((n % M) + M) % M;
+}
+
+/**
+ * Return `time - secondsBefore`, looping the result up to the end of the day if
+ * `time` is close to 00:00.
+ *
+ * For example:
+ * If `secondsBefore` = 5 and `time` was the time_t representation of 02:30:00,
+ * will return the time_t representation of 2:29:55.
+ *
+ * If `secondsBefore` = 5 and `time` was the time_t representation of 00:00:02,
+ * will return the time_t representation of 23:59:57.
+ */
+constexpr time_t timeBefore(const time_t time,
+                            std::chrono::seconds secondsBefore) {
+  // convert time_t to a signed type for this modulo operation
+  using TimeType = long;
+
+  const TimeType seconds = secondsBefore.count();
+
+  constexpr TimeType BEGINNING_OF_DAY =
+      convertRawTimeStringToTimeOffset("00:00:00").value();
+  constexpr TimeType END_OF_DAY =
+      convertRawTimeStringToTimeOffset("23:59:59").value() + 1;
+  constexpr TimeType DAY_LENGTH = END_OF_DAY - BEGINNING_OF_DAY;
+
+  const TimeType result =
+      (mod(((time - BEGINNING_OF_DAY) - seconds), DAY_LENGTH)) +
+      BEGINNING_OF_DAY;
+
+  return static_cast<time_t>(result);
+}
+
 EventList createEventListFromTimesAndNames(
     const DynamicBackgroundData *dynamicData,
     const std::vector<std::pair<time_t, std::string>> &timesAndNames) {
+  const std::optional<TransitionInfo> &transition = *(dynamicData->transition);
+
   EventList eventList;
+
+  // TODO clamp events to not make the lerping overlap and be out of order
 
   logAssert(!timesAndNames.empty(), "Times and names cannot be empty");
 
+  if (transition.has_value() && timesAndNames.size() > 1) {
+    const LerpBackgroundEvent lerpEvent = {
+        .commonImageDirectory = dynamicData->dataDirectory,
+        .startImageName = timesAndNames.back().second,
+        .endImageName = timesAndNames.front().second,
+        .transition = transition.value()};
+
+    const time_t transitionTime =
+        timeBefore(timesAndNames.front().first, transition->duration);
+
+    eventList.emplace_back(transitionTime, lerpEvent);
+  }
   eventList.emplace_back(
       timesAndNames[0].first,
-      SetBackgroundEvent(dynamicData->dataDirectory / timesAndNames[0].second));
+      SetBackgroundEvent{.imagePath = dynamicData->dataDirectory /
+                                      timesAndNames[0].second});
 
-  for (EventList::size_type i = 1; i < eventList.size(); i++) {
+  // Add rest of events
+  for (EventList::size_type i = 1; i < timesAndNames.size(); i++) {
     // transition event
     if (dynamicData->transition.has_value()) {
-      const LerpBackgroundEvent lerpEvent(
-          dynamicData->dataDirectory, timesAndNames[i - 1].second,
-          timesAndNames[i].second, dynamicData->transition->duration,
-          dynamicData->transition->steps);
+      const LerpBackgroundEvent lerpEvent = {
+          .commonImageDirectory = dynamicData->dataDirectory,
+          .startImageName = timesAndNames[i - 1].second,
+          .endImageName = timesAndNames[i].second,
+          .transition = transition.value()};
 
       const time_t transitionTime =
-          timesAndNames[i].first - dynamicData->transition->duration.count();
+          timeBefore(timesAndNames[i].first, transition->duration);
 
       eventList.emplace_back(transitionTime, lerpEvent);
     }
     // set background event
-    eventList.emplace_back(timesAndNames[i].first,
-                           SetBackgroundEvent(dynamicData->dataDirectory /
-                                              timesAndNames[i].second));
+    eventList.emplace_back(
+        timesAndNames[i].first,
+        SetBackgroundEvent{.imagePath = dynamicData->dataDirectory /
+                                        timesAndNames[i].second});
   }
+
+  // TODO should prob not sort like this; find way to build list in order
+  std::ranges::sort(eventList, {}, &std::pair<time_t, Event>::first);
 
   return eventList;
 }
@@ -111,6 +169,10 @@ unsigned int chooseRandomSeed() {
   return uniformDist(generator);
 }
 
+/**
+ * Returns true if eventList is sorted in ascending order, with no 2 times being
+ * the same
+ */
 bool eventListIsSortedByTime(const EventList &eventList) {
   for (size_t i = 0; i < eventList.size() - 1; i++) {
     if (!(eventList[i].first < eventList[i + 1].first)) {
@@ -204,7 +266,10 @@ getCurrentEventAndNextTime(const EventList &eventList, const time_t time) {
 std::chrono::seconds timeUntilNext(const time_t &now, const time_t &later) {
   std::chrono::seconds sleepTime;
 
-  if (now < later) {
+  if (now == later) {
+    constexpr std::chrono::hours TWENTY_FOUR_HOURS(24);
+    sleepTime = TWENTY_FOUR_HOURS;
+  } else if (now < later) {
     sleepTime = std::chrono::seconds(later - now);
   } else { // Sleep past a day boundary / now >= later
     constexpr time_t second_before_midnight =

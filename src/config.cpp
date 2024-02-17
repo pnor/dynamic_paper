@@ -8,7 +8,6 @@
 #include <yaml-cpp/yaml.h>
 
 #include "defaults.hpp"
-#include "globals.hpp"
 #include "yaml_helper.hpp"
 
 namespace dynamic_paper {

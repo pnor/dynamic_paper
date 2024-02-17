@@ -212,9 +212,6 @@ auto main(int argc, char *argv[]) -> int {
     return EXIT_FAILURE;
   }
 
-  // TODO create default dirs like .local/share and .cache/dynamic_paper if
-  // they don't exist
-
   if (program.is_subcommand_used(showCommand)) {
     const Config config = getConfigAndSetupLogging(program);
     handleShowCommand(showCommand, config);

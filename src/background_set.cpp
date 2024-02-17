@@ -133,9 +133,15 @@ std::optional<TransitionInfo>
 tryCreateTransitionInfoFrom(const ParsingInfo &parsingInfo) {
   if (parsingInfo.transitionLength.has_value() &&
       parsingInfo.numberTransitionSteps.has_value()) {
+
+    if (parsingInfo.transitionLength.value() <= 0) {
+      logWarning("Transition Length was >= 0, so not creating transitions");
+      return std::nullopt;
+    }
+
     return std::make_optional<TransitionInfo>(
-        {.duration = std::chrono::seconds(parsingInfo.transitionLength.value()),
-         .steps = parsingInfo.numberTransitionSteps.value()});
+        std::chrono::seconds(parsingInfo.transitionLength.value()),
+        parsingInfo.numberTransitionSteps.value());
   }
 
   if (!parsingInfo.numberTransitionSteps.has_value() &&
@@ -143,8 +149,8 @@ tryCreateTransitionInfoFrom(const ParsingInfo &parsingInfo) {
     logWarning(
         "No number of transition steps was provided so using default steps");
     return std::make_optional<TransitionInfo>(
-        {.duration = std::chrono::seconds(parsingInfo.transitionLength.value()),
-         .steps = DEFAULT_TRANSITION_STEPS});
+        std::chrono::seconds(parsingInfo.transitionLength.value()),
+        DEFAULT_TRANSITION_STEPS);
   }
   if (parsingInfo.numberTransitionSteps.has_value() &&
       !parsingInfo.transitionLength.has_value()) {

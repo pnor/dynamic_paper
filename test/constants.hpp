@@ -23,6 +23,7 @@ consteval time_t getZeroTime() {
 constexpr time_t ONE_SECOND = 1;
 constexpr time_t ONE_MINUTE = ONE_SECOND * 60;
 constexpr time_t ONE_HOUR = ONE_MINUTE * 60;
+constexpr time_t TWENTY_FOUR_HOURS = ONE_HOUR * 24;
 
 const dynamic_paper::SunriseAndSunsetTimes testSunriseAndSunsetTimes = {
     .sunrise = dynamic_paper::DUMMY_SUNRISE_TIME,

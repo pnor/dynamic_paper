@@ -37,6 +37,7 @@ The path to the image that will be shown can be found by combining the =data_dir
   displayed as the background. If multiple images are specified, will randomly choose one when =show= is called.
 - =mode=: ~string~  representing Display Mode. Can be either =center= or =fill=.
 - =transition=: ~boolean~ for whether it should interpolate transitions
+- =transition_length=: ~int~ for the length of the transition in seconds. Must be >= than =number_transition_steps=
 - =number_transition_steps=: ~int~ for number of steps to transition between backgrounds
 
 The path to the image that will be shown can be found by combining the =data_directory= ad =image= paths:

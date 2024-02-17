@@ -9,6 +9,7 @@
 #include "background_setter.hpp"
 #include "config.hpp"
 #include "time_util.hpp"
+#include "transition_info.hpp"
 #include "variant_visitor_templ.hpp"
 
 /** Dynamic Background sets change wallpaper depending on the time of day. They
@@ -16,11 +17,6 @@
  */
 
 namespace dynamic_paper {
-
-struct TransitionInfo {
-  std::chrono::seconds duration;
-  unsigned int steps;
-};
 
 /** Type of `BackgroundSet` that shows different wallpapers at different times,
  * and changes over time*/
@@ -70,9 +66,6 @@ using EventList = std::vector<TimeAndEvent>;
 /** Information needed for the event to change the background to an image */
 struct SetBackgroundEvent {
   std::filesystem::path imagePath;
-
-  explicit SetBackgroundEvent(std::filesystem::path imagePath)
-      : imagePath(std::move(imagePath)) {}
 };
 
 /** Information needed for the event to gradually interpolate between one image
@@ -81,17 +74,7 @@ struct LerpBackgroundEvent {
   std::filesystem::path commonImageDirectory;
   std::string startImageName;
   std::string endImageName;
-  std::chrono::seconds duration;
-  unsigned int numSteps;
-
-  LerpBackgroundEvent(std::filesystem::path commonImageDirectory,
-                      std::string startImageName, std::string endImageName,
-                      const std::chrono::seconds duration,
-                      const unsigned int numSteps)
-      : commonImageDirectory(std::move(commonImageDirectory)),
-        startImageName(std::move(startImageName)),
-        endImageName(std::move(endImageName)), duration(duration),
-        numSteps(numSteps) {}
+  TransitionInfo transition;
 };
 
 // --- Helper Function Declarations ---
@@ -143,7 +126,7 @@ void doEvent(const Event &event, const DynamicBackgroundData *backgroundData,
                                                    CompositeImages>(
                            event.commonImageDirectory, event.startImageName,
                            event.endImageName, config.imageCacheDirectory,
-                           event.duration, event.numSteps, backgroundData->mode,
+                           event.transition, backgroundData->mode,
                            config.backgroundSetterMethod, func);
 
                    if (!result.has_value()) {
