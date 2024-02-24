@@ -7,6 +7,9 @@
 
 /** Handling of time based events */
 
+// TODO move away from time_t for chrono::seconds and make it standard that it
+// represents seconds from midnight in one day
+
 namespace dynamic_paper {
 
 /** Time used for sunrise when testing using `SunEventPollerMethod::Dummy` */

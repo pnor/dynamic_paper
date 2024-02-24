@@ -17,8 +17,10 @@ enum class CompositeImageError { UnableToCreatePath, CommandError };
  * The path is formatted:
  * {common image dir basename}-{start img}-{end img}-{percentage}{extension}`
  * Start and End Image is the name without the extension.
+ *
  * Extension is decided by the extension of the
- * `startImageName`. Is possible for extension to be blank ('')
+ * `startImageName`. If `startImageName` has no extension, will use the
+ * `endImageName`. If neither have an extension, will use blank ("").
  */
 tl::expected<std::filesystem::path, CompositeImageError>
 pathForCompositeImage(const std::filesystem::path &commonImageDirectory,

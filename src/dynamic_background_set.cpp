@@ -30,8 +30,8 @@ public:
 
 using namespace _helper;
 
-template <typename T> constexpr T mod(const T n, const T M) {
-  return ((n % M) + M) % M;
+template <typename T> constexpr T mod(const T number, const T modulo) {
+  return ((number % modulo) + modulo) % modulo;
 }
 
 /**
@@ -68,7 +68,7 @@ constexpr time_t timeBefore(const time_t time,
 EventList createEventListFromTimesAndNames(
     const DynamicBackgroundData *dynamicData,
     const std::vector<std::pair<time_t, std::string>> &timesAndNames) {
-  const std::optional<TransitionInfo> &transition = *(dynamicData->transition);
+  const std::optional<TransitionInfo> &transition = dynamicData->transition;
 
   EventList eventList;
 
@@ -240,6 +240,16 @@ EventList getEventList(const DynamicBackgroundData *dynamicData) {
   return eventList;
 }
 
+std::chrono::seconds getEventDuration(const Event &event) {
+  return std::visit(overloaded{[](const SetBackgroundEvent & /*unused*/) {
+                                 return std::chrono::seconds(0);
+                               },
+                               [](const LerpBackgroundEvent &event) {
+                                 return event.transition.duration;
+                               }},
+                    event);
+}
+
 std::pair<TimeAndEvent, time_t>
 getCurrentEventAndNextTime(const EventList &eventList, const time_t time) {
   logAssert(!eventList.empty(), "Event list is empty");
@@ -263,14 +273,17 @@ getCurrentEventAndNextTime(const EventList &eventList, const time_t time) {
   return std::make_pair(current, next);
 }
 
-std::chrono::seconds timeUntilNext(const time_t &now, const time_t &later) {
+std::chrono::seconds timeUntilNext(const time_t &now,
+                                   const std::chrono::seconds eventDuration,
+                                   const time_t &later) {
   std::chrono::seconds sleepTime;
 
+  constexpr std::chrono::hours TWENTY_FOUR_HOURS(24);
+
   if (now == later) {
-    constexpr std::chrono::hours TWENTY_FOUR_HOURS(24);
-    sleepTime = TWENTY_FOUR_HOURS;
+    sleepTime = TWENTY_FOUR_HOURS - eventDuration;
   } else if (now < later) {
-    sleepTime = std::chrono::seconds(later - now);
+    sleepTime = std::chrono::seconds(later - now) - eventDuration;
   } else { // Sleep past a day boundary / now >= later
     constexpr time_t second_before_midnight =
         convertRawTimeStringToTimeOffset("23:59:59").value();
@@ -278,10 +291,12 @@ std::chrono::seconds timeUntilNext(const time_t &now, const time_t &later) {
         convertRawTimeStringToTimeOffset("00:00:00").value();
 
     sleepTime = std::chrono::seconds((second_before_midnight - now) + 1 +
-                                     (later - midnight));
+                                     (later - midnight)) -
+                eventDuration;
   }
 
-  return sleepTime;
+  return std::clamp(sleepTime, std::chrono::seconds(0),
+                    std::chrono::seconds(TWENTY_FOUR_HOURS));
 }
 
 } // namespace _helper

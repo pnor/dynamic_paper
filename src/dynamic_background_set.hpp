@@ -83,9 +83,15 @@ struct LerpBackgroundEvent {
 void describeError(BackgroundError error);
 
 /** Returns number of seconds until `later`, assuming the time is `now` */
-std::chrono::seconds timeUntilNext(const time_t &now, const time_t &later);
+std::chrono::seconds timeUntilNext(const time_t &now,
+                                   std::chrono::seconds eventDuration,
+                                   const time_t &later);
 
+/** Gets the list of events to do over the course of the day, sorted by time */
 EventList getEventList(const DynamicBackgroundData *dynamicData);
+
+/** Returns the amount of time an event takes */
+std::chrono::seconds getEventDuration(const Event &event);
 
 std::pair<TimeAndEvent, time_t>
 getCurrentEventAndNextTime(const EventList &eventList, time_t time);
@@ -161,9 +167,14 @@ std::chrono::seconds updateBackgroundAndReturnTimeTillNext(
       currentEvent, backgroundData, config,
       std::forward<T>(backgroundSetFunction));
 
+  const std::chrono::seconds currentEventDuration =
+      getEventDuration(currentEvent);
+
   const time_t &nextTime = currentEventAndNextTime.second;
 
-  return timeUntilNext(currentTime, nextTime);
+  // TODO : for lerp events, should check do math to figure out time after
+  // sleeping
+  return timeUntilNext(currentTime, currentEventDuration, nextTime);
 }
 
 } // namespace _helper

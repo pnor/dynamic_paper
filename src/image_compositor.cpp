@@ -33,6 +33,15 @@ bool filesHaveSameExtension(const std::string &name1,
          std::filesystem::path(name2).extension();
 }
 
+std::string getExtension(const std::string &startName,
+                         const std::string &endName) {
+  const std::filesystem::path startPath(startName);
+  if (startPath.extension().empty()) {
+    return std::filesystem::path(endName).extension();
+  }
+  return startPath.extension();
+}
+
 tl::expected<std::filesystem::path, CompositeImageError>
 createCompositeImage(const std::filesystem::path &startImagePath,
                      const std::filesystem::path &endImagePath,
@@ -79,8 +88,7 @@ pathForCompositeImage(const std::filesystem::path &commonImageDirectory,
   }
 
   const std::string &dirName = optDirName.value();
-  const std::string extension =
-      std::filesystem::path(startImageName).extension();
+  const std::string extension = getExtension(startImageName, endImageName);
 
   if (!filesHaveSameExtension(startImageName, endImageName)) {
     logWarning("{} and {} are not the same type of image!", startImageName,
