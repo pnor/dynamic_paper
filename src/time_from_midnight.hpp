@@ -20,9 +20,11 @@ concept DayOrShorter = std::is_same_v<T, std::chrono::seconds> ||
 
 /**
  * Class to represent the amount of time from midnight of the current day
- * Will never have a value greater than a single day.
- * Adding/Subtracting durations to this will loop back to the start/end of the
- * day if the value would be before 00:00:00 or after 23:59:59.
+ * Will never have a value greater than a single day (seconds is always in the
+ * range [0..<(24h in seconds)]).
+ * Adding/Subtracting durations to this will loop
+ * back to the start/end of the day if the value would be before 00:00:00 or
+ * after 23:59:59.
  */
 class TimeFromMidnight {
 public:
