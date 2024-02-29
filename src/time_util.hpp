@@ -2,20 +2,20 @@
 
 #include <chrono>
 #include <ctime>
+#include <format>
 
 #include "config.hpp"
+#include "time_from_midnight.hpp"
 
 /** Handling of time based events */
-
-// TODO move away from time_t for chrono::seconds and make it standard that it
-// represents seconds from midnight in one day
 
 namespace dynamic_paper {
 
 /** Time used for sunrise when testing using `SunEventPollerMethod::Dummy` */
-constexpr time_t DUMMY_SUNRISE_TIME = 8L * (60L * 60L);
+TimeFromMidnight dummySunriseTime();
+
 /** Time used for sunset when testing using `SunEventPollerMethod::Dummy` */
-constexpr time_t DUMMY_SUNSET_TIME = 20L * (60L * 60L);
+TimeFromMidnight dummySunsetTime();
 
 /** Potential errors that can arrise when trying to poll for sunset and sunrise
  */
@@ -27,14 +27,14 @@ enum class SunriseAndSetErrors {
 
 /** Storage class for sunrise and sunset times */
 struct SunriseAndSunsetTimes {
-  time_t sunrise;
-  time_t sunset;
+  TimeFromMidnight sunrise;
+  TimeFromMidnight sunset;
 };
 
 /**
- * Returns the current time using the system clock
+ * Returns the current time using the system clock, as seconds from midnight
  */
-time_t getCurrentTime();
+TimeFromMidnight getCurrentTime();
 
 /**
  * Returns the time of sunrise and sunset by querying another program specified
@@ -47,15 +47,26 @@ std::optional<SunriseAndSunsetTimes>
 getSunriseAndSetString(const Config &config);
 
 /**
- *  Convert string formatted HH:MM or HH:MM:SS to number of seconds
+ *  Convert string formatted HH:MM or HH:MM:SS to number of seconds from
+ * midnight
+ *
  *  Example:
+ *
  *  01:00 -> 3600
  *  02:00 -> 7200
  *  10:00 -> 36000
  *  10:00:01 -> 36001
  */
-constexpr std::optional<time_t>
+constexpr std::optional<TimeFromMidnight>
 convertRawTimeStringToTimeOffset(std::string_view timeString);
+
+/**
+ *  Convert string formatted HH:MM or HH:MM:SS to number of seconds, without
+ * checking to see if the checking the format of `timeString` represents a valid
+ * time string. Will throw an error if it does not.
+ */
+constexpr TimeFromMidnight
+convertRawTimeStringToTimeOffsetUnchecked(std::string_view timeString);
 
 /**
  * Converts a string formatted either a raw time
@@ -63,10 +74,13 @@ convertRawTimeStringToTimeOffset(std::string_view timeString);
  * Or offset from sunrise or sunset:
  * "-01:00 sunrise"
  * "+01:30 sunset"
- * and converts it to a `time_t` in the UTC timezone on 1900-01-00 and the HH:MM
- * based on the string.
+ * and converts it to a `TimeFromMidnight`, the number of seconds from the start
+ * of the day.
+ *
+ * Does this by converting the time to the time in the UTC timezone
+ * on 1900-01-00 and the HH:MM based on the string.
  */
-std::optional<time_t>
+std::optional<TimeFromMidnight>
 timeStringToTime(const std::string &origString,
                  const SunriseAndSunsetTimes &sunriseAndSunsetTimes);
 
@@ -81,7 +95,7 @@ timeStringToTime(const std::string &origString,
  *
  * If anyone 1 string is unable to be parsed, then the function returns nullopt
  */
-std::optional<std::vector<time_t>>
+std::optional<std::vector<TimeFromMidnight>>
 timeStringsToTimes(const std::vector<std::string> &strings,
                    const SunriseAndSunsetTimes &sunriseAndSunsetTimes);
 
@@ -112,7 +126,7 @@ stringViewToInt(const std::string_view text) {
   return res;
 }
 
-constexpr std::optional<time_t>
+constexpr std::optional<TimeFromMidnight>
 convertRawTimeStringToTimeOffset(const std::string_view timeString) {
   size_t colonPos = timeString.find(':');
   if (colonPos == std::string::npos) {
@@ -163,6 +177,14 @@ convertRawTimeStringToTimeOffset(const std::string_view timeString) {
     return std::nullopt;
   }
 
-  return std::chrono::seconds(hours + seconds + minutes).count();
+  return hours + seconds + minutes;
 }
+
+constexpr TimeFromMidnight
+convertRawTimeStringToTimeOffsetUnchecked(std::string_view timeString) {
+  std::optional<TimeFromMidnight> optTime =
+      convertRawTimeStringToTimeOffset(timeString);
+  return optTime.value();
+}
+
 } // namespace dynamic_paper

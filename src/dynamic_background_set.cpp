@@ -1,4 +1,5 @@
 #include "dynamic_background_set.hpp"
+#include "math_util.hpp"
 
 #include <random>
 
@@ -30,44 +31,10 @@ public:
 
 using namespace _helper;
 
-template <typename T> constexpr T mod(const T number, const T modulo) {
-  return ((number % modulo) + modulo) % modulo;
-}
-
-/**
- * Return `time - secondsBefore`, looping the result up to the end of the day if
- * `time` is close to 00:00.
- *
- * For example:
- * If `secondsBefore` = 5 and `time` was the time_t representation of 02:30:00,
- * will return the time_t representation of 2:29:55.
- *
- * If `secondsBefore` = 5 and `time` was the time_t representation of 00:00:02,
- * will return the time_t representation of 23:59:57.
- */
-constexpr time_t timeBefore(const time_t time,
-                            std::chrono::seconds secondsBefore) {
-  // convert time_t to a signed type for this modulo operation
-  using TimeType = long;
-
-  const TimeType seconds = secondsBefore.count();
-
-  constexpr TimeType BEGINNING_OF_DAY =
-      convertRawTimeStringToTimeOffset("00:00:00").value();
-  constexpr TimeType END_OF_DAY =
-      convertRawTimeStringToTimeOffset("23:59:59").value() + 1;
-  constexpr TimeType DAY_LENGTH = END_OF_DAY - BEGINNING_OF_DAY;
-
-  const TimeType result =
-      (mod(((time - BEGINNING_OF_DAY) - seconds), DAY_LENGTH)) +
-      BEGINNING_OF_DAY;
-
-  return static_cast<time_t>(result);
-}
-
 EventList createEventListFromTimesAndNames(
     const DynamicBackgroundData *dynamicData,
-    const std::vector<std::pair<time_t, std::string>> &timesAndNames) {
+    const std::vector<std::pair<TimeFromMidnight, std::string>>
+        &timesAndNames) {
   const std::optional<TransitionInfo> &transition = dynamicData->transition;
 
   EventList eventList;
@@ -83,8 +50,8 @@ EventList createEventListFromTimesAndNames(
         .endImageName = timesAndNames.front().second,
         .transition = transition.value()};
 
-    const time_t transitionTime =
-        timeBefore(timesAndNames.front().first, transition->duration);
+    const TimeFromMidnight transitionTime =
+        timesAndNames.front().first - transition->duration;
 
     eventList.emplace_back(transitionTime, lerpEvent);
   }
@@ -103,8 +70,8 @@ EventList createEventListFromTimesAndNames(
           .endImageName = timesAndNames[i].second,
           .transition = transition.value()};
 
-      const time_t transitionTime =
-          timeBefore(timesAndNames[i].first, transition->duration);
+      const TimeFromMidnight transitionTime =
+          timesAndNames[i].first - transition->duration;
 
       eventList.emplace_back(transitionTime, lerpEvent);
     }
@@ -116,7 +83,7 @@ EventList createEventListFromTimesAndNames(
   }
 
   // TODO should prob not sort like this; find way to build list in order
-  std::ranges::sort(eventList, {}, &std::pair<time_t, Event>::first);
+  std::ranges::sort(eventList, {}, &std::pair<TimeFromMidnight, Event>::first);
 
   return eventList;
 }
@@ -188,17 +155,18 @@ bool eventListIsSortedByTime(const EventList &eventList) {
  * Example: if a time was at index 1 in times and a name was at index 1 in
  * names, they would appear in the same pair in the sorted output.
  **/
-std::vector<std::pair<time_t, std::string>>
+std::vector<std::pair<TimeFromMidnight, std::string>>
 timesAndNamesSortedByTime(const DynamicBackgroundData *dynamicData) {
-  std::vector<std::pair<time_t, std::string>> timesNames;
-  const std::vector<time_t> &times = dynamicData->times;
+  std::vector<std::pair<TimeFromMidnight, std::string>> timesNames;
+  const std::vector<TimeFromMidnight> &times = dynamicData->times;
   const std::vector<std::string> &imageNames = dynamicData->imageNames;
 
   for (size_t i = 0; i < std::min(times.size(), imageNames.size()); i++) {
     timesNames.emplace_back(times[i], imageNames[i]);
   }
 
-  std::ranges::sort(timesNames, {}, &std::pair<time_t, std::string>::first);
+  std::ranges::sort(timesNames, {},
+                    &std::pair<TimeFromMidnight, std::string>::first);
 
   return timesNames;
 }
@@ -207,9 +175,9 @@ timesAndNamesSortedByTime(const DynamicBackgroundData *dynamicData) {
  * Returns the times and names in `dynamicData` sorted by time, but with the
  * image name chosen randomly.
  */
-std::vector<std::pair<time_t, std::string>>
+std::vector<std::pair<TimeFromMidnight, std::string>>
 timesAndRandomNamesSortedByTime(const DynamicBackgroundData *dynamicData) {
-  std::vector<std::pair<time_t, std::string>> timesAndNames;
+  std::vector<std::pair<TimeFromMidnight, std::string>> timesAndNames;
 
   std::vector<std::string> names = dynamicData->imageNames;
   shuffleVector(names);
@@ -250,8 +218,9 @@ std::chrono::seconds getEventDuration(const Event &event) {
                     event);
 }
 
-std::pair<TimeAndEvent, time_t>
-getCurrentEventAndNextTime(const EventList &eventList, const time_t time) {
+std::pair<TimeAndEvent, TimeFromMidnight>
+getCurrentEventAndNextTime(const EventList &eventList,
+                           const TimeFromMidnight time) {
   logAssert(!eventList.empty(), "Event list is empty");
 
   auto firstAfterTime =
@@ -262,20 +231,20 @@ getCurrentEventAndNextTime(const EventList &eventList, const time_t time) {
   if (firstAfterTime == eventList.begin() ||
       firstAfterTime == eventList.end()) {
     const TimeAndEvent &current = eventList.back();
-    const time_t next = eventList.front().first;
+    const TimeFromMidnight next = eventList.front().first;
 
     return std::make_pair(current, next);
   }
 
   const TimeAndEvent current = *(firstAfterTime - 1);
-  const time_t next = firstAfterTime->first;
+  const TimeFromMidnight next = firstAfterTime->first;
 
   return std::make_pair(current, next);
 }
 
-std::chrono::seconds timeUntilNext(const time_t &now,
+std::chrono::seconds timeUntilNext(const TimeFromMidnight &now,
                                    const std::chrono::seconds eventDuration,
-                                   const time_t &later) {
+                                   const TimeFromMidnight &later) {
   std::chrono::seconds sleepTime;
 
   constexpr std::chrono::hours TWENTY_FOUR_HOURS(24);
@@ -285,14 +254,15 @@ std::chrono::seconds timeUntilNext(const time_t &now,
   } else if (now < later) {
     sleepTime = std::chrono::seconds(later - now) - eventDuration;
   } else { // Sleep past a day boundary / now >= later
-    constexpr time_t second_before_midnight =
-        convertRawTimeStringToTimeOffset("23:59:59").value();
-    constexpr time_t midnight =
-        convertRawTimeStringToTimeOffset("00:00:00").value();
+    constexpr TimeFromMidnight secondBeforeMidnight =
+        convertRawTimeStringToTimeOffsetUnchecked("23:59:59");
+    constexpr TimeFromMidnight midnight =
+        convertRawTimeStringToTimeOffsetUnchecked("00:00:00");
 
-    sleepTime = std::chrono::seconds((second_before_midnight - now) + 1 +
-                                     (later - midnight)) -
-                eventDuration;
+    sleepTime =
+        std::chrono::seconds((secondBeforeMidnight - now) +
+                             std::chrono::seconds(1) + (later - midnight)) -
+        eventDuration;
   }
 
   return std::clamp(sleepTime, std::chrono::seconds(0),
@@ -304,7 +274,7 @@ std::chrono::seconds timeUntilNext(const time_t &now,
 DynamicBackgroundData::DynamicBackgroundData(
     std::filesystem::path dataDirectory, BackgroundSetMode mode,
     std::optional<TransitionInfo> transition, BackgroundSetOrder order,
-    std::vector<std::string> imageNames, std::vector<time_t> times)
+    std::vector<std::string> imageNames, std::vector<TimeFromMidnight> times)
     : dataDirectory(std::move(dataDirectory)), mode(mode),
       transition(transition), order(order), imageNames(std::move(imageNames)),
       times(std::move(times)) {}

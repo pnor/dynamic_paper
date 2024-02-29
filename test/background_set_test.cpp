@@ -193,11 +193,20 @@ BackgroundSet getBackgroundSetFrom(const std::string_view yamlString) {
       "Reached impossible cast when getting background set from string");
 }
 
+// ===== Test Fixture ===============
+class BackgroundSetTests : public testing::Test {
+public:
+  void SetUp() override {}
+
+  TimeFromMidnight sunriseTime = dummySunriseTime();
+  TimeFromMidnight sunsetTime = dummySunsetTime();
+};
+
 } // namespace
 
 // ===== Tests ====================
 
-TEST(BackgroundSetTests, StaticBackgroundSetOneImage) {
+TEST_F(BackgroundSetTests, StaticBackgroundSetOneImage) {
   BackgroundSet backgroundSet = getBackgroundSetFrom(STATIC_BACKGROUND_SET);
   EXPECT_EQ(backgroundSet.getName(), "static_paper");
 
@@ -212,7 +221,7 @@ TEST(BackgroundSetTests, StaticBackgroundSetOneImage) {
   EXPECT_EQ(staticDataOpt->mode, BackgroundSetMode::Center);
 }
 
-TEST(BackgroundSetTests, StaticBackgroundSetImageList) {
+TEST_F(BackgroundSetTests, StaticBackgroundSetImageList) {
   BackgroundSet backgroundSet =
       getBackgroundSetFrom(STATIC_BACKGROUND_IMAGE_LIST_SET);
   EXPECT_EQ(backgroundSet.getName(), "static_paper");
@@ -229,7 +238,7 @@ TEST(BackgroundSetTests, StaticBackgroundSetImageList) {
   EXPECT_EQ(staticData->mode, BackgroundSetMode::Fill);
 }
 
-TEST(BackgroundSetTests, DynamicBackgroundSet) {
+TEST_F(BackgroundSetTests, DynamicBackgroundSet) {
   BackgroundSet backgroundSet = getBackgroundSetFrom(DYNAMIC_BACKGROUND_SET);
 
   EXPECT_EQ(backgroundSet.getName(), "dynamic_paper");
@@ -254,11 +263,11 @@ TEST(BackgroundSetTests, DynamicBackgroundSet) {
               ElementsAre("1.jpg", "2.jpg", "3.jpg", "4.jpg"));
 
   ASSERT_THAT(dynamicData->times,
-              ElementsAre(DUMMY_SUNRISE_TIME - ONE_HOUR, DUMMY_SUNRISE_TIME,
-                          DUMMY_SUNSET_TIME - ONE_HOUR, DUMMY_SUNSET_TIME));
+              ElementsAre(sunriseTime - std::chrono::hours(1), sunriseTime,
+                          sunsetTime - std::chrono::hours(1), sunsetTime));
 }
 
-TEST(BackgroundSetTests, DynamicBackgroundSetRandom) {
+TEST_F(BackgroundSetTests, DynamicBackgroundSetRandom) {
   BackgroundSet backgroundSet =
       getBackgroundSetFrom(DYNAMIC_BACKGROUND_SET_RANDOM);
 
@@ -284,12 +293,11 @@ TEST(BackgroundSetTests, DynamicBackgroundSetRandom) {
   ASSERT_THAT(dynamicData->imageNames, ElementsAre("1.jpg", "2.jpg", "3.jpg"));
 
   ASSERT_THAT(dynamicData->times,
-              ElementsAre(ZERO_TIME, ZERO_TIME + (4 * ONE_HOUR),
-                          ZERO_TIME + (10 * ONE_HOUR),
-                          ZERO_TIME + (16 * ONE_HOUR)));
+              ElementsAre(std::chrono::hours(0), std::chrono::hours(4),
+                          std::chrono::hours(10), std::chrono::hours(16)));
 }
 
-TEST(BackgroundSetTests, DynamicBackgroundSetEmptyDefaults) {
+TEST_F(BackgroundSetTests, DynamicBackgroundSetEmptyDefaults) {
   BackgroundSet backgroundSet =
       getBackgroundSetFrom(DYNAMIC_BACKGROUND_SET_EMPTY);
 
@@ -311,10 +319,11 @@ TEST(BackgroundSetTests, DynamicBackgroundSetEmptyDefaults) {
 
   ASSERT_THAT(dynamicData->imageNames, ElementsAre("1.jpg", "2.jpg"));
 
-  ASSERT_THAT(dynamicData->times, ElementsAre(ZERO_TIME, ZERO_TIME + ONE_HOUR));
+  ASSERT_THAT(dynamicData->times,
+              ElementsAre(std::chrono::hours(0), std::chrono::hours(1)));
 }
 
-TEST(BackgroundSetTests, DynamicBackgroundSetSunTimes) {
+TEST_F(BackgroundSetTests, DynamicBackgroundSetSunTimes) {
   BackgroundSet backgroundSet =
       getBackgroundSetFrom(DYNAMIC_BACKGROUND_SUNTIMES);
 
@@ -341,21 +350,22 @@ TEST(BackgroundSetTests, DynamicBackgroundSetSunTimes) {
 
   ASSERT_THAT(
       dynamicData->times,
-      ElementsAre(DUMMY_SUNRISE_TIME - ((5 * ONE_HOUR) + (0 * ONE_MINUTE)),
-                  DUMMY_SUNRISE_TIME - ((4 * ONE_HOUR) + (0 * ONE_MINUTE)),
-                  DUMMY_SUNRISE_TIME - ((3 * ONE_HOUR) + (30 * ONE_MINUTE)),
-                  DUMMY_SUNRISE_TIME - ((1 * ONE_HOUR) + (11 * ONE_MINUTE)),
-                  DUMMY_SUNRISE_TIME,
-                  DUMMY_SUNRISE_TIME + ((0 * ONE_HOUR) + (0 * ONE_MINUTE)),
-                  DUMMY_SUNRISE_TIME + ((0 * ONE_HOUR) + (0 * ONE_MINUTE)),
-                  DUMMY_SUNRISE_TIME + ((1 * ONE_HOUR) + (0 * ONE_MINUTE)),
-                  DUMMY_SUNRISE_TIME + ((1 * ONE_HOUR) + (1 * ONE_MINUTE)),
-                  DUMMY_SUNSET_TIME - ((1 * ONE_HOUR) + (0 * ONE_MINUTE)),
-                  DUMMY_SUNSET_TIME - ((0 * ONE_HOUR) + (0 * ONE_MINUTE)),
-                  DUMMY_SUNSET_TIME));
+      ElementsAre(
+          sunriseTime - (std::chrono::hours(5) + std::chrono::minutes(0)),
+          sunriseTime - (std::chrono::hours(4) + std::chrono::minutes(0)),
+          sunriseTime - (std::chrono::hours(3) + std::chrono::minutes(30)),
+          sunriseTime - (std::chrono::hours(1) + std::chrono::minutes(11)),
+          sunriseTime,
+          sunriseTime + (std::chrono::hours(0) + std::chrono::minutes(0)),
+          sunriseTime + (std::chrono::hours(0) + std::chrono::minutes(0)),
+          sunriseTime + (std::chrono::hours(1) + std::chrono::minutes(0)),
+          sunriseTime + (std::chrono::hours(1) + std::chrono::minutes(1)),
+          sunsetTime - (std::chrono::hours(1) + std::chrono::minutes(0)),
+          sunsetTime - (std::chrono::hours(0) + std::chrono::minutes(0)),
+          sunsetTime));
 }
 
-TEST(BackgroundSetTests, DynamicBackgroundSetStrictTimes) {
+TEST_F(BackgroundSetTests, DynamicBackgroundSetStrictTimes) {
   BackgroundSet backgroundSet =
       getBackgroundSetFrom(DYNAMIC_BACKGROUND_STRICT_TIMES);
 
@@ -380,17 +390,17 @@ TEST(BackgroundSetTests, DynamicBackgroundSetStrictTimes) {
                           "7.jpg", "8.jpg"));
 
   ASSERT_THAT(dynamicData->times,
-              ElementsAre(ZERO_TIME + ((0 * ONE_HOUR) + (0 * ONE_MINUTE)),
-                          ZERO_TIME + ((0 * ONE_HOUR) + (0 * ONE_MINUTE)),
-                          ZERO_TIME + ((1 * ONE_HOUR) + (30 * ONE_MINUTE)),
-                          ZERO_TIME + ((2 * ONE_HOUR) + (45 * ONE_MINUTE)),
-                          ZERO_TIME + ((11 * ONE_HOUR) + (11 * ONE_MINUTE)),
-                          ZERO_TIME + ((15 * ONE_HOUR) + (59 * ONE_MINUTE)),
-                          ZERO_TIME + ((23 * ONE_HOUR) + (23 * ONE_MINUTE)),
-                          ZERO_TIME + ((23 * ONE_HOUR) + (59 * ONE_MINUTE))));
+              ElementsAre(std::chrono::hours(0) + std::chrono::minutes(0),
+                          std::chrono::hours(0) + std::chrono::minutes(0),
+                          std::chrono::hours(1) + std::chrono::minutes(30),
+                          std::chrono::hours(2) + std::chrono::minutes(45),
+                          std::chrono::hours(11) + std::chrono::minutes(11),
+                          std::chrono::hours(15) + std::chrono::minutes(59),
+                          std::chrono::hours(23) + std::chrono::minutes(23),
+                          std::chrono::hours(23) + std::chrono::minutes(59)));
 }
 
-TEST(BackgroundSetTests, DynamicBackgroundSetNoImagesOrTimes) {
+TEST_F(BackgroundSetTests, DynamicBackgroundSetNoImagesOrTimes) {
   const YAML::Node yaml =
       YAML::Load(std::string(DYNAMIC_BACKGROUND_NO_IMAGES_OR_TIMES));
   auto yamlMap = yaml.as<std::unordered_map<std::string, YAML::Node>>();
@@ -403,7 +413,7 @@ TEST(BackgroundSetTests, DynamicBackgroundSetNoImagesOrTimes) {
   }
 }
 
-TEST(BackgroundSetTests, DynamicBackgroundSetTransitionStepsNoLength) {
+TEST_F(BackgroundSetTests, DynamicBackgroundSetTransitionStepsNoLength) {
   BackgroundSet backgroundSet =
       getBackgroundSetFrom(DYNAMIC_BACKGROUND_SET_STEPS_NO_LENGTH);
 

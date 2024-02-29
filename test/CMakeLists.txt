@@ -50,7 +50,9 @@ add_executable(
   background_test_setter.cpp
   static_background_test.cpp
   dynamic_background_test.cpp
+  time_from_midnight_test.cpp
   ${dynamic_paper_SOURCE_DIR}/src/background_set.cpp
+  ${dynamic_paper_SOURCE_DIR}/src/time_from_midnight.cpp
   ${dynamic_paper_SOURCE_DIR}/src/background_setter.cpp
   ${dynamic_paper_SOURCE_DIR}/src/command_executor.cpp
   ${dynamic_paper_SOURCE_DIR}/src/config.cpp

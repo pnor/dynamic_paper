@@ -29,14 +29,14 @@ struct DynamicBackgroundData {
   BackgroundSetOrder order;
   std::vector<std::string> imageNames;
   /** each entry represents number seconds after 00:00 to do a transition */
-  std::vector<time_t> times;
+  std::vector<TimeFromMidnight> times;
 
   DynamicBackgroundData(std::filesystem::path dataDirectory,
                         BackgroundSetMode mode,
                         std::optional<TransitionInfo> transition,
                         BackgroundSetOrder order,
                         std::vector<std::string> imageNames,
-                        std::vector<time_t> times);
+                        std::vector<TimeFromMidnight> times);
 
   /** Updates the background shown for the current time, and returns the amount
    * of seconds until the next event will be shown. */
@@ -44,7 +44,7 @@ struct DynamicBackgroundData {
             ChangesFilesystem Files = FilesystemHandler,
             GetsCompositeImages CompositeImages = ImageCompositor>
   [[nodiscard]] std::chrono::seconds
-  updateBackground(time_t currentTime, const Config &config,
+  updateBackground(TimeFromMidnight currentTime, const Config &config,
                    T &&backgroundSetFunction) const;
 };
 
@@ -58,7 +58,7 @@ struct SetBackgroundEvent;
 struct LerpBackgroundEvent;
 
 using Event = std::variant<SetBackgroundEvent, LerpBackgroundEvent>;
-using TimeAndEvent = std::pair<time_t, Event>;
+using TimeAndEvent = std::pair<TimeFromMidnight, Event>;
 using EventList = std::vector<TimeAndEvent>;
 
 // --- Structs ---
@@ -83,9 +83,9 @@ struct LerpBackgroundEvent {
 void describeError(BackgroundError error);
 
 /** Returns number of seconds until `later`, assuming the time is `now` */
-std::chrono::seconds timeUntilNext(const time_t &now,
+std::chrono::seconds timeUntilNext(const TimeFromMidnight &now,
                                    std::chrono::seconds eventDuration,
-                                   const time_t &later);
+                                   const TimeFromMidnight &later);
 
 /** Gets the list of events to do over the course of the day, sorted by time */
 EventList getEventList(const DynamicBackgroundData *dynamicData);
@@ -93,8 +93,8 @@ EventList getEventList(const DynamicBackgroundData *dynamicData);
 /** Returns the amount of time an event takes */
 std::chrono::seconds getEventDuration(const Event &event);
 
-std::pair<TimeAndEvent, time_t>
-getCurrentEventAndNextTime(const EventList &eventList, time_t time);
+std::pair<TimeAndEvent, TimeFromMidnight>
+getCurrentEventAndNextTime(const EventList &eventList, TimeFromMidnight time);
 
 bool eventListIsSortedByTime(const EventList &eventList);
 
@@ -147,8 +147,9 @@ void doEvent(const Event &event, const DynamicBackgroundData *backgroundData,
 template <CanSetBackgroundTrait T, ChangesFilesystem Files,
           GetsCompositeImages CompositeImages>
 std::chrono::seconds updateBackgroundAndReturnTimeTillNext(
-    const time_t currentTime, const DynamicBackgroundData *backgroundData,
-    const Config &config, const unsigned int seed, T &&backgroundSetFunction) {
+    const TimeFromMidnight currentTime,
+    const DynamicBackgroundData *backgroundData, const Config &config,
+    const unsigned int seed, T &&backgroundSetFunction) {
   // Reset the random seed on each iteration of the loop to ensure the order
   // of `random` dynamic backgrounds is consistent between each reconstruction
   // of the event list.
@@ -158,7 +159,7 @@ std::chrono::seconds updateBackgroundAndReturnTimeTillNext(
   logAssert(eventListIsSortedByTime(eventList),
             "Event list is not sorted by time from earliest to latest");
 
-  const std::pair<TimeAndEvent, time_t> currentEventAndNextTime =
+  const std::pair<TimeAndEvent, TimeFromMidnight> currentEventAndNextTime =
       getCurrentEventAndNextTime(eventList, currentTime);
 
   const Event &currentEvent = currentEventAndNextTime.first.second;
@@ -170,7 +171,7 @@ std::chrono::seconds updateBackgroundAndReturnTimeTillNext(
   const std::chrono::seconds currentEventDuration =
       getEventDuration(currentEvent);
 
-  const time_t &nextTime = currentEventAndNextTime.second;
+  const TimeFromMidnight &nextTime = currentEventAndNextTime.second;
 
   // TODO : for lerp events, should check do math to figure out time after
   // sleeping
@@ -184,7 +185,7 @@ std::chrono::seconds updateBackgroundAndReturnTimeTillNext(
 template <CanSetBackgroundTrait T, ChangesFilesystem Files,
           GetsCompositeImages CompositeImages>
 [[nodiscard]] std::chrono::seconds
-DynamicBackgroundData::updateBackground(const time_t currentTime,
+DynamicBackgroundData::updateBackground(const TimeFromMidnight currentTime,
                                         const Config &config,
                                         T &&backgroundSetFunction) const {
   logTrace("Show dynamic background");

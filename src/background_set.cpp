@@ -231,8 +231,9 @@ createDynamicBackgroundSetFromInfo(const ParsingInfo &parsingInfo,
     return tl::unexpected(BackgroundSetParseErrors::MissingSunpollInfo);
   }
 
-  std::optional<std::vector<time_t>> optTimeOffsets = timeStringsToTimes(
-      parsingInfo.timeStrings.value(), optSunriseAndSunsetTimes.value());
+  std::optional<std::vector<TimeFromMidnight>> optTimeOffsets =
+      timeStringsToTimes(parsingInfo.timeStrings.value(),
+                         optSunriseAndSunsetTimes.value());
   if (!optTimeOffsets.has_value()) {
     return tl::unexpected(BackgroundSetParseErrors::BadTimes);
   }

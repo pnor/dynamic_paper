@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cctype>
+#include <chrono>
 #include <ctime>
 #include <locale>
 
@@ -59,10 +60,14 @@ getSunriseAndSetUsingSunwait() {
   std::tm sunriseTm = hourMinuteStringToTM(groupMatches[0].str());
   std::tm sunsetTm = hourMinuteStringToTM(groupMatches[1].str());
 
-  return {{.sunrise = mktime(&sunriseTm), .sunset = mktime(&sunsetTm)}};
+  const time_t sunriseTimeSinceEpoch = mktime(&sunriseTm);
+  const time_t sunsetTimeSinceEpoch = mktime(&sunsetTm);
+
+  return {{.sunrise = std::chrono::seconds(sunriseTimeSinceEpoch),
+           .sunset = std::chrono::seconds(sunsetTimeSinceEpoch)}};
 }
 
-std::optional<time_t> sunsetOrRiseStringToTimeOffset(
+std::optional<TimeFromMidnight> sunsetOrRiseStringToTimeOffset(
     const SunriseAndSunsetTimes &sunriseAndSunsetTimes,
     const std::smatch &groupMatches) {
   std::string sunsetOrRiseStr = trim_copy(groupMatches[1].str());
@@ -81,7 +86,7 @@ std::optional<time_t> sunsetOrRiseStringToTimeOffset(
   return std::nullopt;
 }
 
-std::optional<time_t>
+std::optional<TimeFromMidnight>
 sunOffsetStringToTimeOffset(const SunriseAndSunsetTimes &sunriseAndSunsetTimes,
                             const std::smatch &groupMatches) {
   const std::string &addOrSubtractStr = groupMatches[1].str();
@@ -91,7 +96,7 @@ sunOffsetStringToTimeOffset(const SunriseAndSunsetTimes &sunriseAndSunsetTimes,
       sunsetOrRiseStr.begin(), sunsetOrRiseStr.end(), sunsetOrRiseStr.begin(),
       [](const char letter) { return std::tolower(letter); });
 
-  std::optional<time_t> timeOffset =
+  std::optional<TimeFromMidnight> timeOffset =
       convertRawTimeStringToTimeOffset(offsetStr);
 
   if (!timeOffset.has_value()) {
@@ -109,9 +114,9 @@ sunOffsetStringToTimeOffset(const SunriseAndSunsetTimes &sunriseAndSunsetTimes,
     return std::nullopt;
   }
 
-  const time_t baseSunTime = sunsetOrRiseStr == "sunrise"
-                                 ? sunriseAndSunsetTimes.sunrise
-                                 : sunriseAndSunsetTimes.sunset;
+  const TimeFromMidnight baseSunTime = sunsetOrRiseStr == "sunrise"
+                                           ? sunriseAndSunsetTimes.sunrise
+                                           : sunriseAndSunsetTimes.sunset;
 
   switch (addOrSubtractStr[0]) {
   case '+': {
@@ -131,14 +136,22 @@ sunOffsetStringToTimeOffset(const SunriseAndSunsetTimes &sunriseAndSunsetTimes,
 
 // ===== header ====================
 
-time_t getCurrentTime() {
+TimeFromMidnight dummySunriseTime() {
+  return TimeFromMidnight::forTime("08:00");
+}
+
+TimeFromMidnight dummySunsetTime() {
+  return TimeFromMidnight::forTime("20:00");
+}
+
+TimeFromMidnight getCurrentTime() {
   // HH:MM
   constexpr size_t HOURS_MINUTES_SIZE = 5;
 
   const std::string timeString =
       std::format("{:%T}", std::chrono::floor<std::chrono::seconds>(
                                std::chrono::system_clock::now()));
-  std::optional<time_t> optTime = convertRawTimeStringToTimeOffset(
+  std::optional<TimeFromMidnight> optTime = convertRawTimeStringToTimeOffset(
       timeString.substr(0, HOURS_MINUTES_SIZE));
 
   logAssert(optTime.has_value(), "Unable to parse valid time from return "
@@ -180,7 +193,7 @@ getSunriseAndSetString(const Config &config) {
 
   case SunEventPollerMethod::Dummy: {
     return std::make_optional<SunriseAndSunsetTimes>(
-        {.sunrise = DUMMY_SUNRISE_TIME, .sunset = DUMMY_SUNSET_TIME});
+        {.sunrise = dummySunriseTime(), .sunset = dummySunsetTime()});
   };
   default: {
     return std::nullopt;
@@ -188,7 +201,7 @@ getSunriseAndSetString(const Config &config) {
   }
 }
 
-std::optional<time_t>
+std::optional<TimeFromMidnight>
 timeStringToTime(const std::string &origString,
                  const SunriseAndSunsetTimes &sunriseAndSunsetTimes) {
 
@@ -234,14 +247,14 @@ timeStringToTime(const std::string &origString,
   return std::nullopt;
 }
 
-std::optional<std::vector<time_t>>
+std::optional<std::vector<TimeFromMidnight>>
 timeStringsToTimes(const std::vector<std::string> &strings,
                    const SunriseAndSunsetTimes &sunriseAndSunsetTimes) {
-  std::vector<time_t> times;
+  std::vector<TimeFromMidnight> times;
   times.reserve(strings.size());
 
   for (const auto &timeString : strings) {
-    std::optional<time_t> optTime =
+    std::optional<TimeFromMidnight> optTime =
         timeStringToTime(timeString, sunriseAndSunsetTimes);
     if (!optTime.has_value()) {
       return std::nullopt;
