@@ -68,6 +68,6 @@ target_include_directories(
 )
 
 # clang tidy
-#find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
-#set(CLANG_TIDY_COMMAND "${CLANG_TIDY_EXE}")
-#set_target_properties(dynamic_paper PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND}")
+find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
+set(CLANG_TIDY_COMMAND "${CLANG_TIDY_EXE}")
+set_target_properties(dynamic_paper PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND}")

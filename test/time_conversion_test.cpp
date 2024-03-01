@@ -19,10 +19,9 @@
 
 #include <gtest/gtest.h>
 
-#include "constants.hpp"
+#include "src/time_util.hpp"
 
 using namespace dynamic_paper;
-using namespace dynamic_paper_test;
 
 // ===== Test Fixture ===============
 

@@ -11,10 +11,7 @@
 #include "src/config.hpp"
 #include "src/file_util.hpp"
 
-#include "constants.hpp"
-
 using namespace dynamic_paper;
-using namespace dynamic_paper_test;
 using namespace testing;
 
 namespace {
