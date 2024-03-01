@@ -1,6 +1,7 @@
 #include "dynamic_background_set.hpp"
 #include "math_util.hpp"
 
+#include <iostream> // TODO remove
 #include <random>
 
 namespace dynamic_paper {
@@ -9,6 +10,8 @@ namespace _helper {
 
 // ===== Helper =====
 namespace {
+
+constexpr std::chrono::hours TWENTY_FOUR_HOURS(24);
 
 /**
  * Class to be used by `std::shuffle` that uses `std::rand`.
@@ -31,6 +34,24 @@ public:
 
 using namespace _helper;
 
+/** Returns a time that is equivalent to `time` - `duration`, but clamped so
+ * that it is always >= `after`. Accounts for the looping property of the time
+ * */
+std::pair<TimeFromMidnight, std::chrono::seconds>
+nonOverlappingTimeAndDuration(TimeFromMidnight time,
+                              const std::chrono::seconds duration,
+                              TimeFromMidnight after) {
+  const std::chrono::seconds timeSeconds = time;
+  const std::chrono::seconds afterSeconds =
+      after > time ? -(TWENTY_FOUR_HOURS - std::chrono::seconds(after))
+                   : std::chrono::seconds(after);
+
+  const std::chrono::seconds nonOverlappingSeconds =
+      std::max(timeSeconds - duration, afterSeconds);
+  return {TimeFromMidnight(nonOverlappingSeconds),
+          time - nonOverlappingSeconds};
+}
+
 EventList createEventListFromTimesAndNames(
     const DynamicBackgroundData *dynamicData,
     const std::vector<std::pair<TimeFromMidnight, std::string>>
@@ -39,39 +60,36 @@ EventList createEventListFromTimesAndNames(
 
   EventList eventList;
 
-  // TODO clamp events to not make the lerping overlap and be out of order
-
   logAssert(!timesAndNames.empty(), "Times and names cannot be empty");
 
-  if (transition.has_value() && timesAndNames.size() > 1) {
-    const LerpBackgroundEvent lerpEvent = {
-        .commonImageDirectory = dynamicData->dataDirectory,
-        .startImageName = timesAndNames.back().second,
-        .endImageName = timesAndNames.front().second,
-        .transition = transition.value()};
-
-    const TimeFromMidnight transitionTime =
-        timesAndNames.front().first - transition->duration;
-
-    eventList.emplace_back(transitionTime, lerpEvent);
+  // Single event case
+  if (timesAndNames.size() == 1) {
+    eventList.emplace_back(
+        timesAndNames.begin()->first,
+        SetBackgroundEvent{.imagePath = dynamicData->dataDirectory /
+                                        timesAndNames.begin()->second});
+    return eventList;
   }
-  eventList.emplace_back(
-      timesAndNames[0].first,
-      SetBackgroundEvent{.imagePath = dynamicData->dataDirectory /
-                                      timesAndNames[0].second});
 
-  // Add rest of events
-  for (EventList::size_type i = 1; i < timesAndNames.size(); i++) {
+  for (EventList::size_type i = 0; i < timesAndNames.size(); i++) {
     // transition event
     if (dynamicData->transition.has_value()) {
+      const std::pair<TimeFromMidnight, std::string> &beforeTimeName =
+          timesAndNames.at(mod(static_cast<int>(i) - 1,
+                               static_cast<int>(timesAndNames.size())));
+      const std::pair<TimeFromMidnight, std::string> &afterTimeName =
+          timesAndNames.at(i);
+
+      const auto [transitionTime, actualDuration] =
+          nonOverlappingTimeAndDuration(
+              afterTimeName.first, transition->duration,
+              beforeTimeName.first + std::chrono::seconds(1));
+
       const LerpBackgroundEvent lerpEvent = {
           .commonImageDirectory = dynamicData->dataDirectory,
-          .startImageName = timesAndNames[i - 1].second,
-          .endImageName = timesAndNames[i].second,
-          .transition = transition.value()};
-
-      const TimeFromMidnight transitionTime =
-          timesAndNames[i].first - transition->duration;
+          .startImageName = beforeTimeName.second,
+          .endImageName = afterTimeName.second,
+          .transition = TransitionInfo(actualDuration, transition->steps)};
 
       eventList.emplace_back(transitionTime, lerpEvent);
     }
@@ -82,11 +100,69 @@ EventList createEventListFromTimesAndNames(
                                         timesAndNames[i].second});
   }
 
-  // TODO should prob not sort like this; find way to build list in order
   std::ranges::sort(eventList, {}, &std::pair<TimeFromMidnight, Event>::first);
 
   return eventList;
 }
+
+// TODO [replace]
+// EventList createEventListFromTimesAndNames(
+//     const DynamicBackgroundData *dynamicData,
+//     const std::vector<std::pair<TimeFromMidnight, std::string>>
+//          &timesAndNames) {
+//    const std::optional<TransitionInfo> &transition = dynamicData->transition;
+//
+//    EventList eventList;
+//
+//    // TODO clamp events to not make the lerping overlap and be out of order
+//
+//    logAssert(!timesAndNames.empty(), "Times and names cannot be empty");
+//
+//    if (transition.has_value() && timesAndNames.size() > 1) {
+//      const LerpBackgroundEvent lerpEvent = {
+//          .commonImageDirectory = dynamicData->dataDirectory,
+//          .startImageName = timesAndNames.back().second,
+//          .endImageName = timesAndNames.front().second,
+//          .transition = transition.value()};
+//
+//      const TimeFromMidnight transitionTime =
+//          timesAndNames.front().first - transition->duration;
+//
+//      eventList.emplace_back(transitionTime, lerpEvent);
+//    }
+//    eventList.emplace_back(
+//        timesAndNames[0].first,
+//        SetBackgroundEvent{.imagePath = dynamicData->dataDirectory /
+//                                        timesAndNames[0].second});
+//
+//    // Add rest of events
+//    for (EventList::size_type i = 1; i < timesAndNames.size(); i++) {
+//      // transition event
+//      if (dynamicData->transition.has_value()) {
+//        const LerpBackgroundEvent lerpEvent = {
+//            .commonImageDirectory = dynamicData->dataDirectory,
+//            .startImageName = timesAndNames[i - 1].second,
+//            .endImageName = timesAndNames[i].second,
+//            .transition = transition.value()};
+//
+//        const TimeFromMidnight transitionTime =
+//            timesAndNames[i].first - transition->duration;
+//
+//        eventList.emplace_back(transitionTime, lerpEvent);
+//      }
+//      // set background event
+//      eventList.emplace_back(
+//          timesAndNames[i].first,
+//          SetBackgroundEvent{.imagePath = dynamicData->dataDirectory /
+//                                          timesAndNames[i].second});
+//    }
+//
+//    // TODO should prob not sort like this; find way to build list in order
+//    std::ranges::sort(eventList, {}, &std::pair<TimeFromMidnight,
+//    Event>::first);
+//
+//    return eventList;
+//  }
 
 /**
  * Shuffles a vector using `std::rand()` as the source of randomness
@@ -143,6 +219,11 @@ unsigned int chooseRandomSeed() {
 bool eventListIsSortedByTime(const EventList &eventList) {
   for (size_t i = 0; i < eventList.size() - 1; i++) {
     if (!(eventList[i].first < eventList[i + 1].first)) {
+      std::cout << "?======" << std::endl;
+      for (const auto &event : eventList) {
+        std::cout << event.first << std::endl;
+      }
+      std::cout << "?======" << std::endl;
       return false;
     }
   }
@@ -246,8 +327,6 @@ std::chrono::seconds timeUntilNext(const TimeFromMidnight &now,
                                    const std::chrono::seconds eventDuration,
                                    const TimeFromMidnight &later) {
   std::chrono::seconds sleepTime;
-
-  constexpr std::chrono::hours TWENTY_FOUR_HOURS(24);
 
   if (now == later) {
     sleepTime = TWENTY_FOUR_HOURS - eventDuration;

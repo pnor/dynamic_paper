@@ -54,7 +54,7 @@ public:
                                   const TimeFromMidnight &value);
 
   constexpr TimeFromMidnight(const std::chrono::seconds seconds)
-      : seconds(seconds) {}
+      : seconds(mod(seconds, TimeFromMidnight::DAY_LENGTH)) {}
   template <DayOrShorter T>
   constexpr TimeFromMidnight(T time) : seconds(std::chrono::seconds(time)) {}
   TimeFromMidnight(const TimeFromMidnight &) = default;

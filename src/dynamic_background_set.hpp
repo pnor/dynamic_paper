@@ -173,8 +173,6 @@ std::chrono::seconds updateBackgroundAndReturnTimeTillNext(
 
   const TimeFromMidnight &nextTime = currentEventAndNextTime.second;
 
-  // TODO : for lerp events, should check do math to figure out time after
-  // sleeping
   return timeUntilNext(currentTime, currentEventDuration, nextTime);
 }
 
