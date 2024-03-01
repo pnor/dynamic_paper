@@ -674,7 +674,6 @@ TEST_F(DynamicBackgroundTest, FileExtensionsDiffer) {
                   SetEvent{.imagePath = data("end.jpg"), .mode = mode}));
 }
 
-// TODO
 TEST_F(DynamicBackgroundTest, OverlappingTransitions) {
   TestBackgroundSetterHistory history{};
 
@@ -723,4 +722,62 @@ TEST_F(DynamicBackgroundTest, OverlappingTransitions) {
           SetEvent{.imagePath = cache("test_dir-2-3-66.jpg"), .mode = mode},
           // show 3
           SetEvent{.imagePath = data("3.jpg"), .mode = mode}));
+}
+
+TEST_F(DynamicBackgroundTest, OverlappingTransitions2) {
+  TestBackgroundSetterHistory history{};
+
+  // Config options for the type of dynamic background set
+  const BackgroundSetMode mode = BackgroundSetMode::Fill;
+  const std::optional<TransitionInfo> transition(
+      TransitionInfo(std::chrono::hours(10), 2));
+  const BackgroundSetOrder order = BackgroundSetOrder::Linear;
+
+  const std::vector<std::string> imageNames = {"1.jpg", "2.jpg", "3.jpg"};
+  const std::vector<TimeFromMidnight> times = {time("20:00"), time("22:00"),
+                                               time("1:00")};
+
+  // Times to test with
+  const std::array timesToCallUpdateBackground{time("20:00"), time("20:00:10"),
+                                               time("22:00"), time("00:00"),
+                                               time("1:00"),  time("11:00")};
+
+  // Do the testing
+  const std::array<std::chrono::seconds, timesToCallUpdateBackground.size()>
+      waitTimesReturned =
+          testDynamicBackground(history,
+                                {.dataDir = this->testDataDir,
+                                 .config = this->config,
+                                 .transition = transition,
+                                 .order = order,
+                                 .times = times},
+                                {.names = imageNames, .mode = mode},
+                                timesToCallUpdateBackground);
+
+  // Expectations
+  EXPECT_EQ(waitTimesReturned[0], std::chrono::seconds(1));
+  EXPECT_EQ(waitTimesReturned[1], std::chrono::seconds(0));
+  EXPECT_EQ(waitTimesReturned[2], std::chrono::seconds(1));
+  EXPECT_EQ(waitTimesReturned[3], std::chrono::seconds(0));
+  EXPECT_EQ(waitTimesReturned[4], std::chrono::hours(9));
+  EXPECT_EQ(waitTimesReturned[5], std::chrono::seconds(0));
+
+  EXPECT_THAT(
+      history.getHistory(),
+      ElementsAre(
+          // show 1
+          SetEvent{.imagePath = data("1.jpg"), .mode = mode},
+          // lerp 1->2
+          SetEvent{.imagePath = cache("test_dir-1-2-33.jpg"), .mode = mode},
+          SetEvent{.imagePath = cache("test_dir-1-2-66.jpg"), .mode = mode},
+          // show 2
+          SetEvent{.imagePath = data("2.jpg"), .mode = mode},
+          // lerp 2->3
+          SetEvent{.imagePath = cache("test_dir-2-3-33.jpg"), .mode = mode},
+          SetEvent{.imagePath = cache("test_dir-2-3-66.jpg"), .mode = mode},
+          // show 3
+          SetEvent{.imagePath = data("3.jpg"), .mode = mode},
+          // show 3->1
+          SetEvent{.imagePath = cache("test_dir-3-1-33.jpg"), .mode = mode},
+          SetEvent{.imagePath = cache("test_dir-3-1-66.jpg"), .mode = mode}));
 }
