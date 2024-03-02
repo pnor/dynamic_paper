@@ -118,6 +118,8 @@ void showBackgroundSet(BackgroundSet &backgroundSet, const Config &config) {
   if (dynamicData.has_value()) {
     while (true) {
       const TimeFromMidnight currentTime = getCurrentTime();
+      logDebug("Current time is {}", currentTime);
+
       const std::chrono::seconds sleepTime =
           dynamicData->updateBackground(currentTime, config,
                                         &setBackgroundToImage) +

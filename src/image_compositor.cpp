@@ -63,7 +63,7 @@ createCompositeImage(const std::filesystem::path &startImagePath,
 
   const int exitCode = runCommandExitCode(
       std::format("magick composite -gravity center -blend {}% {} {} {}",
-                  percentage, startImagePath.string(), endImagePath.string(),
+                  percentage, endImagePath.string(), startImagePath.string(),
                   destinationImagePath.string()));
 
   if (exitCode == EXIT_SUCCESS) {

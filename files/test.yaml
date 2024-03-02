@@ -3,4 +3,5 @@ method: "wallutils"
 #hook_script: "./test.sh"
 image_dir: "~/dev/src/dynamic_paper/dynamic_paper/files/backgrounds/"
 hook_script: "~/dev/src/dynamic_paper/dynamic_paper/files/test.sh"
+background_config: "./files/background_sets.yaml"
 logging_level: trace

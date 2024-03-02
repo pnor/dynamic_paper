@@ -63,7 +63,7 @@ public:
 
 private:
   std::chrono::seconds seconds;
-  constexpr static std::chrono::seconds DAY_LENGTH = std::chrono::hours(24);
+  static constexpr std::chrono::seconds DAY_LENGTH = std::chrono::hours(24);
 };
 
 // operator<=>
@@ -95,3 +95,16 @@ inline TimeFromMidnight operator-(const TimeFromMidnight &lhs,
 }
 
 } // namespace dynamic_paper
+
+// formatter
+template <>
+struct std::formatter<dynamic_paper::TimeFromMidnight>
+    : std::formatter<std::string> {
+  auto format(dynamic_paper::TimeFromMidnight time, format_context &ctx) const {
+
+    return std::formatter<std::string>::format(
+        std::format("{} from Midnight ({})", chrono::seconds(time),
+                    std::format("{:%T}", chrono::seconds(time))),
+        ctx);
+  }
+};

@@ -115,6 +115,9 @@ tl::expected<void, BackgroundError> lerpBackgroundBetweenImages(
     const tl::expected<void, BackgroundError> backgroundResult =
         backgroundSetFunction(expectedCompositedImage.value(), mode, method);
 
+    logTrace("Interpolating to {}...",
+             expectedCompositedImage.value().string());
+
     if (!backgroundResult.has_value()) {
       return tl::unexpected(BackgroundError::SetBackgroundError);
     }

@@ -44,8 +44,8 @@ getSunriseAndSetUsingSunwait() {
 
   const std::string &sunwaitResult = sunwaitExpectation.value();
 
-  std::smatch groupMatches;
-  const std::regex sunwaitRegex(R"(^(\d\d:\d\d), (\d\d:\d\d))");
+  std::smatch groupMatches{};
+  const std::regex sunwaitRegex(R"(^(\d\d:\d\d), (\d\d:\d\d)\n)");
 
   const bool outputMatchResult =
       tryRegexes(sunwaitResult, groupMatches, sunwaitRegex);
@@ -145,12 +145,18 @@ TimeFromMidnight dummySunsetTime() {
 }
 
 TimeFromMidnight getCurrentTime() {
-  // HH:MM
-  constexpr size_t HOURS_MINUTES_SIZE = 5;
+  // HH:MM:SS
+  constexpr size_t HOURS_MINUTES_SIZE = 8;
+  constexpr size_t START_OF_LOCAL_TIME = 11;
+
+  const std::chrono::zoned_time zonedTime{std::chrono::current_zone(),
+                                          std::chrono::system_clock::now()};
 
   const std::string timeString =
-      std::format("{:%T}", std::chrono::floor<std::chrono::seconds>(
-                               std::chrono::system_clock::now()));
+      std::format("{}", zonedTime).substr(START_OF_LOCAL_TIME);
+
+  logDebug("Current time unparsed is {}", timeString);
+
   std::optional<TimeFromMidnight> optTime = convertRawTimeStringToTimeOffset(
       timeString.substr(0, HOURS_MINUTES_SIZE));
 

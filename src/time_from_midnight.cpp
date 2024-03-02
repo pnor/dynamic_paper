@@ -1,5 +1,7 @@
 #include "time_from_midnight.hpp"
 
+#include <format>
+
 #include "logger.hpp"
 #include "time_util.hpp"
 

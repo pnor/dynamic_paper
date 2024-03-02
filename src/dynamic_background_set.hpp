@@ -115,6 +115,9 @@ void doEvent(const Event &event, const DynamicBackgroundData *backgroundData,
                                              backgroundData->mode,
                                              config.backgroundSetterMethod);
 
+                   logTrace("Did Set background event, set to {}",
+                            event.imagePath.string());
+
                    if (!result.has_value()) {
                      describeError(result.error());
                    }
@@ -126,6 +129,8 @@ void doEvent(const Event &event, const DynamicBackgroundData *backgroundData,
                  [&config, backgroundData,
                   backgroundSetFunction](const LerpBackgroundEvent &event) {
                    std::decay_t<T> func = backgroundSetFunction;
+
+                   logTrace("About to start lerping background");
 
                    tl::expected<void, BackgroundError> result =
                        lerpBackgroundBetweenImages<std::decay_t<T>, Files,
