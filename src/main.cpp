@@ -16,6 +16,8 @@
 
 using namespace dynamic_paper;
 
+// TODO logging messages not to stdout
+
 namespace {
 
 // ===== Helper ================
@@ -103,6 +105,8 @@ Config getConfigAndSetupLogging(const argparse::ArgumentParser &program) {
 // ===== Background Set ===============
 
 void showBackgroundSet(BackgroundSet &backgroundSet, const Config &config) {
+  // TODO ? make lambda since it dont wanna tempalte
+  // or template it on some other class
   std::optional<StaticBackgroundData> staticData =
       backgroundSet.getStaticBackgroundData();
   if (staticData.has_value()) {
@@ -116,7 +120,7 @@ void showBackgroundSet(BackgroundSet &backgroundSet, const Config &config) {
       const TimeFromMidnight currentTime = getCurrentTime();
       const std::chrono::seconds sleepTime =
           dynamicData->updateBackground(currentTime, config,
-                                        setBackgroundToImage) +
+                                        &setBackgroundToImage) +
           std::chrono::seconds(1);
 
       logDebug("Sleeping for {} seconds...", sleepTime);
