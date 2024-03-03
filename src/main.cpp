@@ -16,7 +16,14 @@
 
 using namespace dynamic_paper;
 
-// TODO logging messages not to stdout
+// TODO logging messages not to stdout (log to a file)
+// TODO rename image_dir to more descriptive
+// TODO cache management (delete all and for one set + show location)
+// TODO clang tidy
+// TODO try and stop using less shell commands?
+// TODO high level defautl config options for background_sets.yaml (example:
+// specify default transition for all)
+// TODO support +00:00 on either side of (sunset/sunrise)
 
 namespace {
 
@@ -105,8 +112,6 @@ Config getConfigAndSetupLogging(const argparse::ArgumentParser &program) {
 // ===== Background Set ===============
 
 void showBackgroundSet(BackgroundSet &backgroundSet, const Config &config) {
-  // TODO ? make lambda since it dont wanna tempalte
-  // or template it on some other class
   std::optional<StaticBackgroundData> staticData =
       backgroundSet.getStaticBackgroundData();
   if (staticData.has_value()) {
@@ -159,6 +164,8 @@ void handleRandomCommand(const Config &config) {
     return;
   }
 
+  logDebug("Showing background set: {}", optBackgroundSet->getName());
+
   showBackgroundSet(optBackgroundSet.value(), config);
 }
 
@@ -206,6 +213,12 @@ auto main(int argc, char *argv[]) -> int {
 
   argparse::ArgumentParser helpCommand("help");
   listCommand.add_description("Show help");
+
+  // argparse::ArgumentParser cacheCommand("cache");
+  // cacheCommand.add_description("Manage cache for interpolated images");
+  // cacheCommand.add_argument("name").help("Name of wallpaper set to show cache
+  // information");
+
   program.add_subparser(showCommand);
   program.add_subparser(randomCommand);
   program.add_subparser(listCommand);

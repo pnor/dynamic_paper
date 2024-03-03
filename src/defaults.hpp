@@ -38,7 +38,6 @@ constexpr std::string_view DEFAULT_CONFIG_FILE_NAME =
 
 constexpr std::string_view DEFAULT_CONFIG_FILE_CONTENTS = R"""(method: wallutils
 sun_poller: sunwait
-image_dir: ./an_image_dir
 )""";
 
 } // namespace dynamic_paper

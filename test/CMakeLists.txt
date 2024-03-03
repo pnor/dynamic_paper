@@ -51,6 +51,8 @@ add_executable(
   static_background_test.cpp
   dynamic_background_test.cpp
   time_from_midnight_test.cpp
+  current_time_test.cpp
+  cmdline_helper_tests.cpp
   ${dynamic_paper_SOURCE_DIR}/src/background_set.cpp
   ${dynamic_paper_SOURCE_DIR}/src/time_from_midnight.cpp
   ${dynamic_paper_SOURCE_DIR}/src/background_setter.cpp

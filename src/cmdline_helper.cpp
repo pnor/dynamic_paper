@@ -132,23 +132,34 @@ std::optional<BackgroundSet> getRandomBackgroundSet(const Config &config) {
   std::unordered_map<std::string, YAML::Node> yamlMap =
       nameAndYAMLInfoFromFile(config.backgroundSetConfigFile);
 
+  // NOTE: YAML::Node does not std::shuffle properly so have to use alternate
+  // method
+
   std::vector<std::pair<std::string, YAML::Node>> yamlPairs;
   std::ranges::copy(yamlMap.begin(), yamlMap.end(),
                     std::back_inserter(yamlPairs));
 
+  std::vector<size_t> indeces;
+  indeces.reserve(yamlMap.size());
+  for (size_t i = 0; i < yamlPairs.size(); i++) {
+    indeces.push_back(i);
+  }
+
   std::random_device randomDevice;
   std::mt19937 generator(randomDevice());
-  std::shuffle(yamlPairs.begin(), yamlPairs.end(), generator);
+  std::shuffle(indeces.begin(), indeces.end(), generator);
 
-  for (const auto &nameYaml : yamlPairs) {
+  for (const auto &index : indeces) {
     tl::expected<BackgroundSet, BackgroundSetParseErrors> expBackgroundSet =
-        parseFromYAML(nameYaml.first, nameYaml.second, config);
+        parseFromYAML(yamlPairs.at(index).first, yamlPairs.at(index).second,
+                      config);
 
     if (expBackgroundSet.has_value()) {
+      logDebug("success; returning {}", expBackgroundSet->getName());
       return expBackgroundSet.value();
     }
 
-    printParsingError(nameYaml.first, expBackgroundSet.error());
+    printParsingError(yamlPairs.at(index).first, expBackgroundSet.error());
   }
 
   return std::nullopt;
