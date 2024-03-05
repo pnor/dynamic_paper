@@ -20,6 +20,8 @@ using namespace dynamic_paper;
 // TODO rename image_dir to more descriptive
 // TODO cache management (delete all and for one set + show location)
 // TODO clang tidy
+// TODO resolve ties in times not as assert failure (as can happen by accident
+// with changing sunrise/sunset)
 // TODO try and stop using less shell commands?
 // TODO high level defautl config options for background_sets.yaml (example:
 // specify default transition for all)
@@ -195,6 +197,8 @@ void showHelp(const argparse::ArgumentParser &program) {
 // ===== Main ===============
 
 auto main(int argc, char *argv[]) -> int {
+  setLoggingToStderr();
+
   argparse::ArgumentParser program("dynamicpaper");
   program.add_argument("--config")
       .default_value<std::string>(std::string(DEFAULT_CONFIG_FILE_NAME))
@@ -214,6 +218,7 @@ auto main(int argc, char *argv[]) -> int {
   argparse::ArgumentParser helpCommand("help");
   listCommand.add_description("Show help");
 
+  // TODO
   // argparse::ArgumentParser cacheCommand("cache");
   // cacheCommand.add_description("Manage cache for interpolated images");
   // cacheCommand.add_argument("name").help("Name of wallpaper set to show cache

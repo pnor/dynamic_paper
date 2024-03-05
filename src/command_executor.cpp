@@ -25,6 +25,10 @@ runCommandStdout(const std::string &cmd) {
   while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
     result += buffer.data();
   }
+
+  logDebug("In runCommandStdout: ran cmd {}", cmd);
+  logDebug("Output:\n{}", result);
+
   return result;
 }
 

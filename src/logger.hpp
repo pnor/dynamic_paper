@@ -13,6 +13,9 @@ namespace dynamic_paper {
 /** To determine which log messages should be shown */
 enum class LogLevel { INFO, WARNING, ERROR, DEBUG, CRITICAL, TRACE, OFF };
 
+/** Sets the log messages to output to stderr */
+void setLoggingToStderr();
+
 /** Sets up logging library, by setting the format and pattern of logs, and what
  * logs should be shown. */
 void setupLogging(LogLevel logLevel);

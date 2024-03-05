@@ -100,6 +100,9 @@ bool eventListIsSortedByTime(const EventList &eventList);
 
 unsigned int chooseRandomSeed();
 
+/** Logs out an easily readable version of the event list */
+void logPrintEventList(const EventList &eventList);
+
 // --- Event Processing ---
 
 template <CanSetBackgroundTrait T, ChangesFilesystem Files,
@@ -161,6 +164,9 @@ std::chrono::seconds updateBackgroundAndReturnTimeTillNext(
   std::srand(seed);
 
   const EventList eventList = getEventList(backgroundData);
+
+  _helper::logPrintEventList(eventList);
+
   logAssert(eventListIsSortedByTime(eventList),
             "Event list is not sorted by time from earliest to latest");
 
@@ -168,6 +174,8 @@ std::chrono::seconds updateBackgroundAndReturnTimeTillNext(
       getCurrentEventAndNextTime(eventList, currentTime);
 
   const Event &currentEvent = currentEventAndNextTime.first.second;
+  logTrace("Doing Current Event for time {}",
+           currentEventAndNextTime.first.first);
 
   _helper::doEvent<T, Files, CompositeImages>(
       currentEvent, backgroundData, config,

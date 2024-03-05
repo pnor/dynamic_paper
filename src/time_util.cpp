@@ -21,16 +21,6 @@ namespace {
 
 // === string to time objects helper functions ===
 
-/**
- * Converts a string formatted HH:MM to `std::tm`
- */
-std::tm hourMinuteStringToTM(const std::string &hourMinutes) {
-  std::istringstream time(hourMinutes);
-  std::tm timeTm = {};
-  time >> std::get_time(&timeTm, "%H:%M");
-  return timeTm;
-}
-
 tl::expected<SunriseAndSunsetTimes, SunriseAndSetErrors>
 getSunriseAndSetUsingSunwait() {
   const tl::expected<std::string, CommandExecError> sunwaitExpectation =
@@ -57,14 +47,24 @@ getSunriseAndSetUsingSunwait() {
     return tl::unexpected(SunriseAndSetErrors::BadOutput);
   }
 
-  std::tm sunriseTm = hourMinuteStringToTM(groupMatches[0].str());
-  std::tm sunsetTm = hourMinuteStringToTM(groupMatches[1].str());
+  // --
+  const std::optional<TimeFromMidnight> sunriseTime =
+      convertRawTimeStringToTimeOffset(std::string(groupMatches[1]));
+  const std::optional<TimeFromMidnight> sunsetTime =
+      convertRawTimeStringToTimeOffset(std::string(groupMatches[2]));
 
-  const time_t sunriseTimeSinceEpoch = mktime(&sunriseTm);
-  const time_t sunsetTimeSinceEpoch = mktime(&sunsetTm);
+  if (!sunriseTime.has_value()) {
+    logError("Unable to convert sunrise raw string to a time! string was {}",
+             std::string(groupMatches[1]));
+    return tl::unexpected(SunriseAndSetErrors::BadOutput);
+  }
+  if (!sunsetTime.has_value()) {
+    logError("Unable to convert sunset raw string to a time! string was {}",
+             std::string(groupMatches[2]));
+    return tl::unexpected(SunriseAndSetErrors::BadOutput);
+  }
 
-  return {{.sunrise = std::chrono::seconds(sunriseTimeSinceEpoch),
-           .sunset = std::chrono::seconds(sunsetTimeSinceEpoch)}};
+  return {{.sunrise = sunriseTime.value(), .sunset = sunsetTime.value()}};
 }
 
 std::optional<TimeFromMidnight> sunsetOrRiseStringToTimeOffset(

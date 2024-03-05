@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string_view>
 
+#include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
 namespace dynamic_paper {
@@ -45,6 +46,12 @@ void setShouldShowDebugLogs(const LogLevel logLevel) {
 } // namespace
 
 // ===== Header ===============
+
+void setLoggingToStderr() {
+  const std::shared_ptr<spdlog::logger> console =
+      spdlog::stderr_color_mt("error-logger");
+  spdlog::set_default_logger(console);
+}
 
 void setupLogging(const LogLevel logLevel) {
   spdlog::set_pattern("[%H:%M:%S %z] [%n] [%^---%L---%$] %v");

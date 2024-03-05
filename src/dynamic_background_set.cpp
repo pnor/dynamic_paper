@@ -111,6 +111,18 @@ template <typename T> void shuffleVector(std::vector<T> &vec) {
   std::shuffle(vec.begin(), vec.end(), RandUniformRandomBitGenerator());
 }
 
+/** Return out readable string describing what an event does */
+std::string getEventImageName(const Event &event) {
+  return std::visit(overloaded{[](const SetBackgroundEvent &event) {
+                                 return event.imagePath.filename().string();
+                               },
+                               [](const LerpBackgroundEvent &event) {
+                                 return event.startImageName + " -> " +
+                                        event.endImageName;
+                               }},
+                    event);
+}
+
 } // namespace
 
 // ===== Header ===============
@@ -281,6 +293,14 @@ std::chrono::seconds timeUntilNext(const TimeFromMidnight &now,
 
   return std::clamp(sleepTime, std::chrono::seconds(0),
                     std::chrono::seconds(TWENTY_FOUR_HOURS));
+}
+
+void logPrintEventList(const EventList &eventList) {
+  logInfo("Entire event list:");
+  for (const auto &event : eventList) {
+    logInfo("{} : {}", event.first, getEventImageName(event.second));
+  }
+  logInfo("--------");
 }
 
 } // namespace _helper

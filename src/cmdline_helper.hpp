@@ -27,8 +27,7 @@ std::vector<BackgroundSet> getBackgroundSetsFromFile(const Config &config);
  * `nullopt` if unable to find one, or unable to succesfully parse it
  */
 std::optional<BackgroundSet>
-getBackgroundSetWithNameFromFile(const std::string_view name,
-                                 const Config &config);
+getBackgroundSetWithNameFromFile(std::string_view name, const Config &config);
 
 /**
  * Returns a random `BackgroundSet` from the config file.
