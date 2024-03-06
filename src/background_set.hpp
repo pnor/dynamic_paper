@@ -21,6 +21,7 @@ namespace dynamic_paper {
 class BackgroundSet {
 public:
   [[nodiscard]] std::string_view getName() const;
+  [[nodiscard]] BackgroundSetType getType() const;
 
   [[nodiscard]] std::optional<StaticBackgroundData> getStaticBackgroundData();
 

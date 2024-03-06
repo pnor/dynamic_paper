@@ -49,12 +49,12 @@ void setShouldShowDebugLogs(const LogLevel logLevel) {
 
 void setLoggingToStderr() {
   const std::shared_ptr<spdlog::logger> console =
-      spdlog::stderr_color_mt("error-logger");
+      spdlog::stderr_color_mt("main logger");
   spdlog::set_default_logger(console);
 }
 
 void setupLogging(const LogLevel logLevel) {
-  spdlog::set_pattern("[%H:%M:%S %z] [%n] [%^---%L---%$] %v");
+  spdlog::set_pattern("[%H:%M:%S %z] [%^--%L--%$] %v");
   setShouldShowDebugLogs(logLevel);
 }
 

@@ -1,9 +1,12 @@
 #include "cmdline_helper.hpp"
 
+#include <cstdio>
 #include <random>
 #include <ranges>
+#include <unistd.h>
 
 #include "background_set.hpp"
+#include "defaults.hpp"
 #include "logger.hpp"
 
 namespace dynamic_paper {
@@ -75,9 +78,69 @@ void printParsingError(const std::string &name,
   }
 }
 
+void setupLogging(const YAML::Node &config) {
+  const LogLevel logLevel = loadLoggingLevelFromYAML(config);
+  setupLogging(logLevel);
+}
+
+YAML::Node loadConfigFileIntoYAML(const std::filesystem::path &file) {
+  if (!std::filesystem::exists(file)) {
+    errorMsg("Cannot create config from non-existant file: {}", file.string());
+    exit(EXIT_FAILURE);
+  }
+
+  try {
+    return YAML::LoadFile(file);
+  } catch (const YAML::BadFile &e) {
+    errorMsg("Could not parse config file `{}`", file.string());
+    exit(EXIT_FAILURE);
+  }
+}
+
+Config createConfigFromYAML(const YAML::Node &configYaml) {
+  tl::expected<Config, ConfigError> expConfig = loadConfigFromYAML(configYaml);
+
+  if (!expConfig.has_value()) {
+    switch (expConfig.error()) {
+    case ConfigError::MethodParsingError: {
+      errorMsg("Unable to parse general config; invalid method");
+      break;
+    }
+    }
+    exit(1);
+  }
+
+  return expConfig.value();
+}
+
 } // namespace
 
 // ===== Header ====================
+
+Config getConfigAndSetupLogging(const argparse::ArgumentParser &program) {
+  const std::filesystem::path conf = program.get("--config");
+  const std::filesystem::path configFilePath =
+      std::filesystem::path(expandPath(conf));
+
+  if (configFilePath == expandPath(DEFAULT_CONFIG_FILE_NAME)) {
+    const bool fileCreationResult = FilesystemHandler::createFileIfDoesntExist(
+        configFilePath, DEFAULT_CONFIG_FILE_CONTENTS);
+
+    if (!fileCreationResult) {
+      errorMsg("Error creating default config file: {}",
+               configFilePath.string());
+      exit(EXIT_FAILURE);
+    }
+  }
+
+  const YAML::Node configYaml = loadConfigFileIntoYAML(configFilePath);
+
+  setupLogging(configYaml);
+
+  return createConfigFromYAML(configYaml);
+}
+
+bool isBeingPiped() { return isatty(fileno(stdin)) == 0; }
 
 /**
  * Parses `BackgroundSet`s from the config file, exiting the program if unable
@@ -104,6 +167,19 @@ std::vector<BackgroundSet> getBackgroundSetsFromFile(const Config &config) {
   }
 
   return backgroundSets;
+}
+
+std::vector<std::pair<std::string_view, BackgroundSetType>>
+getNamesAndTypes(const std::vector<BackgroundSet> &backgroundSets) {
+  std::vector<std::pair<std::string_view, BackgroundSetType>> namesAndTypes;
+  namesAndTypes.reserve(backgroundSets.size());
+  std::ranges::transform(backgroundSets, std::back_inserter(namesAndTypes),
+                         [](const BackgroundSet &set) {
+                           return std::make_pair(set.getName(), set.getType());
+                         });
+  std::ranges::sort(namesAndTypes, {},
+                    &std::pair<std::string_view, BackgroundSetType>::first);
+  return namesAndTypes;
 }
 
 std::optional<BackgroundSet>
@@ -167,6 +243,31 @@ std::optional<BackgroundSet> getRandomBackgroundSet(const Config &config) {
   }
 
   return std::nullopt;
+}
+
+void showBackgroundSet(BackgroundSet &backgroundSet, const Config &config) {
+  std::optional<StaticBackgroundData> staticData =
+      backgroundSet.getStaticBackgroundData();
+  if (staticData.has_value()) {
+    staticData->show(config, setBackgroundToImage);
+  }
+
+  std::optional<DynamicBackgroundData> dynamicData =
+      backgroundSet.getDynamicBackgroundData();
+  if (dynamicData.has_value()) {
+    while (true) {
+      const TimeFromMidnight currentTime = getCurrentTime();
+      logDebug("Current time is {}", currentTime);
+
+      const std::chrono::seconds sleepTime =
+          dynamicData->updateBackground(currentTime, config,
+                                        &setBackgroundToImage) +
+          std::chrono::seconds(1);
+
+      logDebug("Sleeping for {} seconds...", sleepTime);
+      std::this_thread::sleep_for(sleepTime);
+    }
+  }
 }
 
 } // namespace dynamic_paper

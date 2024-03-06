@@ -13,6 +13,7 @@ TEST(CurrentTime, CurrentTime) {
 
   const std::chrono::seconds gap =
       std::chrono::seconds(after) - std::chrono::seconds(before);
+
   if (gap < std::chrono::seconds(0)) { // ran test close to midnight
     EXPECT_GT(before, after);
     EXPECT_EQ(gap, std::chrono::hours(24) - std::chrono::seconds(1));

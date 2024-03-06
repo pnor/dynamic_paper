@@ -10,6 +10,7 @@
 #include "file_util.hpp"
 #include "time_util.hpp"
 #include "type_helper.hpp"
+#include "variant_visitor_templ.hpp"
 #include "yaml_helper.hpp"
 
 // TODO make this easier to add and remove keys; should be able to just list it
@@ -287,6 +288,16 @@ BackgroundSet::BackgroundSet(std::string name, DynamicBackgroundData data)
       type(std::variant<StaticBackgroundData, DynamicBackgroundData>(data)) {}
 
 std::string_view BackgroundSet::getName() const { return this->name; }
+
+BackgroundSetType BackgroundSet::getType() const {
+  return std::visit(overloaded{[](const StaticBackgroundData & /*event*/) {
+                                 return BackgroundSetType::Static;
+                               },
+                               [](const DynamicBackgroundData & /*event*/) {
+                                 return BackgroundSetType::Dynamic;
+                               }},
+                    this->type);
+}
 
 std::optional<StaticBackgroundData> BackgroundSet::getStaticBackgroundData() {
   auto *staticDataPtr = std::get_if<StaticBackgroundData>(&this->type);

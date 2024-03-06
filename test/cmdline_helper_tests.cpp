@@ -54,7 +54,7 @@ TEST(ChooseRandomBackgroundSet, CmdlineMainLoop) {
   EXPECT_TRUE(
       std::filesystem::exists(std::filesystem::path(TEST_BACKGROUND_SET_FILE)));
 
-  Config config = getConfig();
+  const Config config = getConfig();
 
   std::optional<BackgroundSet> optBackgroundSet = std::nullopt;
 

@@ -16,127 +16,20 @@
 
 using namespace dynamic_paper;
 
-// TODO logging messages not to stdout (log to a file)
-// TODO rename image_dir to more descriptive
+// TODO support +00:00 on either side of (sunset/sunrise)
 // TODO cache management (delete all and for one set + show location)
 // TODO clang tidy
 // TODO resolve ties in times not as assert failure (as can happen by accident
 // with changing sunrise/sunset)
-// TODO try and stop using less shell commands?
+// TODO try and stop using less shell commands? (exec family maybe)
+// - use wallutils directly as a go package
 // TODO high level defautl config options for background_sets.yaml (example:
 // specify default transition for all)
-// TODO support +00:00 on either side of (sunset/sunrise)
 
 namespace {
 
-// ===== Helper ================
-constexpr std::string_view ANSI_COLOR_RED = "\x1b[31m";
-// constexpr std::string_view ANSI_COLOR_GREEN = "\x1b[32m";
-// constexpr std::string_view ANSI_COLOR_YELLOW = "\x1b[33m";
-// constexpr std::string_view ANSI_COLOR_BLUE = "\x1b[34m";
-// constexpr std::string_view ANSI_COLOR_MAGENTA = "\x1b[35m";
-// constexpr std::string_view ANSI_COLOR_CYAN = "\x1b[36m";
+constexpr std::string_view ANSI_COLOR_CYAN = "\x1b[36m";
 constexpr std::string_view ANSI_COLOR_RESET = "\x1b[0m";
-
-template <typename... Ts>
-void errorMsg(const std::format_string<Ts...> msg, Ts &&...args) {
-  const std::string formattedMessage =
-      std::format(msg, std::forward<Ts>(args)...);
-  std::cout << std::format("{}{}{}", ANSI_COLOR_RED, formattedMessage,
-                           ANSI_COLOR_RESET)
-            << std::endl;
-}
-
-// ===== Logging ===============
-
-void setupLogging(const YAML::Node &config) {
-  const LogLevel logLevel = loadLoggingLevelFromYAML(config);
-  setupLogging(logLevel);
-}
-
-// ===== Config ===============
-
-/** Loads config from `file`. Prints an error and crashes if `file` doesn't
- * exist. */
-YAML::Node loadConfigFileIntoYAML(const std::filesystem::path &file) {
-  if (!std::filesystem::exists(file)) {
-    errorMsg("Cannot create config from non-existant file: {}", file.string());
-    exit(EXIT_FAILURE);
-  }
-
-  try {
-    return YAML::LoadFile(file);
-  } catch (const YAML::BadFile &e) {
-    errorMsg("Could not parse config file `{}`", file.string());
-    exit(EXIT_FAILURE);
-  }
-}
-
-Config createConfigFromYAML(const YAML::Node &configYaml) {
-  tl::expected<Config, ConfigError> expConfig = loadConfigFromYAML(configYaml);
-
-  if (!expConfig.has_value()) {
-    switch (expConfig.error()) {
-    case ConfigError::MethodParsingError: {
-      errorMsg("Unable to parse general config; invalid method");
-      break;
-    }
-    }
-    exit(1);
-  }
-
-  return expConfig.value();
-}
-
-Config getConfigAndSetupLogging(const argparse::ArgumentParser &program) {
-  const std::filesystem::path conf = program.get("--config");
-  const std::filesystem::path configFilePath =
-      std::filesystem::path(expandPath(conf));
-
-  if (configFilePath == expandPath(DEFAULT_CONFIG_FILE_NAME)) {
-    const bool fileCreationResult = FilesystemHandler::createFileIfDoesntExist(
-        configFilePath, DEFAULT_CONFIG_FILE_CONTENTS);
-
-    if (!fileCreationResult) {
-      errorMsg("Error creating default config file: {}",
-               configFilePath.string());
-      exit(EXIT_FAILURE);
-    }
-  }
-
-  const YAML::Node configYaml = loadConfigFileIntoYAML(configFilePath);
-
-  setupLogging(configYaml);
-
-  return createConfigFromYAML(configYaml);
-}
-
-// ===== Background Set ===============
-
-void showBackgroundSet(BackgroundSet &backgroundSet, const Config &config) {
-  std::optional<StaticBackgroundData> staticData =
-      backgroundSet.getStaticBackgroundData();
-  if (staticData.has_value()) {
-    staticData->show(config, setBackgroundToImage);
-  }
-
-  std::optional<DynamicBackgroundData> dynamicData =
-      backgroundSet.getDynamicBackgroundData();
-  if (dynamicData.has_value()) {
-    while (true) {
-      const TimeFromMidnight currentTime = getCurrentTime();
-      logDebug("Current time is {}", currentTime);
-
-      const std::chrono::seconds sleepTime =
-          dynamicData->updateBackground(currentTime, config,
-                                        &setBackgroundToImage) +
-          std::chrono::seconds(1);
-
-      logDebug("Sleeping for {} seconds...", sleepTime);
-      std::this_thread::sleep_for(sleepTime);
-    }
-  }
-}
 
 // ===== Command Line Arguements ===============
 
@@ -180,11 +73,31 @@ void handleListCommand(const Config &config) {
 
   const std::vector<BackgroundSet> backgroundSets =
       getBackgroundSetsFromFile(config);
-  std::cout << "Available Background sets are: "
-            << "\n"
-            << std::endl;
-  for (const auto &backgroundSet : backgroundSets) {
-    std::cout << backgroundSet.getName() << std::endl;
+
+  const std::vector<std::pair<std::string_view, BackgroundSetType>>
+      namesAndTypes = getNamesAndTypes(backgroundSets);
+
+  if (isBeingPiped()) {
+    for (const auto &nameType : namesAndTypes) {
+      std::cout << nameType.first << "\n";
+    }
+  } else {
+    std::cout << "Available Background Sets are:\n";
+
+    for (const auto &nameType : namesAndTypes) {
+      switch (nameType.second) {
+      case BackgroundSetType::Static: {
+        std::cout << "- " << nameType.first << "\n";
+        break;
+      }
+      case BackgroundSetType::Dynamic: {
+        std::cout << "- " << ANSI_COLOR_CYAN << nameType.first
+                  << ANSI_COLOR_RESET << "\n";
+        break;
+      }
+      }
+    }
+    std::cout << "\n";
   }
 }
 

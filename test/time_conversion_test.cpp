@@ -644,3 +644,21 @@ TEST_F(TimeStringConversion, BadSunriseSunsetStringsRiseOrSet) {
       {"+00:00 sun set", "+00:00 sunset"}, testSunriseAndSunsetTimes);
   EXPECT_FALSE(timesOpt.has_value());
 }
+
+TEST_F(TimeStringConversion, SunoffsetSpacing) {
+  const std::optional<std::vector<TimeFromMidnight>> timesOpt =
+      dynamic_paper::timeStringsToTimes({"- 2:20 sunrise", "+ 2:20 sunrise",
+                                         "-      1:00             sunset"},
+                                        testSunriseAndSunsetTimes);
+
+  EXPECT_TRUE(timesOpt.has_value());
+  assert(timesOpt.has_value());
+
+  std::vector<TimeFromMidnight> times = timesOpt.value();
+
+  EXPECT_EQ(times[0], testSunriseAndSunsetTimes.sunrise -
+                          std::chrono::hours(2) - std::chrono::minutes(20));
+  EXPECT_EQ(times[1], testSunriseAndSunsetTimes.sunrise +
+                          std::chrono::hours(2) + std::chrono::minutes(20));
+  EXPECT_EQ(times[2], testSunriseAndSunsetTimes.sunset - std::chrono::hours(1));
+}
