@@ -17,9 +17,6 @@
 using namespace dynamic_paper;
 
 // TODO cache management (delete all and for one set + show location)
-// TODO clang tidy
-// TODO resolve ties in times not as assert failure (as can happen by accident
-// with changing sunrise/sunset)
 // TODO try and stop using less shell commands? (exec family maybe)
 // - use wallutils directly as a go package
 // TODO high level defautl config options for background_sets.yaml (example:
@@ -100,6 +97,17 @@ void handleListCommand(const Config &config) {
   }
 }
 
+void handleCacheCommand(const Config &config,
+                        const argparse::ArgumentParser &cache,
+                        const argparse::ArgumentParser &info) {
+  if (cache.is_subcommand_used(info)) {
+    showCacheInfo(config);
+  } else {
+    errorMsg("No subcommand was chosen");
+    std::cout << cache.help().str();
+  }
+}
+
 void showHelp(const argparse::ArgumentParser &program) {
   std::cout << program.help().str();
 }
@@ -130,16 +138,18 @@ auto main(int argc, char *argv[]) -> int {
   argparse::ArgumentParser helpCommand("help");
   listCommand.add_description("Show help");
 
-  // TODO
-  // argparse::ArgumentParser cacheCommand("cache");
-  // cacheCommand.add_description("Manage cache for interpolated images");
-  // cacheCommand.add_argument("name").help("Name of wallpaper set to show cache
-  // information");
+  argparse::ArgumentParser cacheCommand("cache");
+  cacheCommand.add_description("Manage cache for interpolated images");
+  argparse::ArgumentParser cacheInfoCommand("info");
+  cacheInfoCommand.add_description(
+      "Show information about cached interpolated images");
+  cacheCommand.add_subparser(cacheInfoCommand);
 
   program.add_subparser(showCommand);
   program.add_subparser(randomCommand);
   program.add_subparser(listCommand);
   program.add_subparser(helpCommand);
+  program.add_subparser(cacheCommand);
 
   try {
     program.parse_args(argc, argv);
@@ -157,6 +167,9 @@ auto main(int argc, char *argv[]) -> int {
   } else if (program.is_subcommand_used(randomCommand)) {
     const Config config = getConfigAndSetupLogging(program);
     handleRandomCommand(config);
+  } else if (program.is_subcommand_used(cacheCommand)) {
+    const Config config = getConfigAndSetupLogging(program);
+    handleCacheCommand(config, cacheCommand, cacheInfoCommand);
   } else if (program.is_subcommand_used(helpCommand)) {
     showHelp(program);
   } else {

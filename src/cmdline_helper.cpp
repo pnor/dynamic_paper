@@ -140,6 +140,11 @@ Config getConfigAndSetupLogging(const argparse::ArgumentParser &program) {
   return createConfigFromYAML(configYaml);
 }
 
+void showCacheInfo(const Config &config) {
+  std::cout << "Cache files are stored in "
+            << config.imageCacheDirectory.string() << "\n";
+}
+
 bool isBeingPiped() { return isatty(fileno(stdin)) == 0; }
 
 /**

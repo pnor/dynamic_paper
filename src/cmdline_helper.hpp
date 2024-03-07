@@ -35,6 +35,11 @@ void errorMsg(const std::format_string<Ts...> msg, Ts &&...args) {
  * */
 Config getConfigAndSetupLogging(const argparse::ArgumentParser &program);
 
+// ===== Cache ===============
+
+/** Shows information about cached files */
+void showCacheInfo(const Config &config);
+
 // ===== Command Line Args ===============
 
 /** Returns `true` if the output from this process is being piped into another
