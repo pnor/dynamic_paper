@@ -16,7 +16,6 @@
 
 using namespace dynamic_paper;
 
-// TODO support +00:00 on either side of (sunset/sunrise)
 // TODO cache management (delete all and for one set + show location)
 // TODO clang tidy
 // TODO resolve ties in times not as assert failure (as can happen by accident

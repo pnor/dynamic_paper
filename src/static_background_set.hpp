@@ -1,6 +1,5 @@
 #pragma once
 
-#include <expected>
 #include <filesystem>
 #include <optional>
 #include <random>
@@ -31,12 +30,12 @@ struct StaticBackgroundData {
 
 // ===== Definition ===============
 
-namespace _helper {
+namespace detail {
 
 /** Returns a random number in range [0..max)*/
 size_t randomNumber(size_t max);
 
-} // namespace _helper
+} // namespace detail
 
 template <CanSetBackgroundTrait T>
 void StaticBackgroundData::show(const Config &config,
@@ -46,7 +45,7 @@ void StaticBackgroundData::show(const Config &config,
             "Static background cannot show with no images");
 
   const std::string imageName =
-      imageNames.at(_helper::randomNumber(imageNames.size()));
+      imageNames.at(detail::randomNumber(imageNames.size()));
   const std::filesystem::path imagePath = dataDirectory / imageName;
 
   const tl::expected<void, BackgroundError> result =

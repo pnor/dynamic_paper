@@ -8,7 +8,7 @@ namespace dynamic_paper {
 
 // ===== Header ===============
 
-namespace _helper {
+namespace detail {
 
 /** Returns a random number in range [0..max)*/
 size_t randomNumber(const size_t max) {
@@ -18,7 +18,7 @@ size_t randomNumber(const size_t max) {
   return distrib(gen);
 }
 
-} // namespace _helper
+} // namespace detail
 
 StaticBackgroundData::StaticBackgroundData(std::filesystem::path dataDirectory,
                                            BackgroundSetMode mode,

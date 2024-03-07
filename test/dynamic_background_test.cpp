@@ -13,7 +13,6 @@
 #include "src/background_setter.hpp"
 #include "src/config.hpp"
 #include "src/dynamic_background_set.hpp"
-#include "src/static_background_set.hpp"
 
 using namespace dynamic_paper_test;
 using namespace dynamic_paper;
@@ -779,4 +778,62 @@ TEST_F(DynamicBackgroundTest, OverlappingTransitions2) {
           // show 3->1
           SetEvent{.imagePath = cache("test_dir-3-1-33.jpg"), .mode = mode},
           SetEvent{.imagePath = cache("test_dir-3-1-66.jpg"), .mode = mode}));
+}
+
+/**
+ * Test when transitions start at the exact same time.
+ *
+ * This is forbidden, but should remove events to stop this
+ * The policy is that overlapping transition events should both be removed.
+ * If a transition and set event overlap, keep the set event.
+ * If 2 set events overlap, keep the set event that came up last in the parsing
+ * of the config list.
+ */
+TEST_F(DynamicBackgroundTest, SameTimeTransitions) {
+  TestBackgroundSetterHistory history{};
+
+  // Config options for the type of dynamic background set
+  const BackgroundSetMode mode = BackgroundSetMode::Fill;
+  const std::optional<TransitionInfo> transition(
+      TransitionInfo(std::chrono::seconds(1), 2));
+  const BackgroundSetOrder order = BackgroundSetOrder::Linear;
+
+  const std::vector<std::string> imageNames = {"1.jpg", "2.jpg", "3.jpg",
+                                               "4.jpg"};
+  const std::vector<TimeFromMidnight> times = {
+      time("1:00"), time("1:00"),    // 2 lerp , 2 set
+      time("2:00"), time("2:00:01"), // 1 lerp and 1 set, but no 0 length
+                                     // transitions will remove one
+  };
+
+  // Times to test with
+  const std::array timesToCallUpdateBackground{time("0:59:59"), time("1:00"),
+                                               time("2:00")};
+
+  // Do the testing
+  const std::array<std::chrono::seconds, timesToCallUpdateBackground.size()>
+      waitTimesReturned =
+          testDynamicBackground(history,
+                                {.dataDir = this->testDataDir,
+                                 .config = this->config,
+                                 .transition = transition,
+                                 .order = order,
+                                 .times = times},
+                                {.names = imageNames, .mode = mode},
+                                timesToCallUpdateBackground);
+
+  // Expectations
+  EXPECT_EQ(waitTimesReturned[0], std::chrono::seconds(1));
+  EXPECT_EQ(waitTimesReturned[1],
+            std::chrono::hours(1) - std::chrono::seconds(1));
+  EXPECT_EQ(waitTimesReturned[2], std::chrono::seconds(1));
+
+  EXPECT_THAT(history.getHistory(),
+              ElementsAre(
+                  // show 4 (both transitions were removed)
+                  SetEvent{.imagePath = data("4.jpg"), .mode = mode},
+                  // show 2 (1 overlaps is is removed)
+                  SetEvent{.imagePath = data("2.jpg"), .mode = mode},
+                  // show 3 (transition is removed for the set event)
+                  SetEvent{.imagePath = data("3.jpg"), .mode = mode}));
 }

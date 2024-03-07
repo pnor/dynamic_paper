@@ -5,12 +5,15 @@
 
 namespace dynamic_paper {
 
-namespace _helper {
+namespace detail {
 
 // ===== Helper =====
+
 namespace {
 
 constexpr std::chrono::hours TWENTY_FOUR_HOURS(24);
+
+// ===== Random Engine ====================
 
 /**
  * Class to be used by `std::shuffle` that uses `std::rand`.
@@ -31,7 +34,14 @@ public:
   result_type operator()() { return g(); }
 };
 
-using namespace _helper;
+/**
+ * Shuffles a vector using `std::rand()` as the source of randomness
+ */
+template <typename T> void shuffleVector(std::vector<T> &vec) {
+  std::shuffle(vec.begin(), vec.end(), RandUniformRandomBitGenerator());
+}
+
+// ===== Managing the Event List ====================
 
 /** Returns a time that is equivalent to `time` - `duration`, but clamped so
  * that it is always >= `after`. Accounts for the looping property of the time
@@ -51,24 +61,27 @@ nonOverlappingTimeAndDuration(TimeFromMidnight time,
           time - nonOverlappingSeconds};
 }
 
-EventList createEventListFromTimesAndNames(
-    const DynamicBackgroundData *dynamicData,
-    const std::vector<std::pair<TimeFromMidnight, std::string>>
-        &timesAndNames) {
-  const std::optional<TransitionInfo> &transition = dynamicData->transition;
-
+EventList
+singleEventList(const DynamicBackgroundData *dynamicData,
+                const std::vector<std::pair<TimeFromMidnight, std::string>>
+                    &timesAndNames) {
   EventList eventList;
 
-  logAssert(!timesAndNames.empty(), "Times and names cannot be empty");
+  eventList.emplace_back(
+      timesAndNames.begin()->first,
+      SetBackgroundEvent{.imagePath = dynamicData->dataDirectory /
+                                      timesAndNames.begin()->second});
+  return eventList;
+}
 
-  // Single event case
-  if (timesAndNames.size() == 1) {
-    eventList.emplace_back(
-        timesAndNames.begin()->first,
-        SetBackgroundEvent{.imagePath = dynamicData->dataDirectory /
-                                        timesAndNames.begin()->second});
-    return eventList;
-  }
+EventList
+multipleEventList(const DynamicBackgroundData *dynamicData,
+                  const std::vector<std::pair<TimeFromMidnight, std::string>>
+                      &timesAndNames) {
+  const std::optional<TransitionInfo> &transition = dynamicData->transition;
+  EventList eventList;
+  eventList.reserve(transition.has_value() ? (2 * timesAndNames.size()) + 1
+                                           : timesAndNames.size());
 
   for (EventList::size_type i = 0; i < timesAndNames.size(); i++) {
     // transition event
@@ -84,13 +97,15 @@ EventList createEventListFromTimesAndNames(
               afterTimeName.first, transition->duration,
               beforeTimeName.first + std::chrono::seconds(1));
 
-      const LerpBackgroundEvent lerpEvent = {
-          .commonImageDirectory = dynamicData->dataDirectory,
-          .startImageName = beforeTimeName.second,
-          .endImageName = afterTimeName.second,
-          .transition = TransitionInfo(actualDuration, transition->steps)};
+      if (actualDuration > std::chrono::seconds(0)) {
+        const LerpBackgroundEvent lerpEvent = {
+            .commonImageDirectory = dynamicData->dataDirectory,
+            .startImageName = beforeTimeName.second,
+            .endImageName = afterTimeName.second,
+            .transition = TransitionInfo(actualDuration, transition->steps)};
 
-      eventList.emplace_back(transitionTime, lerpEvent);
+        eventList.emplace_back(transitionTime, lerpEvent);
+      }
     }
     // set background event
     eventList.emplace_back(
@@ -99,16 +114,71 @@ EventList createEventListFromTimesAndNames(
                                         timesAndNames[i].second});
   }
 
-  std::ranges::sort(eventList, {}, &std::pair<TimeFromMidnight, Event>::first);
-
   return eventList;
 }
 
-/**
- * Shuffles a vector using `std::rand()` as the source of randomness
+/** Removes events that start at the same time. Prioritizes set events over
+ * transition events, and will prefer the event that occurs first in the
+ * `eventList`.
  */
-template <typename T> void shuffleVector(std::vector<T> &vec) {
-  std::shuffle(vec.begin(), vec.end(), RandUniformRandomBitGenerator());
+void removeOverlappingEvents(EventList &eventList) {
+  size_t first = 0;
+  size_t second = 1;
+
+  while (second < eventList.size()) {
+    const TimeAndEvent &firstTimeEvent = eventList[first];
+    const TimeAndEvent &secondTimeEvent = eventList[second];
+    if (firstTimeEvent.first != secondTimeEvent.first) {
+      first++;
+      second++;
+      continue;
+    }
+
+    const auto isSetEvent = [](const TimeAndEvent &event) {
+      return std::holds_alternative<SetBackgroundEvent>(event.second);
+    };
+    const auto isLerpEvent = [](const TimeAndEvent &event) {
+      return std::holds_alternative<LerpBackgroundEvent>(event.second);
+    };
+
+    if (isLerpEvent(firstTimeEvent) && isLerpEvent(secondTimeEvent)) {
+      eventList.erase(eventList.begin() + static_cast<int>(first),
+                      eventList.begin() + static_cast<int>(second + 1));
+    } else if (isSetEvent(firstTimeEvent) && isSetEvent(secondTimeEvent)) {
+      eventList.erase(eventList.begin() +
+                      static_cast<EventList::difference_type>(first));
+    } else {
+      if (isLerpEvent(firstTimeEvent)) {
+        eventList.erase(eventList.begin() +
+                        static_cast<EventList::difference_type>(first));
+      }
+      if (isLerpEvent(secondTimeEvent)) {
+        eventList.erase(eventList.begin() +
+                        static_cast<EventList::difference_type>(second));
+      }
+    }
+  }
+}
+
+EventList createEventListFromTimesAndNames(
+    const DynamicBackgroundData *dynamicData,
+    const std::vector<std::pair<TimeFromMidnight, std::string>>
+        &timesAndNames) {
+
+  logAssert(!timesAndNames.empty(), "Times and names cannot be empty");
+
+  // Single event case
+  if (timesAndNames.size() == 1) {
+    return singleEventList(dynamicData, timesAndNames);
+  }
+
+  EventList eventList = multipleEventList(dynamicData, timesAndNames);
+
+  std::ranges::sort(eventList, {}, &std::pair<TimeFromMidnight, Event>::first);
+
+  removeOverlappingEvents(eventList);
+
+  return eventList;
 }
 
 /** Return out readable string describing what an event does */
@@ -125,7 +195,7 @@ std::string getEventImageName(const Event &event) {
 
 } // namespace
 
-// ===== Header ===============
+// ===== Header: detail ===============
 
 void describeError(const BackgroundError error) {
   switch (error) {
@@ -303,7 +373,9 @@ void logPrintEventList(const EventList &eventList) {
   logInfo("--------");
 }
 
-} // namespace _helper
+} // namespace detail
+
+// ===== Header ===============
 
 DynamicBackgroundData::DynamicBackgroundData(
     std::filesystem::path dataDirectory, BackgroundSetMode mode,
@@ -312,4 +384,5 @@ DynamicBackgroundData::DynamicBackgroundData(
     : dataDirectory(std::move(dataDirectory)), mode(mode),
       transition(transition), order(order), imageNames(std::move(imageNames)),
       times(std::move(times)) {}
+
 } // namespace dynamic_paper

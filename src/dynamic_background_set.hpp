@@ -50,7 +50,7 @@ struct DynamicBackgroundData {
 
 // ===== Header Helper ===============
 
-namespace _helper {
+namespace detail {
 
 // --- Types ---
 
@@ -158,6 +158,7 @@ std::chrono::seconds updateBackgroundAndReturnTimeTillNext(
     const TimeFromMidnight currentTime,
     const DynamicBackgroundData *backgroundData, const Config &config,
     const unsigned int seed, T &&backgroundSetFunction) {
+
   // Reset the random seed on each iteration of the loop to ensure the order
   // of `random` dynamic backgrounds is consistent between each reconstruction
   // of the event list.
@@ -165,7 +166,7 @@ std::chrono::seconds updateBackgroundAndReturnTimeTillNext(
 
   const EventList eventList = getEventList(backgroundData);
 
-  _helper::logPrintEventList(eventList);
+  detail::logPrintEventList(eventList);
 
   logAssert(eventListIsSortedByTime(eventList),
             "Event list is not sorted by time from earliest to latest");
@@ -177,7 +178,7 @@ std::chrono::seconds updateBackgroundAndReturnTimeTillNext(
   logTrace("Doing Current Event for time {}",
            currentEventAndNextTime.first.first);
 
-  _helper::doEvent<T, Files, CompositeImages>(
+  detail::doEvent<T, Files, CompositeImages>(
       currentEvent, backgroundData, config,
       std::forward<T>(backgroundSetFunction));
 
@@ -189,7 +190,7 @@ std::chrono::seconds updateBackgroundAndReturnTimeTillNext(
   return timeUntilNext(currentTime, currentEventDuration, nextTime);
 }
 
-} // namespace _helper
+} // namespace detail
 
 // ===== Definition =====
 
@@ -201,11 +202,11 @@ DynamicBackgroundData::updateBackground(const TimeFromMidnight currentTime,
                                         T &&backgroundSetFunction) const {
   logTrace("Show dynamic background");
 
-  const unsigned int seed = _helper::chooseRandomSeed();
+  const unsigned int seed = detail::chooseRandomSeed();
   logTrace("Random seed is {}", seed);
 
-  return _helper::updateBackgroundAndReturnTimeTillNext<T, Files,
-                                                        CompositeImages>(
+  return detail::updateBackgroundAndReturnTimeTillNext<T, Files,
+                                                       CompositeImages>(
       currentTime, this, config, seed, std::forward<T>(backgroundSetFunction));
 }
 
