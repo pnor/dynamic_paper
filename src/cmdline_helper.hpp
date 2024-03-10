@@ -27,7 +27,13 @@ void errorMsg(const std::format_string<Ts...> msg, Ts &&...args) {
 // ===== Parsing ===============
 
 /**
- * Sets up logging and parses the Config file.
+ * Gets the name of the config file
+ */
+std::filesystem::path
+getConfigFileName(const argparse::ArgumentParser &program);
+
+/**
+ * Parses all the options from the Config file.
  * Exits if there is an error parsing a file or creating files.
  *
  * Creates a sample config file if none exists and the config is set to the

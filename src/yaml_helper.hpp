@@ -102,7 +102,6 @@ constexpr std::optional<T> yamlStringTo(const std::string &text) {
 
 // - default
 template <typename T>
-//  requires(!is_optional<T>)
 constexpr std::optional<T> yamlStringTo(const std::string & /*text*/) {
   static_assert(!is_optional<T>,
                 "Cannot use yamlStringTo to create an optional type");

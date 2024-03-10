@@ -78,9 +78,10 @@ void printParsingError(const std::string &name,
   }
 }
 
-void setupLogging(const YAML::Node &config) {
-  const LogLevel logLevel = loadLoggingLevelFromYAML(config);
-  setupLogging(logLevel);
+void setupLoggingFromYAML(const YAML::Node &config) {
+  std::pair<LogLevel, std::filesystem::path> levelAndFileName =
+      loadLoggingInfoFromYAML(config);
+  setupLogging(std::move(levelAndFileName));
 }
 
 YAML::Node loadConfigFileIntoYAML(const std::filesystem::path &file) {
@@ -119,8 +120,7 @@ Config createConfigFromYAML(const YAML::Node &configYaml) {
 
 Config getConfigAndSetupLogging(const argparse::ArgumentParser &program) {
   const std::filesystem::path conf = program.get("--config");
-  const std::filesystem::path configFilePath =
-      std::filesystem::path(expandPath(conf));
+  auto configFilePath = std::filesystem::path(expandPath(conf));
 
   if (configFilePath == expandPath(DEFAULT_CONFIG_FILE_NAME)) {
     const bool fileCreationResult = FilesystemHandler::createFileIfDoesntExist(
@@ -135,14 +135,17 @@ Config getConfigAndSetupLogging(const argparse::ArgumentParser &program) {
 
   const YAML::Node configYaml = loadConfigFileIntoYAML(configFilePath);
 
-  setupLogging(configYaml);
+  setupLoggingFromYAML(configYaml);
 
   return createConfigFromYAML(configYaml);
 }
 
 void showCacheInfo(const Config &config) {
-  std::cout << "Cache files are stored in "
-            << config.imageCacheDirectory.string() << "\n";
+  constexpr std::string_view ANSI_COLOR_CYAN = "\x1b[36m";
+  constexpr std::string_view ANSI_COLOR_RESET = "\x1b[0m";
+
+  std::cout << "Cache files are stored in " << ANSI_COLOR_CYAN
+            << config.imageCacheDirectory.string() << ANSI_COLOR_RESET << "\n";
 }
 
 bool isBeingPiped() { return isatty(fileno(stdin)) == 0; }

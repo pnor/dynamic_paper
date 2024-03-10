@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <filesystem>
 #include <format>
 #include <string_view>
 
@@ -13,12 +14,10 @@ namespace dynamic_paper {
 /** To determine which log messages should be shown */
 enum class LogLevel { INFO, WARNING, ERROR, DEBUG, CRITICAL, TRACE, OFF };
 
-/** Sets the log messages to output to stderr */
-void setLoggingToStderr();
-
-/** Sets up logging library, by setting the format and pattern of logs, and what
- * logs should be shown. */
-void setupLogging(LogLevel logLevel);
+/** Sets up logging library, by setting the format and pattern of logs, what
+ * logs should be shown, and where to log to */
+void setupLogging(
+    std::pair<LogLevel, std::filesystem::path> &&logLevelAndLogFile);
 
 /** Prints a debug log message saying `msg`. Accepts `args` for use in a format
  * string. */

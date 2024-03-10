@@ -1,9 +1,10 @@
 #include "logger.hpp"
 
+#include <filesystem>
 #include <iostream>
 #include <string_view>
 
-#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/spdlog.h>
 
 namespace dynamic_paper {
@@ -47,15 +48,17 @@ void setShouldShowDebugLogs(const LogLevel logLevel) {
 
 // ===== Header ===============
 
-void setLoggingToStderr() {
-  const std::shared_ptr<spdlog::logger> console =
-      spdlog::stderr_color_mt("main logger");
-  spdlog::set_default_logger(console);
-}
+void setupLogging(
+    std::pair<LogLevel, std::filesystem::path> &&logLevelAndLogFile) {
+  const std::pair<LogLevel, std::filesystem::path> levelAndFile =
+      std::move(logLevelAndLogFile);
 
-void setupLogging(const LogLevel logLevel) {
+  const std::shared_ptr<spdlog::logger> console =
+      spdlog::basic_logger_mt("main logger", std::string(levelAndFile.second));
+  spdlog::set_default_logger(console);
+
   spdlog::set_pattern("[%H:%M:%S %z] [%^--%L--%$] %v");
-  setShouldShowDebugLogs(logLevel);
+  setShouldShowDebugLogs(levelAndFile.first);
 }
 
 } // namespace dynamic_paper

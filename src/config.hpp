@@ -99,7 +99,8 @@ public:
 /** Loads the general config from a yaml file representing the config */
 tl::expected<Config, ConfigError> loadConfigFromYAML(const YAML::Node &config);
 
-/** Laods the amount of logging from the general config file*/
-LogLevel loadLoggingLevelFromYAML(const YAML::Node &config);
+/** Laods just the logging related information from the general config file*/
+std::pair<LogLevel, std::filesystem::path>
+loadLoggingInfoFromYAML(const YAML::Node &config);
 
 } // namespace dynamic_paper

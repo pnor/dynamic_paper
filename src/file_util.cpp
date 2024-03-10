@@ -15,10 +15,7 @@ namespace {
  * way to its path if they don't exist. */
 bool createFile(const std::filesystem::path &filePath,
                 const std::string_view contents) {
-  logTrace("Attempting to create file {}", filePath.string());
-
   if (std::filesystem::exists(filePath)) {
-    logInfo("Skipped creating {} because it already exists", filePath.string());
     return true;
   }
 
@@ -61,10 +58,8 @@ std::filesystem::path expandPath(std::filesystem::path path) {
 
 bool FilesystemHandler::createDirectoryIfDoesntExist(
     const std::filesystem::path &dir) {
-  logTrace("Attempting to create directory {}", dir.string());
 
   if (std::filesystem::exists(dir)) {
-    logInfo("Skipped creating {} because it already exists", dir.string());
     return true;
   }
 

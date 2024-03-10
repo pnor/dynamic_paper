@@ -20,6 +20,7 @@ static constexpr std::string_view METHOD_SCRIPT_KEY = "method_script";
 static constexpr std::string_view HOOK_SCRIPT_KEY = "hook_script";
 static constexpr std::string_view IMAGE_CACHE_DIR_KEY = "cache_dir";
 static constexpr std::string_view LOGGING_KEY = "logging_level";
+static constexpr std::string_view LOG_FILE_KEY = "log_file";
 
 using ExpectedMethod =
     tl::expected<BackgroundSetterMethod, BackgroundSetterMethodError>;
@@ -100,9 +101,15 @@ tl::expected<Config, ConfigError> loadConfigFromYAML(const YAML::Node &config) {
                 hookScript, imageCacheDir);
 };
 
-LogLevel loadLoggingLevelFromYAML(const YAML::Node &config) {
-  return generalConfigParseOrUseDefault<LogLevel>(config, LOGGING_KEY,
-                                                  ConfigDefaults::logLevel);
+std::pair<LogLevel, std::filesystem::path>
+loadLoggingInfoFromYAML(const YAML::Node &config) {
+  const auto level = generalConfigParseOrUseDefault<LogLevel>(
+      config, LOGGING_KEY, ConfigDefaults::logLevel);
+  const auto fileName = generalConfigParseOrUseDefault<std::filesystem::path>(
+      config, LOG_FILE_KEY,
+      std::filesystem::path(ConfigDefaults::logFileName()));
+
+  return std::make_pair(level, fileName);
 }
 
 } // namespace dynamic_paper

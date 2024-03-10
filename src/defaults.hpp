@@ -6,6 +6,7 @@
 /** Default values used throughout */
 
 namespace dynamic_paper {
+
 /** Default values used if a config option is not specified in the user config
  */
 struct ConfigDefaults {
@@ -14,6 +15,11 @@ struct ConfigDefaults {
   static constexpr SunEventPollerMethod sunEventPollerMethod =
       SunEventPollerMethod::Sunwait;
   static constexpr LogLevel logLevel = LogLevel::INFO;
+
+  static inline std::string logFileName() {
+    return (getHomeDirectory() /
+            ".local/share/dynamic_paper/dynamic_paper.log");
+  }
 
   static inline std::string backgroundSetConfigFile() {
     return (getHomeDirectory() /
@@ -28,6 +34,7 @@ struct ConfigDefaults {
   }
 
   ConfigDefaults() = delete;
+  ConfigDefaults &operator=(const ConfigDefaults &) = delete;
   ConfigDefaults(ConfigDefaults &other) = delete;
   ConfigDefaults(ConfigDefaults &&other) = delete;
   ~ConfigDefaults() = delete;

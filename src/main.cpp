@@ -16,9 +16,11 @@
 
 using namespace dynamic_paper;
 
+// TODO better README
 // TODO cache management (delete all and for one set + show location)
 // TODO try and stop using less shell commands? (exec family maybe)
 // - use wallutils directly as a go package
+// - sunwait as a package?
 // TODO high level defautl config options for background_sets.yaml (example:
 // specify default transition for all)
 
@@ -117,9 +119,7 @@ void showHelp(const argparse::ArgumentParser &program) {
 // ===== Main ===============
 
 auto main(int argc, char *argv[]) -> int {
-  setLoggingToStderr();
-
-  argparse::ArgumentParser program("dynamicpaper");
+  argparse::ArgumentParser program("dynamic_paper");
   program.add_argument("--config")
       .default_value<std::string>(std::string(DEFAULT_CONFIG_FILE_NAME))
       .required()
