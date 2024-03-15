@@ -16,11 +16,12 @@
 
 using namespace dynamic_paper;
 
+// TODO try and stop using less shell commands? (exec family maybe)
+// - use wallutils directly
+// - libgeoclue for location
+// - buelowp sunset
 // TODO better README
 // TODO cache management (delete all and for one set + show location)
-// TODO try and stop using less shell commands? (exec family maybe)
-// - use wallutils directly as a go package
-// - sunwait as a package?
 // TODO high level defautl config options for background_sets.yaml (example:
 // specify default transition for all)
 
@@ -156,6 +157,8 @@ auto main(int argc, char *argv[]) -> int {
   } catch (const std::runtime_error &err) {
     errorMsg("Error parsing command line options:\n{}", err.what());
     return EXIT_FAILURE;
+  } catch (const std::exception &generalException) {
+    errorMsg("An unknown error occurred!\n{}", generalException.what());
   }
 
   if (program.is_subcommand_used(showCommand)) {

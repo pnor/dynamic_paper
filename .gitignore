@@ -7,6 +7,10 @@ tmp/
 # Release
 Release
 
+# Build artifacts
+./src/golang/go-background.h
+./src/golang/go-background.a
+
 # CMake
 CMakeLists.txt.user
 CMakeCache.txt

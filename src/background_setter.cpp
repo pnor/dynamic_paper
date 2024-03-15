@@ -12,6 +12,9 @@
 #include "logger.hpp"
 #include "variant_visitor_templ.hpp"
 
+// TODO move
+#include "golang/go-background.h"
+
 namespace dynamic_paper {
 
 namespace {

@@ -105,9 +105,11 @@ std::pair<LogLevel, std::filesystem::path>
 loadLoggingInfoFromYAML(const YAML::Node &config) {
   const auto level = generalConfigParseOrUseDefault<LogLevel>(
       config, LOGGING_KEY, ConfigDefaults::logLevel);
-  const auto fileName = generalConfigParseOrUseDefault<std::filesystem::path>(
-      config, LOG_FILE_KEY,
-      std::filesystem::path(ConfigDefaults::logFileName()));
+
+  const auto fileName =
+      expandPath(generalConfigParseOrUseDefault<std::filesystem::path>(
+          config, LOG_FILE_KEY,
+          std::filesystem::path(ConfigDefaults::logFileName())));
 
   return std::make_pair(level, fileName);
 }

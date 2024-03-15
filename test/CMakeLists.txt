@@ -68,7 +68,8 @@ target_link_libraries(dynamic_paper_test PRIVATE gtest_main gmock_main yaml-cpp
 target_include_directories(dynamic_paper_test
                            PRIVATE ${dynamic_paper_SOURCE_DIR})
 
-# clang tidy find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
-# set(CLANG_TIDY_COMMAND "${CLANG_TIDY_EXE}")
-# set_target_properties(dynamic_paper_test PROPERTIES CXX_CLANG_TIDY
-# "${CLANG_TIDY_COMMAND}")
+# clang tidy
+find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
+set(CLANG_TIDY_COMMAND "${CLANG_TIDY_EXE}")
+set_target_properties(dynamic_paper PROPERTIES CXX_CLANG_TIDY
+                                               "${CLANG_TIDY_COMMAND}")

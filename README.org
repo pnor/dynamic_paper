@@ -1,6 +1,6 @@
 #+title: Dynamic Paper
 
-Manage backgrounds that stay the same or change over the course of the day
+A tool to manage backgrounds many different backgrounds change over the course of the day on Linux
 
 * Background Sets
 Different wallpaper background are organized into a concept of "Background Sets". You can choose to
