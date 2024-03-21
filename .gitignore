@@ -8,8 +8,9 @@ tmp/
 Release
 
 # Build artifacts
-./src/golang/go-background.h
-./src/golang/go-background.a
+src/golang/go-background.h
+src/golang/go-background.a
+src/golang/go.sum
 
 # CMake
 CMakeLists.txt.user
