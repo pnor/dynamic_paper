@@ -1,10 +1,14 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.15)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(POLICY CMP0135)
   cmake_policy(SET CMP0135 NEW)
   set(CMAKE_POLICY_DEFAULT_CMP0135 NEW)
 endif()
+
+# ===== Common Locations ==========
+
+set(MAIN_SRC_DIR "${dynamic_paper_SOURCE_DIR}/src")
 
 # ===== Libraries ==========
 
@@ -42,25 +46,30 @@ set(GOLANG_SRCS ${GOLANG_SRC_FILE_NAMES})
 list(TRANSFORM GOLANG_SRCS
      PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/${GOLANG_DIR_NAME}/")
 set(GOLANG_OUTPUT_NAME go-background)
+set(GOLANG_COMPILE_SCRIPT compile_go.sh)
+
+set(FULL_GO "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}")
 
 add_custom_command(
-  POST_BUILD
-  OUTPUT ${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a
-         ${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.h
-  COMMAND ${GO_EXEC} mod tidy
-  COMMAND ${GO_EXEC} build -buildmode=c-archive -o ${GOLANG_OUTPUT_NAME}.a
-          ${GOLANG_SRC_FILE_NAMES}
-  WORKING_DIRECTORY ${dynamic_paper_SOURCE_DIR}/src/golang
+  OUTPUT "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a"
+         "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.h"
+  COMMAND "./compile_go.sh"
+  WORKING_DIRECTORY "${dynamic_paper_SOURCE_DIR}/src/${GOLANG_DIR_NAME}"
   DEPENDS ${GOLANG_SRCS}
-  COMMENT "Building archive and header file for golang src")
+  COMMENT "[src] Building archive and header file for golang src")
 
-# TODO make it so main build waits for existence of the archive?
-add_custom_target(build-golang ALL DEPENDS ${GOLANG_SRCS})
+add_custom_target(
+  build-golang ALL
+  DEPENDS "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a"
+          "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.h"
+          "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_COMPILE_SCRIPT}")
 
 # ===== Add Sources ==========
 
+message("${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a")
 add_executable(
   dynamic_paper
+  # sources
   main.cpp
   background_set.cpp
   background_setter.cpp
@@ -75,15 +84,22 @@ add_executable(
   yaml_helper.cpp
   cmdline_helper.cpp
   file_util.cpp
-  # golang archive
-  ${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a)
+  "${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a")
+
+target_link_libraries(
+  dynamic_paper
+  PRIVATE ${CMAKE_SOURCE_DIR}/src/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a)
 
 target_link_libraries(dynamic_paper PRIVATE yaml-cpp spdlog argparse expected)
 
-# TODO can remove?
-target_include_directories(dynamic_paper PRIVATE ${dynamic_paper_SOURCE_DIR})
+set_property(
+  TARGET dynamic_paper
+  APPEND
+  PROPERTY ADDITIONAL_CLEAN_FILES {GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a
+           ${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.h)
 
 # ===== Clang Tidy ==========
+
 find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
 set(CLANG_TIDY_COMMAND "${CLANG_TIDY_EXE}")
 set_target_properties(dynamic_paper PROPERTIES CXX_CLANG_TIDY

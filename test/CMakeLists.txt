@@ -1,10 +1,16 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.15)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(POLICY CMP0135)
   cmake_policy(SET CMP0135 NEW)
   set(CMAKE_POLICY_DEFAULT_CMP0135 NEW)
 endif()
+
+# ===== Common Locations ==========
+
+set(MAIN_SRC_DIR "${dynamic_paper_SOURCE_DIR}/src")
+
+# ===== Libraries ==========
 
 include(FetchContent)
 FetchContent_Declare(
@@ -36,8 +42,39 @@ FetchContent_Declare(
   GIT_TAG v1.1.0)
 FetchContent_MakeAvailable(expected)
 
+# ===== Golang ==========
+
+set(GOLANG_DIR_NAME golang)
+
+set(GOLANG_SRC_FILE_NAMES background.go)
+set(GOLANG_SRCS ${GOLANG_SRC_FILE_NAMES})
+list(TRANSFORM GOLANG_SRCS PREPEND "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/")
+
+set(GOLANG_OUTPUT_NAME go-background)
+set(GOLANG_COMPILE_SCRIPT compile_go.sh)
+
+set(GOLANG_DIR_FULL_PATH "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/")
+
+add_custom_command(
+  OUTPUT "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a"
+         "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.h"
+  COMMAND "./compile_go.sh"
+  WORKING_DIRECTORY "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}"
+  DEPENDS ${GOLANG_SRCS}
+  COMMENT "[test] Building archive and header file for golang src")
+
+# add_custom_target(build-golang-test ALL DEPENDS ${GOLANG_SRCS})
+add_custom_target(
+  build-golang-test ALL
+  DEPENDS "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a"
+          "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.h"
+          "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_COMPILE_SCRIPT}")
+
+# ===== Add Sources ==========
+
 add_executable(
   dynamic_paper_test
+  # test sources
   general_config_test.cpp
   background_set_test.cpp
   time_conversion_test.cpp
@@ -48,19 +85,25 @@ add_executable(
   time_from_midnight_test.cpp
   current_time_test.cpp
   cmdline_helper_tests.cpp
-  ${dynamic_paper_SOURCE_DIR}/src/background_set.cpp
-  ${dynamic_paper_SOURCE_DIR}/src/time_from_midnight.cpp
-  ${dynamic_paper_SOURCE_DIR}/src/background_setter.cpp
-  ${dynamic_paper_SOURCE_DIR}/src/command_executor.cpp
-  ${dynamic_paper_SOURCE_DIR}/src/config.cpp
-  ${dynamic_paper_SOURCE_DIR}/src/dynamic_background_set.cpp
-  ${dynamic_paper_SOURCE_DIR}/src/image_compositor.cpp
-  ${dynamic_paper_SOURCE_DIR}/src/logger.cpp
-  ${dynamic_paper_SOURCE_DIR}/src/static_background_set.cpp
-  ${dynamic_paper_SOURCE_DIR}/src/time_util.cpp
-  ${dynamic_paper_SOURCE_DIR}/src/yaml_helper.cpp
-  ${dynamic_paper_SOURCE_DIR}/src/cmdline_helper.cpp
-  ${dynamic_paper_SOURCE_DIR}/src/file_util.cpp)
+  # sources
+  ${MAIN_SRC_DIR}/background_set.cpp
+  ${MAIN_SRC_DIR}/time_from_midnight.cpp
+  ${MAIN_SRC_DIR}/background_setter.cpp
+  ${MAIN_SRC_DIR}/command_executor.cpp
+  ${MAIN_SRC_DIR}/config.cpp
+  ${MAIN_SRC_DIR}/dynamic_background_set.cpp
+  ${MAIN_SRC_DIR}/image_compositor.cpp
+  ${MAIN_SRC_DIR}/logger.cpp
+  ${MAIN_SRC_DIR}/static_background_set.cpp
+  ${MAIN_SRC_DIR}/time_util.cpp
+  ${MAIN_SRC_DIR}/yaml_helper.cpp
+  ${MAIN_SRC_DIR}/cmdline_helper.cpp
+  ${MAIN_SRC_DIR}/file_util.cpp
+  "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a")
+
+target_link_libraries(
+  dynamic_paper_test
+  PRIVATE ${CMAKE_SOURCE_DIR}/src/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a)
 
 target_link_libraries(dynamic_paper_test PRIVATE gtest_main gmock_main yaml-cpp
                                                  spdlog argparse expected)
@@ -68,8 +111,9 @@ target_link_libraries(dynamic_paper_test PRIVATE gtest_main gmock_main yaml-cpp
 target_include_directories(dynamic_paper_test
                            PRIVATE ${dynamic_paper_SOURCE_DIR})
 
-# clang tidy
-find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
-set(CLANG_TIDY_COMMAND "${CLANG_TIDY_EXE}")
-set_target_properties(dynamic_paper PROPERTIES CXX_CLANG_TIDY
-                                               "${CLANG_TIDY_COMMAND}")
+# ===== Clang Tidy ==========
+
+# find_program(CLANG_TIDY_EXE NAMES "clang-tidy") set(CLANG_TIDY_COMMAND
+# "${CLANG_TIDY_EXE}") set_target_properties(dynamic_paper_test PROPERTIES
+# CXX_CLANG_TIDY
+# "${CLANG_TIDY_COMMAND}")

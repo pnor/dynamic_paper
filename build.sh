@@ -61,7 +61,7 @@ function bump_compile_commands_json {
 }
 
 # $1: should be `debug` or `release` which determines which type of build to perform
-# $2: (optional) `1` if should not run cmake
+# $2: (optional) `1` if should *not* run cmake
 function build {
     echo -e "${CYAN}Building project${NC}"
     # Build targets into release

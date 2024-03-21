@@ -20,6 +20,7 @@ using namespace dynamic_paper;
 // - use wallutils directly
 // - libgeoclue for location
 // - buelowp sunset
+// - image magick
 // TODO better README
 // TODO cache management (delete all and for one set + show location)
 // TODO high level defautl config options for background_sets.yaml (example:

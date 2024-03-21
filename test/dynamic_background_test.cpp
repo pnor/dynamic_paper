@@ -10,7 +10,6 @@
 #include <tl/expected.hpp>
 
 #include "background_test_setter.hpp"
-#include "src/background_setter.hpp"
 #include "src/config.hpp"
 #include "src/dynamic_background_set.hpp"
 

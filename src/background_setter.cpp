@@ -8,22 +8,31 @@
 
 #include "command_executor.hpp"
 #include "file_util.hpp"
+#include "golang/go-background.h"
 #include "image_compositor.hpp"
 #include "logger.hpp"
 #include "variant_visitor_templ.hpp"
-
-// TODO move
-#include "golang/go-background.h"
 
 namespace dynamic_paper {
 
 namespace {
 
-// Static Commmands Run in Shell
-constexpr std::string_view WALLUTILS_SET_CENTERED_FORMAT_STRING =
-    "setwallpaper -m center {}";
-constexpr std::string_view WALLUTILS_SET_FILLED_FORMAT_STRING =
-    "setwallpaper -m fill {}";
+// ===== Calling Set Background in Go ===============
+
+void callSetBackground(const std::string &imageName,
+                       const std::string &modeString) {
+  /**
+   * cgo creates a C compatible header file that does not use `const`.
+   * This single function will for a fact not mutate the value referenced by the
+   * pointers, despite them being passed as mutable pointers.
+   */
+  char *imageNamePtr = const_cast<char *>(imageName.c_str());   // NOLINT
+  char *modeStringPtr = const_cast<char *>(modeString.c_str()); // NOLINT
+
+  SetBackground(imageNamePtr, modeStringPtr);
+}
+
+// ===== Heleper ===============
 
 inline std::string convertScriptNameToCommand(const std::string &scriptName,
                                               const BackgroundSetMode mode,
@@ -74,23 +83,7 @@ setBackgroundToImage(const std::filesystem::path &imagePath,
                 convertScriptNameToCommand(method.script, mode, imageName));
           },
           [mode, &imageName](const BackgroundSetterMethodWallUtils) {
-            switch (mode) {
-            case BackgroundSetMode::Center: {
-              const std::string command =
-                  std::format(WALLUTILS_SET_CENTERED_FORMAT_STRING, imageName);
-
-              return runCommandHandleError(command);
-            }
-            case BackgroundSetMode::Fill: {
-              const std::string command =
-                  std::format(WALLUTILS_SET_FILLED_FORMAT_STRING, imageName);
-
-              return runCommandHandleError(command);
-            }
-            }
-
-            logAssert(false, "Unhandled background set mode case when setting "
-                             "background to image!");
+            callSetBackground(imageName, backgroundSetModeString(mode));
             return tl::expected<void, BackgroundError>();
           }},
       method);
