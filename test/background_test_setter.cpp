@@ -1,8 +1,14 @@
 #include "background_test_setter.hpp"
 
-namespace dynamic_paper_test {
+#include <ostream>
+#include <string>
+#include <utility>
+#include <vector>
 
-using namespace dynamic_paper;
+#include "src/background_set_enums.hpp"
+#include "src/logger.hpp"
+
+namespace dynamic_paper_test {
 
 namespace {
 
@@ -15,7 +21,7 @@ constexpr std::string setEventString(const SetEvent &event) {
     return "[mode = Fill   | " + event.imagePath.string() + " ]";
   };
   }
-  logAssert(false, "Unreachable");
+  dynamic_paper::logAssert(false, "Unreachable");
   return "[?]";
 }
 

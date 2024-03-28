@@ -2,7 +2,8 @@
 
 #include <format>
 
-#include "command_executor.hpp"
+#include <CImg.h>
+
 #include "logger.hpp"
 
 namespace dynamic_paper {
@@ -51,25 +52,26 @@ createCompositeImage(const std::filesystem::path &startImagePath,
     logWarning(
         "Trying to make a composite image using {} but it doesn't exist!",
         startImagePath.string());
+    return tl::unexpected(CompositeImageError::FileDoesntExist);
   }
+
   if (!std::filesystem::exists(endImagePath)) {
     logWarning(
         "Trying to make a composite image using {} but it doesn't exist!",
         endImagePath.string());
+    return tl::unexpected(CompositeImageError::FileDoesntExist);
   }
   if (std::filesystem::exists(destinationImagePath)) {
     logWarning("Creating a new composite image that already exists in cache!");
   }
 
-  const int exitCode = runCommandExitCode(
-      std::format("magick composite -gravity center -blend {}% {} {} {}",
-                  percentage, endImagePath.string(), startImagePath.string(),
-                  destinationImagePath.string()));
+  using namespace cimg_library;
+  CImg<unsigned char> baseImage = CImg<>(startImagePath.c_str());
+  CImg<unsigned char> compositeImage = CImg<>(endImagePath.c_str());
+  baseImage.draw_image(compositeImage, static_cast<float>(percentage) / 100.0F);
+  baseImage.save(destinationImagePath.c_str());
 
-  if (exitCode == EXIT_SUCCESS) {
-    return destinationImagePath;
-  }
-  return tl::unexpected(CompositeImageError::CommandError);
+  return destinationImagePath;
 }
 
 } // namespace

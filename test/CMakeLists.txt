@@ -13,37 +13,21 @@ set(MAIN_SRC_DIR "${dynamic_paper_SOURCE_DIR}/src")
 # ===== Libraries ==========
 
 include(FetchContent)
+
 FetchContent_Declare(
   googletest
   URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
 )
-FetchContent_MakeAvailable(googletest)
 
-include(FetchContent)
 FetchContent_Declare(
   yaml-cpp URL https://github.com/jbeder/yaml-cpp/archive/refs/tags/0.8.0.zip)
-FetchContent_MakeAvailable(yaml-cpp)
 
 FetchContent_Declare(
   spdlog
   GIT_REPOSITORY https://github.com/gabime/spdlog.git
   GIT_TAG v1.12.0)
-FetchContent_MakeAvailable(spdlog)
 
-FetchContent_Declare(
-  argparse
-  GIT_REPOSITORY https://github.com/p-ranav/argparse.git
-  GIT_TAG v3.0)
-FetchContent_MakeAvailable(argparse)
-
-FetchContent_Declare(
-  expected
-  GIT_REPOSITORY https://github.com/TartanLlama/expected.git
-  GIT_TAG v1.1.0)
-FetchContent_MakeAvailable(expected)
-
-# ===== Golang ==========
-
+# ===== Golang Build ==========
 set(GOLANG_DIR_NAME golang)
 
 set(GOLANG_SRC_FILE_NAMES background.go)
@@ -71,7 +55,6 @@ add_custom_target(
           "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_COMPILE_SCRIPT}")
 
 # ===== Add Sources ==========
-
 add_executable(
   dynamic_paper_test
   # test sources
@@ -101,12 +84,29 @@ add_executable(
   ${MAIN_SRC_DIR}/file_util.cpp
   "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a")
 
+# ===== Include Path ==========
+target_include_directories(
+  dynamic_paper_test
+  PRIVATE "${CMAKE_SOURCE_DIR}/third-party/CImg/include"
+          "${CMAKE_SOURCE_DIR}/third-party/argparse/include"
+          "${CMAKE_SOURCE_DIR}/third-party/expected/include"
+          "${CMAKE_SOURCE_DIR}/third-party/spdlog/include")
+
+# ===== Linking ===========
+
 target_link_libraries(
   dynamic_paper_test
   PRIVATE ${CMAKE_SOURCE_DIR}/src/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a)
 
-target_link_libraries(dynamic_paper_test PRIVATE gtest_main gmock_main yaml-cpp
-                                                 spdlog argparse expected)
+FetchContent_MakeAvailable(spdlog)
+target_link_libraries(dynamic_paper_test PRIVATE spdlog::spdlog_header_only)
+
+FetchContent_MakeAvailable(googletest)
+FetchContent_MakeAvailable(yaml-cpp)
+target_link_libraries(dynamic_paper_test PRIVATE gtest_main gmock_main yaml-cpp)
+
+find_package(X11 REQUIRED) # TODO support wayland
+target_link_libraries(dynamic_paper_test PRIVATE ${X11_LIBRARIES})
 
 target_include_directories(dynamic_paper_test
                            PRIVATE ${dynamic_paper_SOURCE_DIR})

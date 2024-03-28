@@ -2,14 +2,23 @@
  *   Test parsing of YAML background sets
  */
 
+#include <cassert>
+#include <optional>
+#include <stdexcept>
+#include <string_view>
+
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-
 #include <yaml-cpp/yaml.h>
 
 #include "src/background_set.hpp"
+#include "src/background_set_enums.hpp"
 #include "src/config.hpp"
+#include "src/dynamic_background_set.hpp"
 #include "src/file_util.hpp"
+#include "src/static_background_set.hpp"
+#include "src/time_from_midnight.hpp"
+#include "src/time_util.hpp"
 
 using namespace dynamic_paper;
 using namespace testing;

@@ -38,7 +38,7 @@ dynamic_example2:
   mode: center
   order: linear
   transition: true
-  number_transition_steps: 5
+  number_transition_steps: 100
   transition_length: 5
   images:
     - 1.png
@@ -46,7 +46,7 @@ dynamic_example2:
     - 3.png
     - 4.png
   times:
-    - 14:24
-    - 14:25
-    - 14:26
-    - 14:27
+    - 01:09
+    - 01:10
+    - 01:11
+    - 01:12

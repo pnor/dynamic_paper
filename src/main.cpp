@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include <argparse/argparse.hpp>
+#include <spdlog/fmt/fmt.h>
 #include <spdlog/spdlog.h>
 #include <tl/expected.hpp>
 #include <yaml-cpp/yaml.h>
@@ -10,18 +11,16 @@
 #include "cmdline_helper.hpp"
 #include "config.hpp"
 #include "defaults.hpp"
-#include "file_util.hpp"
 #include "logger.hpp"
-#include "time_util.hpp"
 
 using namespace dynamic_paper;
 
 // TODO try and stop using less shell commands? (exec family maybe)
-// - use wallutils directly
 // - libgeoclue for location
 // - buelowp sunset
 // - image magick
 // TODO better README
+// TODO log to stdout option
 // TODO cache management (delete all and for one set + show location)
 // TODO high level defautl config options for background_sets.yaml (example:
 // specify default transition for all)
@@ -41,8 +40,7 @@ void handleShowCommand(argparse::ArgumentParser &showCommand,
       getBackgroundSetWithNameFromFile(name, config);
 
   if (!optBackgroundSet.has_value()) {
-    std::cout << "Unable to show background set with name " << name
-              << std::endl;
+    std::cout << "Unable to show background set with name " << name << '\n';
     return;
   }
 

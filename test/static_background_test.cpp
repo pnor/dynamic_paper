@@ -2,13 +2,16 @@
  * Test ability to show Static Backgrounds Sets
  */
 
+#include <filesystem>
+#include <string_view>
+
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
 #include <tl/expected.hpp>
 
 #include "background_test_setter.hpp"
-#include "src/background_setter.hpp"
+#include "src/background_set_enums.hpp"
 #include "src/config.hpp"
 #include "src/static_background_set.hpp"
 

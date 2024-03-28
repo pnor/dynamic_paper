@@ -13,31 +13,16 @@ set(MAIN_SRC_DIR "${dynamic_paper_SOURCE_DIR}/src")
 # ===== Libraries ==========
 
 include(FetchContent)
+
 FetchContent_Declare(
   yaml-cpp URL https://github.com/jbeder/yaml-cpp/archive/refs/tags/0.8.0.zip)
-FetchContent_MakeAvailable(yaml-cpp)
 
 FetchContent_Declare(
   spdlog
   GIT_REPOSITORY https://github.com/gabime/spdlog.git
   GIT_TAG v1.12.0)
-FetchContent_MakeAvailable(spdlog)
 
-FetchContent_Declare(
-  argparse
-  GIT_REPOSITORY https://github.com/p-ranav/argparse.git
-  GIT_TAG v3.0)
-FetchContent_MakeAvailable(argparse)
-
-FetchContent_Declare(
-  expected
-  GIT_REPOSITORY https://github.com/TartanLlama/expected.git
-  GIT_TAG v1.1.0)
-FetchContent_MakeAvailable(expected)
-
-# ===== Golang ==========
-find_program(GO_EXEC NAMES "go")
-
+# ===== Golang Build ==========
 set(GOLANG_SRC_FILE_NAMES background.go)
 set(GOLANG_DIR_NAME golang)
 
@@ -65,8 +50,6 @@ add_custom_target(
           "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_COMPILE_SCRIPT}")
 
 # ===== Add Sources ==========
-
-message("${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a")
 add_executable(
   dynamic_paper
   # sources
@@ -86,11 +69,30 @@ add_executable(
   file_util.cpp
   "${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a")
 
+# ===== Include Path ==========
+target_include_directories(
+  dynamic_paper
+  PRIVATE "${CMAKE_SOURCE_DIR}/third-party/CImg/include"
+          "${CMAKE_SOURCE_DIR}/third-party/argparse/include"
+          "${CMAKE_SOURCE_DIR}/third-party/expected/include"
+          "${CMAKE_SOURCE_DIR}/third-party/spdlog/include")
+
+# ===== Linking ===========
+
 target_link_libraries(
   dynamic_paper
   PRIVATE ${CMAKE_SOURCE_DIR}/src/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a)
 
-target_link_libraries(dynamic_paper PRIVATE yaml-cpp spdlog argparse expected)
+FetchContent_MakeAvailable(yaml-cpp)
+target_link_libraries(dynamic_paper PRIVATE yaml-cpp)
+
+FetchContent_MakeAvailable(spdlog)
+target_link_libraries(dynamic_paper PRIVATE spdlog::spdlog_header_only)
+
+find_package(X11 REQUIRED) # TODO support wayland
+target_link_libraries(dynamic_paper PRIVATE ${X11_LIBRARIES})
+
+# ===== Clean Command ==========
 
 set_property(
   TARGET dynamic_paper
@@ -100,7 +102,7 @@ set_property(
 
 # ===== Clang Tidy ==========
 
-find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
-set(CLANG_TIDY_COMMAND "${CLANG_TIDY_EXE}")
-set_target_properties(dynamic_paper PROPERTIES CXX_CLANG_TIDY
-                                               "${CLANG_TIDY_COMMAND}")
+# find_program(CLANG_TIDY_EXE NAMES "clang-tidy") set(CLANG_TIDY_COMMAND
+# "${CLANG_TIDY_EXE}") set_target_properties(dynamic_paper PROPERTIES
+# CXX_CLANG_TIDY
+# "${CLANG_TIDY_COMMAND}")

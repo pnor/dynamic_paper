@@ -16,6 +16,8 @@
  * (2 * (60 * 60)) + (<time between sunrise and sunset>)
  *
  */
+#include <cassert>
+#include <chrono>
 
 #include <gtest/gtest.h>
 

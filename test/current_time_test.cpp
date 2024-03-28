@@ -2,6 +2,8 @@
  *   Test the ability to get the time
  */
 
+#include <chrono>
+
 #include <gtest/gtest.h>
 
 #include "src/time_util.hpp"

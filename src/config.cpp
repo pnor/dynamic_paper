@@ -1,8 +1,5 @@
 #include "config.hpp"
 
-#include <fstream>
-#include <iostream>
-#include <stdexcept>
 #include <utility>
 
 #include <yaml-cpp/yaml.h>

@@ -1,13 +1,16 @@
 /**
  *   Test parsing of YAML config files
  */
+#include <filesystem>
+#include <optional>
+#include <string>
+#include <string_view>
 
 #include <gtest/gtest.h>
 
-#include <yaml-cpp/yaml.h>
-
 #include "src/config.hpp"
 #include "src/defaults.hpp"
+#include "src/file_util.hpp"
 
 using namespace dynamic_paper;
 

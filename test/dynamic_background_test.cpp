@@ -2,7 +2,12 @@
  * Test ability to show Dynamic Background Sets
  */
 
-#include <cassert>
+#include <array>
+#include <chrono>
+#include <filesystem>
+#include <optional>
+#include <string>
+#include <string_view>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -10,8 +15,11 @@
 #include <tl/expected.hpp>
 
 #include "background_test_setter.hpp"
+#include "src/background_set_enums.hpp"
 #include "src/config.hpp"
 #include "src/dynamic_background_set.hpp"
+#include "src/time_from_midnight.hpp"
+#include "src/transition_info.hpp"
 
 using namespace dynamic_paper_test;
 using namespace dynamic_paper;
@@ -98,8 +106,8 @@ struct DynamicSetConfig {
   std::vector<TimeFromMidnight> times;
 };
 struct Backgrounds {
-  std::vector<std::string> names;
-  BackgroundSetMode mode;
+  std::vector<std::string> names{};
+  BackgroundSetMode mode = BackgroundSetMode::Fill;
 };
 
 constexpr TimeFromMidnight time(std::string_view timeString) {
@@ -116,7 +124,7 @@ timesArray(const std::vector<std::string_view> &timeStrings) {
   return vec;
 }
 
-template <size_t N>
+template <std::size_t N>
 std::array<std::chrono::seconds, N>
 testDynamicBackground(TestBackgroundSetterHistory &history,
                       const DynamicSetConfig setConfig,

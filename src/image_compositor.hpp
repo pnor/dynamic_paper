@@ -9,7 +9,7 @@ namespace dynamic_paper {
 
 /** Logic of creating and caching composited backgrounds */
 
-enum class CompositeImageError { UnableToCreatePath, CommandError };
+enum class CompositeImageError { UnableToCreatePath, FileDoesntExist };
 
 /** Returns the path location of where a composited image created from
  * `startImageName` and `endImageName` with a ratio of `percentage` would be.

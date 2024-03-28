@@ -23,5 +23,5 @@ set(CMAKE_CXX_FLAGS_RELEASE
     "${CMAKE_CXX_FLAGS_RELEASE} -O3 -Wall -Wextra -Werror=switch -Wno-error=sign-compare"
 )
 
-# add_subdirectory(src)
+add_subdirectory(src)
 add_subdirectory(test)

@@ -2,13 +2,19 @@
  *   Test parsing of YAML config files to set the logging level
  */
 
-#include <gtest/gtest.h>
+#include <filesystem>
+#include <optional>
+#include <string>
+#include <string_view>
+#include <utility>
 
+#include <gtest/gtest.h>
 #include <spdlog/spdlog.h>
-#include <yaml-cpp/yaml.h>
+#include <yaml-cpp/parser.h>
 
 #include "src/config.hpp"
 #include "src/defaults.hpp"
+#include "src/logger.hpp"
 
 using namespace dynamic_paper;
 
@@ -88,13 +94,13 @@ logging_level: "off"
 )"""";
 
 LogLevel getLogLevelFromYAML(const YAML::Node &yaml) {
-  std::pair<LogLevel, std::filesystem::path> levelAndFile =
+  const std::pair<LogLevel, std::filesystem::path> levelAndFile =
       loadLoggingInfoFromYAML(yaml);
   return levelAndFile.first;
 }
 
 std::string getConfigFileNameFromYAML(const YAML::Node &yaml) {
-  std::pair<LogLevel, std::filesystem::path> levelAndFile =
+  const std::pair<LogLevel, std::filesystem::path> levelAndFile =
       loadLoggingInfoFromYAML(yaml);
   return levelAndFile.second;
 }
