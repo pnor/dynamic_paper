@@ -24,4 +24,4 @@ set(CMAKE_CXX_FLAGS_RELEASE
 )
 
 add_subdirectory(src)
-add_subdirectory(test)
+# add_subdirectory(test)

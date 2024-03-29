@@ -1,8 +1,6 @@
 #include "logger.hpp"
 
 #include <filesystem>
-#include <iostream>
-#include <string_view>
 
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/spdlog.h>

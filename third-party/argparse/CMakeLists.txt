@@ -1,6 +1,9 @@
-# add_library(${TARGET_LOGGER} INTERFACE)
+file(
+  DOWNLOAD
+  https://raw.githubusercontent.com/p-ranav/argparse/master/include/argparse/argparse.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/argparse/argparse.hpp)
+
 target_include_directories(
-  ${TARGET_LOGGER}
-  INTERFACE "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
-            "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
-target_link_libraries(example_header_only PRIVATE spdlog::spdlog_header_only)
+  ${INCLUDE_TARGET}
+  PRIVATE "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
+          "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")

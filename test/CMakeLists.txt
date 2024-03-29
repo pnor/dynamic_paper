@@ -84,13 +84,12 @@ add_executable(
   ${MAIN_SRC_DIR}/file_util.cpp
   "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a")
 
-# ===== Include Path ==========
-target_include_directories(
-  dynamic_paper_test
-  PRIVATE "${CMAKE_SOURCE_DIR}/third-party/CImg/include"
-          "${CMAKE_SOURCE_DIR}/third-party/argparse/include"
-          "${CMAKE_SOURCE_DIR}/third-party/expected/include"
-          "${CMAKE_SOURCE_DIR}/third-party/spdlog/include")
+# ===== Include Header Files ==========
+set(INCLUDE_TARGET dynamic_paper_test)
+include("../third-party/CImg/CMakeLists.txt")
+include("../third-party/argparse/CMakeLists.txt")
+include("../third-party/expected/CMakeLists.txt")
+include("../third-party/HTTPRequest/CMakeLists.txt")
 
 # ===== Linking ===========
 
