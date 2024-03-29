@@ -1,11 +1,11 @@
 #pragma once
 
+/** Collection of functions for template type manipulation */
+
 #include <optional>
 #include <vector>
 
 #include "type_traits"
-
-/** Collection of functions for template type manipulation */
 
 namespace dynamic_paper {
 

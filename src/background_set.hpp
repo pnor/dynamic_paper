@@ -1,5 +1,7 @@
 #pragma once
 
+/** Object that represents a static/dynamic background to be shown */
+
 #include <expected>
 #include <filesystem>
 #include <optional>
@@ -13,7 +15,6 @@
 #include "dynamic_background_set.hpp"
 #include "static_background_set.hpp"
 
-/** Object that represents a static/dynamic background to be shown */
 namespace dynamic_paper {
 
 /** Collection of information used to determine how to display a background.

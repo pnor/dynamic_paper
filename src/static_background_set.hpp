@@ -1,14 +1,13 @@
 #pragma once
 
+/** Static Background Sets show a wallpaper once and exit */
+
 #include <filesystem>
 #include <optional>
-#include <random>
 #include <vector>
 
 #include "background_set_enums.hpp"
 #include "background_setter.hpp"
-
-/** Static Background Sets show a wallpaper once and exit */
 
 namespace dynamic_paper {
 

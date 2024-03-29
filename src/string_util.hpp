@@ -1,10 +1,10 @@
 #pragma once
 
+/** Utility functions to operate on strings */
+
 #include <algorithm>
 #include <regex>
 #include <string>
-
-/** Utility functions to operate on strings */
 
 // === string manip ===
 

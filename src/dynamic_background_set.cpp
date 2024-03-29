@@ -1,7 +1,9 @@
 #include "dynamic_background_set.hpp"
-#include "math_util.hpp"
 
 #include <random>
+
+#include "math_util.hpp"
+#include "time_util.hpp"
 
 namespace dynamic_paper {
 

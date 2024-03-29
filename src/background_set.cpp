@@ -227,7 +227,7 @@ createDynamicBackgroundSetFromInfo(const ParsingInfo &parsingInfo,
   }
 
   std::optional<SunriseAndSunsetTimes> optSunriseAndSunsetTimes =
-      getSunriseAndSetString(config);
+      getSunriseAndSunsetTimes(config);
   if (!optSunriseAndSunsetTimes.has_value()) {
     return tl::unexpected(BackgroundSetParseErrors::MissingSunpollInfo);
   }
@@ -320,6 +320,7 @@ std::optional<DynamicBackgroundData> BackgroundSet::getDynamicBackgroundData() {
 tl::expected<BackgroundSet, BackgroundSetParseErrors>
 parseFromYAML(const std::string &name, const YAML::Node &yaml,
               const Config &config) {
+  // TODO make this take optional sunrise set times for caching
   ParsingInfo parsingInfo;
 
   const auto yamlMap = yaml.as<std::unordered_map<std::string, YAML::Node>>();

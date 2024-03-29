@@ -1,8 +1,7 @@
 #include "static_background_set.hpp"
 
 #include <cstdlib>
-
-#include "background_setter.hpp"
+#include <random>
 
 namespace dynamic_paper {
 

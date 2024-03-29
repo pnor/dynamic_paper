@@ -1,12 +1,12 @@
 #pragma once
 
-#include <chrono>
-
-#include "logger.hpp"
-
 /**
  * Helper struct used to represent transitions
  */
+
+#include <chrono>
+
+#include "logger.hpp"
 
 namespace dynamic_paper {
 

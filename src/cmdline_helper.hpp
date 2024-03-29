@@ -1,14 +1,14 @@
 #pragma once
 
+/** Helper function for `main` that handle the user facing functionality of the
+ * program */
+
 #include <argparse/argparse.hpp>
 
 #include "background_set.hpp"
 #include "config.hpp"
 
 namespace dynamic_paper {
-
-/** Helper function for `main` that handle the user facing functionality of the
- * program */
 
 // ===== Logging ===============
 

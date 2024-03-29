@@ -1,9 +1,8 @@
 #pragma once
 
-#include <filesystem>
-#include <optional>
-
 /** Utility functions to work with the filesystem */
+
+#include <filesystem>
 
 namespace dynamic_paper {
 

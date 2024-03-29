@@ -1,14 +1,16 @@
 #pragma once
 
+/**
+ * Represent the amount of time that has passed since midnight of the current
+ * day
+ */
+
 #include <chrono>
 #include <type_traits>
 
 #include "math_util.hpp"
 
 namespace dynamic_paper {
-
-/** Represent the amount of time that has passed since midnight of the current
- * day */
 
 /** Restriction to make it only possible to add time units <= 1 day to
  * `TimeFromMidnight` */

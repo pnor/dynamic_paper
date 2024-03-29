@@ -19,6 +19,7 @@
 #include "src/config.hpp"
 #include "src/dynamic_background_set.hpp"
 #include "src/time_from_midnight.hpp"
+#include "src/time_util.hpp"
 #include "src/transition_info.hpp"
 
 using namespace dynamic_paper_test;

@@ -1,13 +1,13 @@
 #pragma once
 
+/** Logic of creating and caching composited backgrounds */
+
 #include <filesystem>
 #include <string>
 
 #include <tl/expected.hpp>
 
 namespace dynamic_paper {
-
-/** Logic of creating and caching composited backgrounds */
 
 enum class CompositeImageError { UnableToCreatePath, FileDoesntExist };
 
@@ -50,7 +50,7 @@ public:
   /**
    * Returns the path to an image that is interpolated between
    * `commonImageDirectory /startImageName` and `commonImageDirectory /
-   * endImageName` by `percentage`%. Uses the external program `imagemagick` to
+   * endImageName` by `percentage`%. Uses the library `CImg` to
    * create the interpolated image
    *
    * `percentage` should be in the range [0..100]

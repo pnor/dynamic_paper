@@ -21,6 +21,11 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/gabime/spdlog.git
   GIT_TAG v1.12.0)
 
+FetchContent_Declare(
+  cpr
+  GIT_REPOSITORY https://github.com/libcpr/cpr.git
+  GIT_TAG 1.10.5)
+
 # ===== Golang Build ==========
 set(GOLANG_SRC_FILE_NAMES background.go)
 set(GOLANG_DIR_NAME golang)
@@ -73,13 +78,15 @@ set(INCLUDE_TARGET dynamic_paper)
 include("../third-party/CImg/CMakeLists.txt")
 include("../third-party/argparse/CMakeLists.txt")
 include("../third-party/expected/CMakeLists.txt")
-include("../third-party/HTTPRequest/CMakeLists.txt")
 
 # ===== Linking ===========
 
 target_link_libraries(
   dynamic_paper
   PRIVATE ${CMAKE_SOURCE_DIR}/src/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a)
+
+FetchContent_MakeAvailable(cpr)
+target_link_libraries(dynamic_paper PRIVATE cpr::cpr)
 
 FetchContent_MakeAvailable(yaml-cpp)
 target_link_libraries(dynamic_paper PRIVATE yaml-cpp)

@@ -1,15 +1,11 @@
 #include "background_setter.hpp"
 
-#include <algorithm>
 #include <format>
-#include <thread>
 
 #include <tl/expected.hpp>
 
 #include "command_executor.hpp"
-#include "file_util.hpp"
 #include "golang/go-background.h"
-#include "image_compositor.hpp"
 #include "logger.hpp"
 #include "variant_visitor_templ.hpp"
 

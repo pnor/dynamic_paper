@@ -1,10 +1,10 @@
 #pragma once
 
+/** Helper functions for parsing the YAML files*/
+
 #include <algorithm>
-#include <filesystem>
 #include <optional>
 #include <type_traits>
-#include <variant>
 
 #include <tl/expected.hpp>
 #include <yaml-cpp/yaml.h>
@@ -14,8 +14,6 @@
 #include "logger.hpp"
 #include "string_util.hpp"
 #include "type_helper.hpp"
-
-/** Helper functions for parsing the YAML files*/
 
 namespace dynamic_paper {
 

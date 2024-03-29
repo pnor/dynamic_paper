@@ -1,13 +1,13 @@
 #pragma once
 
+/** Handling of time based events */
+
 #include <chrono>
+#include <concepts>
 #include <ctime>
-#include <format>
 
 #include "config.hpp"
 #include "time_from_midnight.hpp"
-
-/** Handling of time based events */
 
 namespace dynamic_paper {
 
@@ -44,7 +44,7 @@ TimeFromMidnight getCurrentTime();
  * failed, etc.)
  */
 std::optional<SunriseAndSunsetTimes>
-getSunriseAndSetString(const Config &config);
+getSunriseAndSunsetTimes(const Config &config);
 
 /**
  *  Convert string formatted HH:MM or HH:MM:SS to number of seconds from
@@ -98,6 +98,11 @@ timeStringToTime(const std::string &origString,
 std::optional<std::vector<TimeFromMidnight>>
 timeStringsToTimes(const std::vector<std::string> &strings,
                    const SunriseAndSunsetTimes &sunriseAndSunsetTimes);
+
+/**
+ * Returns the amount of time it took to run `block`
+ */
+std::chrono::milliseconds elapsedTimeToRunCodeBlock(std::invocable auto block);
 
 // ===== constexpr definition =======
 
@@ -185,6 +190,16 @@ convertRawTimeStringToTimeOffsetUnchecked(std::string_view timeString) {
   std::optional<TimeFromMidnight> optTime =
       convertRawTimeStringToTimeOffset(timeString);
   return optTime.value();
+}
+
+std::chrono::milliseconds elapsedTimeToRunCodeBlock(std::invocable auto block) {
+  std::chrono::steady_clock::time_point begin =
+      std::chrono::steady_clock::now();
+
+  std::invoke(block);
+
+  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+  return std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
 }
 
 } // namespace dynamic_paper

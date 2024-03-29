@@ -1,20 +1,21 @@
 #pragma once
 
+/**
+ * Dynamic Background sets change wallpaper depending on the time of day. They
+ * sleep until the next time to show a wallpaper is hit
+ */
+
 #include <chrono>
 #include <filesystem>
 #include <optional>
 #include <vector>
 
 #include "background_set_enums.hpp"
-#include "background_setter.hpp"
+#include "background_setter_definition.hpp"
 #include "config.hpp"
-#include "time_util.hpp"
+#include "time_from_midnight.hpp"
 #include "transition_info.hpp"
 #include "variant_visitor_templ.hpp"
-
-/** Dynamic Background sets change wallpaper depending on the time of day. They
- * sleep until the next time to show a wallpaper is hit
- */
 
 namespace dynamic_paper {
 

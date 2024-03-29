@@ -1,9 +1,9 @@
 #pragma once
 
-#include "background_setter.hpp"
-#include "file_util.hpp"
-
 /** Default values used throughout */
+
+#include "config.hpp"
+#include "file_util.hpp"
 
 namespace dynamic_paper {
 

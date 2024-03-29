@@ -1,5 +1,9 @@
 #pragma once
 
+/**
+ * Execute shell commands and return the output
+ */
+
 #include <string>
 
 #include <tl/expected.hpp>

@@ -1,10 +1,10 @@
 #pragma once
 
+/** Enums for different traits of `BackgroundSet`s*/
+
 #include <string>
 
 #include "logger.hpp"
-
-/** Enums for different traits of `BackgroundSet`s*/
 
 namespace dynamic_paper {
 

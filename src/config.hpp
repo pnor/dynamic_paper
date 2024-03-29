@@ -1,5 +1,9 @@
 #pragma once
 
+/**
+ * Parsing and usage of the general config
+ */
+
 #include <filesystem>
 #include <optional>
 #include <type_traits>
@@ -11,13 +15,13 @@
 #include "logger.hpp"
 #include "variant_visitor_templ.hpp"
 
-// General Configuration
-
 namespace dynamic_paper {
 
 // ===== Sun Event Polling ===============
 
-/** Type of ways to determine the position of the sun.
+/**
+ * TODO REMOVE
+ *Type of ways to determine the position of the sun.
  *`Dummy` : For testing purposes
  *`Sunwait` : Use external program called sunwait
  */
@@ -56,6 +60,7 @@ using BackgroundSetterMethod =
 constexpr std::string
 backgroundSetterMethodString(const BackgroundSetterMethod &method) {
   std::string returnString;
+  // TODO remove
 
   std::visit(overloaded{[&returnString](const BackgroundSetterMethodScript &) {
                           returnString = "script";

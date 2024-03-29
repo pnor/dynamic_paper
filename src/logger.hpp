@@ -1,15 +1,13 @@
 #pragma once
 
-#include <cstddef>
+/** Helper functions for logging */
+
 #include <filesystem>
 #include <format>
-#include <string_view>
 
 #include <spdlog/spdlog.h>
 
 namespace dynamic_paper {
-
-/** Helper functions for logging */
 
 /** To determine which log messages should be shown */
 enum class LogLevel { INFO, WARNING, ERROR, DEBUG, CRITICAL, TRACE, OFF };

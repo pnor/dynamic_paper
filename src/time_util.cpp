@@ -2,6 +2,7 @@
 #include <cctype>
 #include <chrono>
 #include <ctime>
+#include <format>
 
 #include <tl/expected.hpp>
 
@@ -165,7 +166,7 @@ TimeFromMidnight getCurrentTime() {
 }
 
 std::optional<SunriseAndSunsetTimes>
-getSunriseAndSetString(const Config &config) {
+getSunriseAndSunsetTimes(const Config &config) {
   switch (config.sunEventPollerMethod) {
   case SunEventPollerMethod::Sunwait: {
     tl::expected<SunriseAndSunsetTimes, SunriseAndSetErrors> expectation =
