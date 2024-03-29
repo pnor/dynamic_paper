@@ -18,7 +18,6 @@ using namespace dynamic_paper;
 // TODO try and stop using less shell commands? (exec family maybe)
 // - libgeoclue for location
 // - buelowp sunset
-// - image magick
 // TODO better README
 // TODO log to stdout option
 // TODO cache management (delete all and for one set + show location)
