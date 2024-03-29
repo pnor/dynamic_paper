@@ -1,5 +1,5 @@
 file(DOWNLOAD https://raw.githubusercontent.com/GreycLab/CImg/master/CImg.h
-     ${CMAKE_CURRENT_SOURCE_DIR}/include/CImg.h)
+     ${CMAKE_CURRENT_LIST_DIR}/include/CImg.h)
 
 target_include_directories(
   ${INCLUDE_TARGET}

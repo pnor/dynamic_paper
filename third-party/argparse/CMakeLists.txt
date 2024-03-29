@@ -1,7 +1,7 @@
 file(
   DOWNLOAD
   https://raw.githubusercontent.com/p-ranav/argparse/master/include/argparse/argparse.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/argparse/argparse.hpp)
+  ${CMAKE_CURRENT_LIST_DIR}/include/argparse/argparse.hpp)
 
 target_include_directories(
   ${INCLUDE_TARGET}

@@ -1,7 +1,7 @@
 file(
   DOWNLOAD
   https://raw.githubusercontent.com/elnormous/HTTPRequest/master/include/HTTPRequest.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/HTTPRequest.hpp)
+  ${CMAKE_CURRENT_LIST_DIR}/include/HTTPRequest.hpp)
 
 target_include_directories(
   ${INCLUDE_TARGET}

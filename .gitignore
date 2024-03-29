@@ -12,6 +12,12 @@ src/golang/go-background.h
 src/golang/go-background.a
 src/golang/go.sum
 
+# Third party include
+third-party/CImg/include/CImg.h
+third-party/HTTPRequest/include/HTTPRequest.hpp
+third-party/argparse/include/argparse/argparse.hpp
+third-party/expected/include/tl/expected.hpp
+
 # CMake
 CMakeLists.txt.user
 CMakeCache.txt
