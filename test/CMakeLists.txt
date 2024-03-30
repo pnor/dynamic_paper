@@ -92,6 +92,7 @@ add_executable(
   ${MAIN_SRC_DIR}/yaml_helper.cpp
   ${MAIN_SRC_DIR}/cmdline_helper.cpp
   ${MAIN_SRC_DIR}/file_util.cpp
+  ${MAIN_SRC_DIR}/location.cpp
   "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a")
 
 # ===== Include Header Files ==========
@@ -130,3 +131,5 @@ target_include_directories(dynamic_paper_test
 # "${CLANG_TIDY_EXE}") set_target_properties(dynamic_paper_test PROPERTIES
 # CXX_CLANG_TIDY
 # "${CLANG_TIDY_COMMAND}")
+
+add_test(NAME runTests COMMAND dynamic_background_test)

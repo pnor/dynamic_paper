@@ -71,6 +71,7 @@ add_executable(
   yaml_helper.cpp
   cmdline_helper.cpp
   file_util.cpp
+  location.cpp
   "${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a")
 
 # ===== Include Header Files ==========

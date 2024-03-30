@@ -7,6 +7,7 @@ set -euo pipefail
 
 RED='\033[0;31m'
 CYAN='\033[0;36m'
+MAGENTA='\033[0;35m'
 NC='\033[0m' # No Color
 
 function help_message {
@@ -60,28 +61,59 @@ function bump_compile_commands_json {
     cp "Release/compile_commands.json" "./"
 }
 
-# $1: should be `debug` or `release` which determines which type of build to perform
-# $2: (optional) `1` if should *not* run cmake
+# $1: should be `main` to run main executable `test` to run tests. Can be `all` to build both and
+# run tests
+# $2: should be `debug` or `release` which determines which type of build to perform
+# $3: (optional) `1` if should run cmake
 function build {
-    echo -e "${CYAN}Building project${NC}"
+    main_or_test="$1"
+    debug_or_release="$2"
+    run_cmake="$3"
+
+    if [[ "$main_or_test" == "main" ]]; then
+        echo -e "${CYAN}Building main project${NC}"
+    else
+        echo -e "${MAGENTA}Building project tests${NC}"
+    fi
+
     # Build targets into release
     mkdir -p Release
     cd Release
-    if [[ (( "$#" == 1 )) || ( (( "$#" -gt 1 )) && "$2" != "1" ) ]]; then
-        case "$1" in
-            "debug")
-                cmake -DCMAKE_BUILD_TYPE=Debug ..
-                ;;
-            "release")
-                cmake -DCMAKE_BUILD_TYPE=Release ..
-                ;;
-            *)
-                echo -e "${RED}Error in build; bad arg${NC}"
-                exit 1
-                ;;
-        esac
+
+    if [[ (( "$#" < 4 )) ]]; then
+        if [[ "$run_cmake" == "1" ]]; then
+            case "$debug_or_release" in
+                "debug")
+                    cmake -DCMAKE_BUILD_TYPE=Debug ..
+                    ;;
+                "release")
+                    cmake -DCMAKE_BUILD_TYPE=Release ..
+                    ;;
+                *)
+                    echo -e "${RED}Error in build; bad arg for debug/release build${NC}"
+                    exit 1
+                    ;;
+            esac
+        fi
+    else
+        echo -e "${RED}Error in build; bad arg${NC}"
+        exit 1
     fi
-    make
+
+    case "$main_or_test" in
+        "main")
+            make dynamic_paper
+            ;;
+        "test")
+            make dynamic_paper_test
+            ;;
+        "all")
+            make all
+            ;;
+        *)
+            echo -e "${RED}error in build; bad arg for whether to build main or test target"
+            ;;
+    esac
 
     cd ..
     copy_assets "Release/bin/files"
@@ -127,37 +159,37 @@ case "$arg" in
         exit 0
         ;;
     "" | "make-debug")
-        build "debug"
+        build "all" "debug" 1
         ;;
     "make-release")
-        build "release"
+        build "all" "release" 1
         ;;
     "run")
-        build "debug"
+        build "main" "debug" 1
         shift
         run "run" "$@"
         ;;
     "r")
-        build "debug" 1
+        build "main" "debug"
         shift
         run "run" "$@"
         ;;
     "run-release")
-        build "release"
+        build "main" "release" 1
         shift
         run "run" "$@"
         ;;
     "test")
-        build "debug"
+        build "test" "debug" 1
         run "test"
         ;;
     "t")
-        build "debug" 1
+        build "test" "debug"
         shift
         run "test" "$@"
         ;;
     "test-release")
-        build "release"
+        build "test" "release" 1
         run "test"
         ;;
     "clean")
