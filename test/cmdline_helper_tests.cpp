@@ -16,8 +16,13 @@ namespace {
 constexpr std::string_view TEST_BACKGROUND_SET_FILE =
     "./files/test_background_sets.yaml";
 Config getConfig() {
-  return {TEST_BACKGROUND_SET_FILE, BackgroundSetterMethodWallUtils(),
-          SunEventPollerMethod::Dummy, std::nullopt, "~/.cache/backgrounds"};
+  return {TEST_BACKGROUND_SET_FILE,
+          BackgroundSetterMethodWallUtils(),
+          SunEventPollerMethod::Dummy,
+          std::nullopt,
+          "~/.cache/backgrounds",
+          LocationInfo{.latitudeAndLongitude = std::make_pair(70, 70),
+                       .useLocationInfoOverSearch = false}};
 }
 
 std::string getDataFromSet(BackgroundSet &backgroundSet) {

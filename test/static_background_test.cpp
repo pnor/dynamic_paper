@@ -38,7 +38,9 @@ public:
                    {BackgroundSetterMethodWallUtils()},
                    SunEventPollerMethod::Dummy,
                    std::nullopt,
-                   std::filesystem::path(CACHE_DIR)};
+                   std::filesystem::path(CACHE_DIR),
+                   LocationInfo{.latitudeAndLongitude = {0, 0},
+                                .useLocationInfoOverSearch = false}};
   std::filesystem::path testDataDir = DATA_DIR;
 };
 

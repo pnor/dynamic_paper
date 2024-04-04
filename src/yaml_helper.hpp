@@ -63,9 +63,9 @@ constexpr std::optional<T> yamlStringTo(const std::string &text) {
 }
 
 // - boolean
-template <typename T>
-  requires(!is_optional<T> && std::is_same_v<T, bool>)
-constexpr std::optional<T> yamlStringTo(const std::string &text) {
+
+template <>
+constexpr std::optional<bool> yamlStringTo(const std::string &text) {
   if (text == "true") {
     return true;
   }
@@ -79,7 +79,8 @@ constexpr std::optional<T> yamlStringTo(const std::string &text) {
 
 // - unsigned numeric
 template <typename T>
-  requires(!is_optional<T> && (std::is_unsigned_v<T> && std::is_integral_v<T>))
+  requires(!is_optional<T> && !std::is_same_v<T, bool> &&
+           (std::is_unsigned_v<T> && std::is_integral_v<T>))
 constexpr std::optional<T> yamlStringTo(const std::string &text) {
   T val =
       std::clamp(std::stoul(text),
@@ -98,11 +99,24 @@ constexpr std::optional<T> yamlStringTo(const std::string &text) {
   return static_cast<T>(val);
 }
 
-// - default
+// - signed doubles
+template <typename T>
+  requires(!is_optional<T> && std::is_same_v<T, double>)
+constexpr std::optional<T> yamlStringTo(const std::string &text) {
+  try {
+    return std::stod(text);
+  } catch (const std::exception &) {
+    return std::nullopt;
+  }
+}
+
+// - default : Fail assert since it means its unimplemented for the type
 template <typename T>
 constexpr std::optional<T> yamlStringTo(const std::string & /*text*/) {
   static_assert(!is_optional<T>,
                 "Cannot use yamlStringTo to create an optional type");
+
+  static_assert(false, "No implementation of `yamlStringTo` for type!");
   return std::nullopt;
 }
 

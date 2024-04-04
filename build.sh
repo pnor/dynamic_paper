@@ -68,7 +68,11 @@ function bump_compile_commands_json {
 function build {
     main_or_test="$1"
     debug_or_release="$2"
-    run_cmake="$3"
+    if [[ "$#" == 3 ]]; then
+        run_cmake="$3"
+    else
+        run_cmake=""
+    fi
 
     if [[ "$main_or_test" == "main" ]]; then
         echo -e "${CYAN}Building main project${NC}"

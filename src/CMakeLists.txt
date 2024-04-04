@@ -1,30 +1,14 @@
 cmake_minimum_required(VERSION 3.15)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-if(POLICY CMP0135)
-  cmake_policy(SET CMP0135 NEW)
-  set(CMAKE_POLICY_DEFAULT_CMP0135 NEW)
-endif()
-
 # ===== Common Locations ==========
 
 set(MAIN_SRC_DIR "${dynamic_paper_SOURCE_DIR}/src")
 
-# ===== Libraries ==========
-include(FetchContent)
-
-FetchContent_Declare(
-  yaml-cpp URL https://github.com/jbeder/yaml-cpp/archive/refs/tags/0.8.0.zip)
-
-FetchContent_Declare(
-  spdlog
-  GIT_REPOSITORY https://github.com/gabime/spdlog.git
-  GIT_TAG v1.12.0)
-
-FetchContent_Declare(
-  cpr
-  GIT_REPOSITORY https://github.com/libcpr/cpr.git
-  GIT_TAG 1.10.5)
+# ExternalProject_Add(SunRise DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}
+# GIT_REPOSITORY https://github.com/signetica/SunRise.git GIT_TAG 2.0.4
+# BUILD_COMMAND ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_FLAGS} SunRise.cpp -o
+# SunRiseLib
 
 # ===== Golang Build ==========
 set(GOLANG_SRC_FILE_NAMES background.go)
@@ -74,27 +58,32 @@ add_executable(
   location.cpp
   "${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a")
 
-# ===== Include Header Files ==========
-set(INCLUDE_TARGET dynamic_paper)
-include("../third-party/CImg/CMakeLists.txt")
-include("../third-party/argparse/CMakeLists.txt")
-include("../third-party/expected/CMakeLists.txt")
-
 # ===== Linking ===========
 
+target_include_directories(argparse INTERFACE ${argparse_SOURCE_DIR}/include)
+target_link_libraries(dynamic_paper PRIVATE argparse)
+
+target_include_directories(CImg INTERFACE ${cimg_SOURCE_DIR}/)
+target_link_libraries(dynamic_paper PRIVATE CImg)
+
+target_include_directories(expected INTERFACE ${expected_SOURCE_DIR}/include)
+target_link_libraries(dynamic_paper PRIVATE expected)
+
+# golang lib
 target_link_libraries(
   dynamic_paper
   PRIVATE ${CMAKE_SOURCE_DIR}/src/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a)
 
-FetchContent_MakeAvailable(cpr)
+# cpr
 target_link_libraries(dynamic_paper PRIVATE cpr::cpr)
 
-FetchContent_MakeAvailable(yaml-cpp)
+# yaml-cpp
 target_link_libraries(dynamic_paper PRIVATE yaml-cpp)
 
-FetchContent_MakeAvailable(spdlog)
+# spdlog
 target_link_libraries(dynamic_paper PRIVATE spdlog::spdlog_header_only)
 
+# X11
 find_package(X11 REQUIRED) # TODO support wayland
 target_link_libraries(dynamic_paper PRIVATE ${X11_LIBRARIES})
 

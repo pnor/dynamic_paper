@@ -10,33 +10,6 @@ endif()
 
 set(MAIN_SRC_DIR "${dynamic_paper_SOURCE_DIR}/src")
 
-# ===== Libraries ==========
-
-include(FetchContent)
-
-FetchContent_Declare(
-  googletest
-  URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
-)
-
-FetchContent_Declare(
-  yaml-cpp URL https://github.com/jbeder/yaml-cpp/archive/refs/tags/0.8.0.zip)
-
-FetchContent_Declare(
-  spdlog
-  GIT_REPOSITORY https://github.com/gabime/spdlog.git
-  GIT_TAG v1.12.0)
-
-FetchContent_Declare(
-  spdlog
-  GIT_REPOSITORY https://github.com/gabime/spdlog.git
-  GIT_TAG v1.12.0)
-
-FetchContent_Declare(
-  cpr
-  GIT_REPOSITORY https://github.com/libcpr/cpr.git
-  GIT_TAG 1.10.5)
-
 # ===== Golang Build ==========
 set(GOLANG_DIR_NAME golang)
 
@@ -95,33 +68,43 @@ add_executable(
   ${MAIN_SRC_DIR}/location.cpp
   "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a")
 
-# ===== Include Header Files ==========
-set(INCLUDE_TARGET dynamic_paper_test)
-include("../third-party/CImg/CMakeLists.txt")
-include("../third-party/argparse/CMakeLists.txt")
-include("../third-party/expected/CMakeLists.txt")
-
 # ===== Linking ===========
 
+# googletest
+FetchContent_MakeAvailable(googletest)
+target_link_libraries(dynamic_paper_test PRIVATE gtest_main gmock_main)
+
+# argparse
+target_include_directories(argparse INTERFACE ${argparse_SOURCE_DIR}/include)
+target_link_libraries(dynamic_paper_test PRIVATE argparse)
+
+# CImg
+target_include_directories(CImg INTERFACE ${cimg_SOURCE_DIR}/)
+target_link_libraries(dynamic_paper_test PRIVATE CImg)
+
+# expected
+target_include_directories(expected INTERFACE ${expected_SOURCE_DIR}/include)
+target_link_libraries(dynamic_paper_test PRIVATE expected)
+
+# golang lib
 target_link_libraries(
   dynamic_paper_test
   PRIVATE ${CMAKE_SOURCE_DIR}/src/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a)
 
-FetchContent_MakeAvailable(spdlog)
-target_link_libraries(dynamic_paper_test PRIVATE spdlog::spdlog_header_only)
-
-FetchContent_MakeAvailable(cpr)
+# cpr
 target_link_libraries(dynamic_paper_test PRIVATE cpr::cpr)
 
-FetchContent_MakeAvailable(googletest)
-target_link_libraries(dynamic_paper_test PRIVATE gtest_main gmock_main)
-
-FetchContent_MakeAvailable(yaml-cpp)
+# yaml-cpp
 target_link_libraries(dynamic_paper_test PRIVATE yaml-cpp)
 
+# spdlog
+target_link_libraries(dynamic_paper_test PRIVATE spdlog::spdlog_header_only)
+
+# X11
 find_package(X11 REQUIRED) # TODO support wayland
 target_link_libraries(dynamic_paper_test PRIVATE ${X11_LIBRARIES})
 
+# The main project
 target_include_directories(dynamic_paper_test
                            PRIVATE ${dynamic_paper_SOURCE_DIR})
 

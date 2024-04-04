@@ -5,6 +5,7 @@
 #include <chrono>
 #include <concepts>
 #include <ctime>
+#include <functional>
 
 #include "config.hpp"
 #include "time_from_midnight.hpp"

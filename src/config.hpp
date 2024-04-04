@@ -6,7 +6,6 @@
 
 #include <filesystem>
 #include <optional>
-#include <type_traits>
 #include <variant>
 
 #include <tl/expected.hpp>
@@ -73,6 +72,23 @@ backgroundSetterMethodString(const BackgroundSetterMethod &method) {
   return returnString;
 }
 
+// ===== Location Info ===============
+
+/**
+ * Describes how to infer the user's position
+ *
+ * If `useLocationInfoOverSearch` is true, will not try and search for the
+ * user's position and use `latitudeAndLongitude` as the position.
+ */
+struct LocationInfo {
+  std::pair<double, double> latitudeAndLongitude;
+  /**
+   * If true, will *not* search for the
+   * user's position and instead use `latitudeAndLongitude` as the position.
+   */
+  bool useLocationInfoOverSearch;
+};
+
 // ===== Config ===============
 
 enum class ConfigError { MethodParsingError };
@@ -92,11 +108,15 @@ public:
   /** Location of the directory cached images created to transition between
    * backgrounds is kept*/
   std::filesystem::path imageCacheDirectory;
+  /**
+   * Location to use when determining time of sunrise and sunset
+   */
+  LocationInfo locationInfo;
 
   Config(std::filesystem::path backgroundSetConfigFile,
          BackgroundSetterMethod setMethod, SunEventPollerMethod sunMethod,
          std::optional<std::filesystem::path> hookScript,
-         std::filesystem::path imageCacheDirectory);
+         std::filesystem::path imageCacheDirectory, LocationInfo locationInfo);
 };
 
 // ===== Loading config from files ====================

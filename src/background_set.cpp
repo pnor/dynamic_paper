@@ -2,11 +2,18 @@
 
 #include <algorithm>
 #include <cassert>
+#include <filesystem>
 #include <format>
+#include <optional>
+#include <string>
+#include <string_view>
 #include <type_traits>
 #include <utility>
 #include <variant>
 
+#include <yaml-cpp/yaml.h>
+
+#include "background_set_enums.hpp"
 #include "file_util.hpp"
 #include "time_util.hpp"
 #include "type_helper.hpp"

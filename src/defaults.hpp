@@ -15,6 +15,9 @@ struct ConfigDefaults {
   static constexpr SunEventPollerMethod sunEventPollerMethod =
       SunEventPollerMethod::Sunwait;
   static constexpr LogLevel logLevel = LogLevel::INFO;
+  static constexpr LocationInfo locationInfo = {
+      .latitudeAndLongitude = std::make_pair(40.730610, -73.935242),
+      .useLocationInfoOverSearch = false};
 
   static inline std::string logFileName() {
     return (getHomeDirectory() /

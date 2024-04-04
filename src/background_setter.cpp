@@ -1,6 +1,9 @@
 #include "background_setter.hpp"
 
+#include <cstdlib>
+#include <filesystem>
 #include <format>
+#include <string>
 
 #include <tl/expected.hpp>
 

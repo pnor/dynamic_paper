@@ -3,13 +3,16 @@
 #include <chrono>
 #include <ctime>
 #include <format>
+#include <string>
 
+// #include <SunRise.h>
 #include <tl/expected.hpp>
 
 #include "command_executor.hpp"
 #include "config.hpp"
 #include "logger.hpp"
 #include "string_util.hpp"
+#include "time_from_midnight.hpp"
 #include "time_util.hpp"
 
 namespace dynamic_paper {
