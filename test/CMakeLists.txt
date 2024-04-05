@@ -9,6 +9,7 @@ endif()
 # ===== Common Locations ==========
 
 set(MAIN_SRC_DIR "${dynamic_paper_SOURCE_DIR}/src")
+set(CURRENT_TARGET dynamic_paper_test)
 
 # ===== Golang Build ==========
 set(GOLANG_DIR_NAME golang)
@@ -39,7 +40,7 @@ add_custom_target(
 
 # ===== Add Sources ==========
 add_executable(
-  dynamic_paper_test
+  ${CURRENT_TARGET}
   # test sources
   general_config_test.cpp
   background_set_test.cpp
@@ -72,46 +73,49 @@ add_executable(
 
 # googletest
 FetchContent_MakeAvailable(googletest)
-target_link_libraries(dynamic_paper_test PRIVATE gtest_main gmock_main)
+target_link_libraries(${CURRENT_TARGET} PRIVATE gtest_main gmock_main)
 
 # argparse
 target_include_directories(argparse INTERFACE ${argparse_SOURCE_DIR}/include)
-target_link_libraries(dynamic_paper_test PRIVATE argparse)
+target_link_libraries(${CURRENT_TARGET} PRIVATE argparse)
 
 # CImg
 target_include_directories(CImg INTERFACE ${cimg_SOURCE_DIR}/)
-target_link_libraries(dynamic_paper_test PRIVATE CImg)
+target_link_libraries(${CURRENT_TARGET} PRIVATE CImg)
 
 # expected
 target_include_directories(expected INTERFACE ${expected_SOURCE_DIR}/include)
-target_link_libraries(dynamic_paper_test PRIVATE expected)
+target_link_libraries(${CURRENT_TARGET} PRIVATE expected)
 
 # golang lib
 target_link_libraries(
-  dynamic_paper_test
+  ${CURRENT_TARGET}
   PRIVATE ${CMAKE_SOURCE_DIR}/src/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a)
 
 # cpr
-target_link_libraries(dynamic_paper_test PRIVATE cpr::cpr)
+target_link_libraries(${CURRENT_TARGET} PRIVATE cpr::cpr)
 
 # yaml-cpp
-target_link_libraries(dynamic_paper_test PRIVATE yaml-cpp)
+target_link_libraries(${CURRENT_TARGET} PRIVATE yaml-cpp)
 
 # spdlog
-target_link_libraries(dynamic_paper_test PRIVATE spdlog::spdlog_header_only)
+target_link_libraries(${CURRENT_TARGET} PRIVATE spdlog::spdlog_header_only)
+
+# sunset
+target_link_libraries(${CURRENT_TARGET} PRIVATE sunset)
 
 # X11
 find_package(X11 REQUIRED) # TODO support wayland
-target_link_libraries(dynamic_paper_test PRIVATE ${X11_LIBRARIES})
+target_link_libraries(${CURRENT_TARGET} PRIVATE ${X11_LIBRARIES})
 
 # The main project
-target_include_directories(dynamic_paper_test
+target_include_directories(${CURRENT_TARGET}
                            PRIVATE ${dynamic_paper_SOURCE_DIR})
 
 # ===== Clang Tidy ==========
 
 # find_program(CLANG_TIDY_EXE NAMES "clang-tidy") set(CLANG_TIDY_COMMAND
-# "${CLANG_TIDY_EXE}") set_target_properties(dynamic_paper_test PROPERTIES
+# "${CLANG_TIDY_EXE}") set_target_properties(${CURRENT_TARGET} PROPERTIES
 # CXX_CLANG_TIDY
 # "${CLANG_TIDY_COMMAND}")
 

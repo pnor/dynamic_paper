@@ -4,11 +4,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # ===== Common Locations ==========
 
 set(MAIN_SRC_DIR "${dynamic_paper_SOURCE_DIR}/src")
-
-# ExternalProject_Add(SunRise DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}
-# GIT_REPOSITORY https://github.com/signetica/SunRise.git GIT_TAG 2.0.4
-# BUILD_COMMAND ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_FLAGS} SunRise.cpp -o
-# SunRiseLib
+set(CURRENT_TARGET dynamic_paper)
 
 # ===== Golang Build ==========
 set(GOLANG_SRC_FILE_NAMES background.go)
@@ -60,37 +56,43 @@ add_executable(
 
 # ===== Linking ===========
 
+# argparse
 target_include_directories(argparse INTERFACE ${argparse_SOURCE_DIR}/include)
-target_link_libraries(dynamic_paper PRIVATE argparse)
+target_link_libraries(${CURRENT_TARGET} PRIVATE argparse)
 
-target_include_directories(CImg INTERFACE ${cimg_SOURCE_DIR}/)
-target_link_libraries(dynamic_paper PRIVATE CImg)
+# CImg
+target_include_directories(CImg INTERFACE ${cimg_SOURCE_DIR})
+target_link_libraries(${CURRENT_TARGET} PRIVATE CImg)
 
+# expected
 target_include_directories(expected INTERFACE ${expected_SOURCE_DIR}/include)
-target_link_libraries(dynamic_paper PRIVATE expected)
+target_link_libraries(${CURRENT_TARGET} PRIVATE expected)
 
 # golang lib
 target_link_libraries(
-  dynamic_paper
+  ${CURRENT_TARGET}
   PRIVATE ${CMAKE_SOURCE_DIR}/src/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a)
 
 # cpr
-target_link_libraries(dynamic_paper PRIVATE cpr::cpr)
+target_link_libraries(${CURRENT_TARGET} PRIVATE cpr::cpr)
 
 # yaml-cpp
-target_link_libraries(dynamic_paper PRIVATE yaml-cpp)
+target_link_libraries(${CURRENT_TARGET} PRIVATE yaml-cpp)
 
 # spdlog
-target_link_libraries(dynamic_paper PRIVATE spdlog::spdlog_header_only)
+target_link_libraries(${CURRENT_TARGET} PRIVATE spdlog::spdlog_header_only)
+
+# sunset
+target_link_libraries(${CURRENT_TARGET} PRIVATE sunset)
 
 # X11
 find_package(X11 REQUIRED) # TODO support wayland
-target_link_libraries(dynamic_paper PRIVATE ${X11_LIBRARIES})
+target_link_libraries(${CURRENT_TARGET} PRIVATE ${X11_LIBRARIES})
 
 # ===== Clean Command ==========
 
 set_property(
-  TARGET dynamic_paper
+  TARGET ${CURRENT_TARGET}
   APPEND
   PROPERTY ADDITIONAL_CLEAN_FILES {GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a
            ${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.h)
@@ -98,6 +100,6 @@ set_property(
 # ===== Clang Tidy ==========
 
 # find_program(CLANG_TIDY_EXE NAMES "clang-tidy") set(CLANG_TIDY_COMMAND
-# "${CLANG_TIDY_EXE}") set_target_properties(dynamic_paper PROPERTIES
+# "${CLANG_TIDY_EXE}") set_target_properties(${CURRENT_TARGET} PROPERTIES
 # CXX_CLANG_TIDY
 # "${CLANG_TIDY_COMMAND}")

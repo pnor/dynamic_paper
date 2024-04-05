@@ -77,6 +77,13 @@ FetchContent_Declare(
   GIT_TAG 1.10.5)
 FetchContent_MakeAvailable(cpr)
 
+# sunset
+FetchContent_Declare(
+  sunset
+  GIT_REPOSITORY https://github.com/buelowp/sunset.git
+  GIT_TAG 1.1.7)
+FetchContent_MakeAvailable(sunset)
+
 # googletest
 FetchContent_Declare(
   googletest

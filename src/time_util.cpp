@@ -5,7 +5,7 @@
 #include <format>
 #include <string>
 
-// #include <SunRise.h>
+#include <sunset.h>
 #include <tl/expected.hpp>
 
 #include "command_executor.hpp"
