@@ -34,11 +34,8 @@ class StaticBackgroundTest : public testing::Test {
 public:
   void SetUp() override {}
 
-  Config config = {std::filesystem::path(),
-                   {BackgroundSetterMethodWallUtils()},
-                   SunEventPollerMethod::Dummy,
-                   std::nullopt,
-                   std::filesystem::path(CACHE_DIR),
+  Config config = {std::filesystem::path(), SunEventPollerMethod::Dummy,
+                   std::nullopt, std::filesystem::path(CACHE_DIR),
                    LocationInfo{.latitudeAndLongitude = {0, 0},
                                 .useLocationInfoOverSearch = false}};
   std::filesystem::path testDataDir = DATA_DIR;
@@ -56,10 +53,10 @@ void showBackgroundOnStaticData(StaticBackgroundTest &test,
                                 TestBackgroundSetterHistory &history,
                                 const std::vector<std::string> &imageNames,
                                 const BackgroundSetMode mode) {
-  auto setBackgroundFunc = [&history](const std::filesystem::path &imagePath,
-                                      BackgroundSetMode mode,
-                                      const BackgroundSetterMethod &)
-      -> tl::expected<void, BackgroundError> {
+  auto setBackgroundFunc =
+      [&history](
+          const std::filesystem::path &imagePath,
+          BackgroundSetMode mode) -> tl::expected<void, BackgroundError> {
     history.addEvent(SetEvent{imagePath, mode});
     return {};
   };

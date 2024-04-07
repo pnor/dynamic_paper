@@ -8,8 +8,8 @@
 #include <sunset.h>
 #include <tl/expected.hpp>
 
-#include "command_executor.hpp"
 #include "config.hpp"
+#include "location.hpp"
 #include "logger.hpp"
 #include "string_util.hpp"
 #include "time_from_midnight.hpp"
@@ -23,51 +23,118 @@ namespace {
 
 // === string to time objects helper functions ===
 
-tl::expected<SunriseAndSunsetTimes, SunriseAndSetErrors>
-getSunriseAndSetUsingSunwait() {
-  const tl::expected<std::string, CommandExecError> sunwaitExpectation =
-      runCommandStdout("sunwait list");
-
-  if (!sunwaitExpectation.has_value()) {
-    logWarning(
-        "Unable to execute command in attempt to get sunrise/sunset times");
-    return tl::unexpected(SunriseAndSetErrors::UnableExecuteCommand);
+void explainError(const LocationError &error) {
+  switch (error) {
+  case LocationError::RequestFailed: {
+    logError("Unable to get location for user because the http request "
+             "failed, so using fallback from config");
+    break;
   }
-
-  const std::string &sunwaitResult = sunwaitExpectation.value();
-
-  std::smatch groupMatches{};
-  const std::regex sunwaitRegex(R"(^(\d\d:\d\d), (\d\d:\d\d)\n)");
-
-  const bool outputMatchResult =
-      tryRegexes(sunwaitResult, groupMatches, sunwaitRegex);
-
-  if (!outputMatchResult) {
-    logWarning(
-        "return output not expected when getting sunrise/sunset times: {}",
-        sunwaitResult);
-    return tl::unexpected(SunriseAndSetErrors::BadOutput);
+  case dynamic_paper::LocationError::UnableParseJsonResponse: {
+    logError("Unable to parse json response from http request for "
+             "location, so using fallback from config");
+    break;
   }
-
-  // --
-  const std::optional<TimeFromMidnight> sunriseTime =
-      convertRawTimeStringToTimeOffset(std::string(groupMatches[1]));
-  const std::optional<TimeFromMidnight> sunsetTime =
-      convertRawTimeStringToTimeOffset(std::string(groupMatches[2]));
-
-  if (!sunriseTime.has_value()) {
-    logError("Unable to convert sunrise raw string to a time! string was {}",
-             std::string(groupMatches[1]));
-    return tl::unexpected(SunriseAndSetErrors::BadOutput);
+  case dynamic_paper::LocationError::UnableParseLatitudeOrLongitude: {
+    logError("Unable to parse latitude or longitude http request for "
+             "location, so using fallback from config");
+    break;
   }
-  if (!sunsetTime.has_value()) {
-    logError("Unable to convert sunset raw string to a time! string was {}",
-             std::string(groupMatches[2]));
-    return tl::unexpected(SunriseAndSetErrors::BadOutput);
   }
-
-  return {{.sunrise = sunriseTime.value(), .sunset = sunsetTime.value()}};
 }
+
+std::pair<double, double> getLatitudeAndLongitude(const Config &config) {
+  if (config.locationInfo.useLocationInfoOverSearch) {
+    return config.locationInfo.latitudeAndLongitude;
+  }
+
+  return getUserLatitudeAndLongitude(config)
+      .map_error(explainError)
+      .value_or(config.locationInfo.latitudeAndLongitude);
+}
+
+int timeZoneOffset() {
+  time_t timeNow = time(nullptr);
+  struct tm timeStruct = {};
+
+  localtime_r(&timeNow, &timeStruct);
+
+  constexpr long HOUR = 60L * 60L;
+  return static_cast<int>(timeStruct.tm_gmtoff / HOUR);
+}
+
+TimeFromMidnight minutesFromMidnightToTimFromMidnight(const double minutes) {
+  constexpr int MINUTES_TO_SECONDS = 60;
+  return {std::chrono::seconds(static_cast<int>(minutes * MINUTES_TO_SECONDS))};
+}
+
+SunriseAndSunsetTimes
+getSunriseAndSunsetTimesUsingLocation(const Config &config) {
+  // TODO
+  // if override time, use that
+  // if override location use that
+  // else get location
+  // then call sunset api
+
+  const std::pair<double, double> latitudeAndLongitude =
+      getLatitudeAndLongitude(config);
+
+  SunSet sunset;
+  sunset.setPosition(latitudeAndLongitude.first, latitudeAndLongitude.second,
+                     timeZoneOffset());
+  const double sunriseRawValue = sunset.calcSunrise();
+  const double sunsetRawValue = sunset.calcSunset();
+
+  return {.sunrise = minutesFromMidnightToTimFromMidnight(sunriseRawValue),
+          .sunset = minutesFromMidnightToTimFromMidnight(sunsetRawValue)};
+}
+
+// TODO delete !!
+// tl::expected<SunriseAndSunsetTimes, SunriseAndSetErrors>
+// getSunriseAndSetUsingSunwait() {
+//   const tl::expected<std::string, CommandExecError> sunwaitExpectation =
+//       runCommandStdout("sunwait list");
+//
+//   if (!sunwaitExpectation.has_value()) {
+//     logWarning(
+//         "Unable to execute command in attempt to get sunrise/sunset times");
+//     return tl::unexpected(SunriseAndSetErrors::UnableExecuteCommand);
+//   }
+//
+//   const std::string &sunwaitResult = sunwaitExpectation.value();
+//
+//   std::smatch groupMatches{};
+//   const std::regex sunwaitRegex(R"(^(\d\d:\d\d), (\d\d:\d\d)\n)");
+//
+//   const bool outputMatchResult =
+//       tryRegexes(sunwaitResult, groupMatches, sunwaitRegex);
+//
+//   if (!outputMatchResult) {
+//     logWarning(
+//         "return output not expected when getting sunrise/sunset times: {}",
+//         sunwaitResult);
+//     return tl::unexpected(SunriseAndSetErrors::BadOutput);
+//   }
+//
+//   // --
+//   const std::optional<TimeFromMidnight> sunriseTime =
+//       convertRawTimeStringToTimeOffset(std::string(groupMatches[1]));
+//   const std::optional<TimeFromMidnight> sunsetTime =
+//       convertRawTimeStringToTimeOffset(std::string(groupMatches[2]));
+//
+//   if (!sunriseTime.has_value()) {
+//     logError("Unable to convert sunrise raw string to a time! string was {}",
+//              std::string(groupMatches[1]));
+//     return tl::unexpected(SunriseAndSetErrors::BadOutput);
+//   }
+//   if (!sunsetTime.has_value()) {
+//     logError("Unable to convert sunset raw string to a time! string was {}",
+//              std::string(groupMatches[2]));
+//     return tl::unexpected(SunriseAndSetErrors::BadOutput);
+//   }
+//
+//   return {{.sunrise = sunriseTime.value(), .sunset = sunsetTime.value()}};
+// }
 
 std::optional<TimeFromMidnight> sunsetOrRiseStringToTimeOffset(
     const SunriseAndSunsetTimes &sunriseAndSunsetTimes,
@@ -168,44 +235,14 @@ TimeFromMidnight getCurrentTime() {
   return optTime.value();
 }
 
-std::optional<SunriseAndSunsetTimes>
-getSunriseAndSunsetTimes(const Config &config) {
+SunriseAndSunsetTimes getSunriseAndSunsetTimes(const Config &config) {
   switch (config.sunEventPollerMethod) {
-  case SunEventPollerMethod::Sunwait: {
-    tl::expected<SunriseAndSunsetTimes, SunriseAndSetErrors> expectation =
-        getSunriseAndSetUsingSunwait();
-
-    if (expectation.has_value()) {
-      return std::make_optional(expectation.value());
-    }
-
-    switch (expectation.error()) {
-    case SunriseAndSetErrors::BadOutput: {
-      logWarning("Unable to determine time of sunset or sunrise due to bad "
-                 "output from the sunpolling program");
-      break;
-    }
-    case SunriseAndSetErrors::CommandNotFound: {
-      logWarning("Unable to determine time of sunset or sunrise due a "
-                 "command not found error");
-      break;
-    }
-    case SunriseAndSetErrors::UnableExecuteCommand: {
-      logWarning("Unable to determine time of sunset or sunrise due to not "
-                 "being able to execute the sunpolling program");
-      break;
-    }
-    }
-    return std::nullopt;
-  };
-
-  case SunEventPollerMethod::Dummy: {
-    return std::make_optional<SunriseAndSunsetTimes>(
-        {.sunrise = dummySunriseTime(), .sunset = dummySunsetTime()});
-  };
+  case dynamic_paper::SunEventPollerMethod::Dummy: {
+    return {.sunrise = dummySunriseTime(), .sunset = dummySunsetTime()};
+  }
   default: {
-    return std::nullopt;
-  };
+    return getSunriseAndSunsetTimesUsingLocation(config);
+  }
   }
 }
 

@@ -32,17 +32,15 @@ enum class HookCommandError { CommandError };
 template <typename T>
 concept CanSetBackgroundTrait =
     requires(T &&func, const std::filesystem::path &imagePath,
-             const BackgroundSetMode mode,
-             const BackgroundSetterMethod &method) {
+             const BackgroundSetMode mode) {
       {
-        func(imagePath, mode, method)
+        func(imagePath, mode)
       } -> std::convertible_to<tl::expected<void, BackgroundError>>;
     };
 
 tl::expected<void, BackgroundError>
 setBackgroundToImage(const std::filesystem::path &imagePath,
-                     BackgroundSetMode mode,
-                     const BackgroundSetterMethod &method);
+                     BackgroundSetMode mode);
 
 /**
  * TODO change docstring to remove "program"
@@ -61,8 +59,7 @@ tl::expected<void, BackgroundError> lerpBackgroundBetweenImages(
     const std::filesystem::path &commonImageDirectory,
     const std::string &beforeImageName, const std::string &afterImageName,
     const std::filesystem::path &cacheDirectory, std::chrono::seconds duration,
-    unsigned int numSteps, BackgroundSetMode mode,
-    const BackgroundSetterMethod &method, T backgroundSetFunction);
+    unsigned int numSteps, BackgroundSetMode mode, T backgroundSetFunction);
 
 /**
  * Runs the script at `hookScriptPath` on the image at `imagePath`.

@@ -67,25 +67,16 @@ runCommandHandleError(const std::string &command) {
 
 // ===== Header ===============
 
+// TODO remove expected?
 tl::expected<void, BackgroundError>
 setBackgroundToImage(const std::filesystem::path &imagePath,
-                     const BackgroundSetMode mode,
-                     const BackgroundSetterMethod &method) {
+                     const BackgroundSetMode mode) {
   logTrace("Setting background to image ({})", imagePath.string());
 
   const std::string imageName = imagePath.string();
 
-  return std::visit(
-      overloaded{
-          [mode, &imageName](const BackgroundSetterMethodScript &method) {
-            return runCommandHandleError(
-                convertScriptNameToCommand(method.script, mode, imageName));
-          },
-          [mode, &imageName](const BackgroundSetterMethodWallUtils) {
-            callSetBackground(imageName, backgroundSetModeString(mode));
-            return tl::expected<void, BackgroundError>();
-          }},
-      method);
+  callSetBackground(imageName, backgroundSetModeString(mode));
+  return {};
 }
 
 tl::expected<void, HookCommandError>

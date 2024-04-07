@@ -116,8 +116,7 @@ void doEvent(const Event &event, const DynamicBackgroundData *backgroundData,
                   backgroundSetFunction](const SetBackgroundEvent &event) {
                    tl::expected<void, BackgroundError> result =
                        backgroundSetFunction(event.imagePath,
-                                             backgroundData->mode,
-                                             config.backgroundSetterMethod);
+                                             backgroundData->mode);
 
                    logTrace("Did Set background event, set to {}",
                             event.imagePath.string());
@@ -141,8 +140,7 @@ void doEvent(const Event &event, const DynamicBackgroundData *backgroundData,
                                                    CompositeImages>(
                            event.commonImageDirectory, event.startImageName,
                            event.endImageName, config.imageCacheDirectory,
-                           event.transition, backgroundData->mode,
-                           config.backgroundSetterMethod, func);
+                           event.transition, backgroundData->mode, func);
 
                    if (!result.has_value()) {
                      describeError(result.error());

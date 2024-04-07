@@ -19,6 +19,8 @@ using namespace dynamic_paper;
 // - libgeoclue for location
 // - buelowp sunset
 // TODO better README
+// TODO config to just manually choose sunrise and sunset
+// TODO rehaul general config for cmdline options, then file then defualts?
 // TODO log to stdout option
 // TODO cache management (delete all and for one set + show location)
 // TODO high level defautl config options for background_sets.yaml (example:

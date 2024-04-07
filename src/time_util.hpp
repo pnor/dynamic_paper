@@ -44,8 +44,7 @@ TimeFromMidnight getCurrentTime();
  * Returns nullopt if the query is unsucessful (cmd is not installed, cmd
  * failed, etc.)
  */
-std::optional<SunriseAndSunsetTimes>
-getSunriseAndSunsetTimes(const Config &config);
+SunriseAndSunsetTimes getSunriseAndSunsetTimes(const Config &config);
 
 /**
  *  Convert string formatted HH:MM or HH:MM:SS to number of seconds from
@@ -193,7 +192,7 @@ convertRawTimeStringToTimeOffsetUnchecked(std::string_view timeString) {
   return optTime.value();
 }
 
-std::chrono::milliseconds elapsedTimeToRunCodeBlock(std::invocable auto block) {
+std::chrono::milliseconds timeToRunCodeBlock(std::invocable auto block) {
   std::chrono::steady_clock::time_point begin =
       std::chrono::steady_clock::now();
 

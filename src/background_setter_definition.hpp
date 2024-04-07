@@ -21,7 +21,7 @@ tl::expected<void, BackgroundError> lerpBackgroundBetweenImages(
     const std::string &beforeImageName, const std::string &afterImageName,
     const std::filesystem::path &cacheDirectory,
     const TransitionInfo &transition, const BackgroundSetMode mode,
-    const BackgroundSetterMethod &method, T backgroundSetFunction) {
+    T backgroundSetFunction) {
 
   const bool dirCreationResult =
       Files::createDirectoryIfDoesntExist(cacheDirectory);
@@ -34,10 +34,10 @@ tl::expected<void, BackgroundError> lerpBackgroundBetweenImages(
     std::optional<tl::expected<void, BackgroundError>> potentialError =
         std::nullopt;
 
-    std::chrono::milliseconds timeElapsed = elapsedTimeToRunCodeBlock(
-        [i, denominator, &commonImageDirectory, &beforeImageName,
-         &afterImageName, &cacheDirectory, mode, method, backgroundSetFunction,
-         &potentialError]() {
+    std::chrono::milliseconds timeElapsed =
+        timeToRunCodeBlock([i, denominator, &commonImageDirectory,
+                            &beforeImageName, &afterImageName, &cacheDirectory,
+                            mode, backgroundSetFunction, &potentialError]() {
           // modifies `i` so is more in the middle of the range, to avoid
           // interpolating 0% and 100% images
           const unsigned int numerator = i + 1;
@@ -58,8 +58,7 @@ tl::expected<void, BackgroundError> lerpBackgroundBetweenImages(
           }
 
           const tl::expected<void, BackgroundError> backgroundResult =
-              backgroundSetFunction(expectedCompositedImage.value(), mode,
-                                    method);
+              backgroundSetFunction(expectedCompositedImage.value(), mode);
 
           logTrace("Interpolating to {}...",
                    expectedCompositedImage.value().string());

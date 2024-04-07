@@ -26,10 +26,7 @@ using namespace testing;
 namespace {
 
 Config getConfig() {
-  return {"./images",
-          BackgroundSetterMethodWallUtils(),
-          SunEventPollerMethod::Dummy,
-          std::nullopt,
+  return {"./images", SunEventPollerMethod::Dummy, std::nullopt,
           "~/.cache/backgrounds",
           LocationInfo{.latitudeAndLongitude = {0, 0},
                        .useLocationInfoOverSearch = false}};

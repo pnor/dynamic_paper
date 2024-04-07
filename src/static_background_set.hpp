@@ -48,16 +48,14 @@ void StaticBackgroundData::show(const Config &config,
   const std::filesystem::path imagePath = dataDirectory / imageName;
 
   const tl::expected<void, BackgroundError> result =
-      backgroundSetFunction(imagePath, mode, config.backgroundSetterMethod);
+      backgroundSetFunction(imagePath, mode);
 
   if (!result.has_value()) {
     std::string modeString = backgroundSetModeString(this->mode);
-    std::string methodString =
-        backgroundSetterMethodString(config.backgroundSetterMethod);
     logWarning(
         "Encountered error in attempting to set the background for static "
-        "background set. Image name was {} with mode {} using method {}",
-        imageName, modeString, methodString);
+        "background set. Image name was {} with mode {}",
+        imageName, modeString);
   }
 
   if (config.hookScript.has_value()) {

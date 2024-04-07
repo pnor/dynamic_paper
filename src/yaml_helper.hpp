@@ -40,13 +40,6 @@ constexpr std::string_view CRITICAL_LOGGING_STRING = "critical";
 constexpr std::string_view TRACE_LOGGING_STRING = "trace";
 constexpr std::string_view OFF_LOGGING_STRING = "off";
 
-// ===== Error Types ===============
-enum class BackgroundSetterMethodError {
-  NoScriptProvided,
-  NoMethodInYAML,
-  InvalidMethod
-};
-
 // ===== Converting yaml strings to types ===============
 
 /**
@@ -215,21 +208,6 @@ constexpr std::optional<LogLevel> yamlStringTo(const std::string &text) {
 
   return std::nullopt;
 }
-
-// ===== Parsing BackgroundSetterMethod Strings ===============
-
-/**
- *  Attempt to parse the Method of setting the background from the YAML.
- *
- *  If the yaml specifies the method to be 'script', will also read the
- * 'method_script' field to determine the script to use to set the background.
- *  If no method script is specified returns an unexpected error.
- *
- *  If no method is specified, defaults to 'Wallutils'
- */
-tl::expected<BackgroundSetterMethod, BackgroundSetterMethodError>
-parseBackgroundSetterMethod(YAML::Node config, std::string_view methodKey,
-                            std::string_view criptKey);
 
 // ===== Parsing yaml ===============
 

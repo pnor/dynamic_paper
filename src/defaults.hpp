@@ -10,8 +10,6 @@ namespace dynamic_paper {
 /** Default values used if a config option is not specified in the user config
  */
 struct ConfigDefaults {
-  static constexpr BackgroundSetterMethodWallUtils backgroundSetterMethod =
-      BackgroundSetterMethodWallUtils();
   static constexpr SunEventPollerMethod sunEventPollerMethod =
       SunEventPollerMethod::Sunwait;
   static constexpr LogLevel logLevel = LogLevel::INFO;

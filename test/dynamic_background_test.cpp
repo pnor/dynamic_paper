@@ -71,11 +71,8 @@ class DynamicBackgroundTest : public testing::Test {
 public:
   void SetUp() override {}
 
-  Config config = {std::filesystem::path(),
-                   {BackgroundSetterMethodWallUtils()},
-                   SunEventPollerMethod::Dummy,
-                   std::nullopt,
-                   std::filesystem::path(CACHE_DIR),
+  Config config = {std::filesystem::path(), SunEventPollerMethod::Dummy,
+                   std::nullopt, std::filesystem::path(CACHE_DIR),
                    LocationInfo{.latitudeAndLongitude = {0, 0},
                                 .useLocationInfoOverSearch = false}};
   std::filesystem::path testDataDir = DATA_DIR;
@@ -133,10 +130,10 @@ testDynamicBackground(TestBackgroundSetterHistory &history,
                       const DynamicSetConfig setConfig,
                       const Backgrounds &backgrounds,
                       std::array<TimeFromMidnight, N> timesToUpdateWith) {
-  auto setBackgroundFunc = [&history](const std::filesystem::path &imagePath,
-                                      BackgroundSetMode mode,
-                                      const BackgroundSetterMethod &)
-      -> tl::expected<void, BackgroundError> {
+  auto setBackgroundFunc =
+      [&history](
+          const std::filesystem::path &imagePath,
+          BackgroundSetMode mode) -> tl::expected<void, BackgroundError> {
     history.addEvent(SetEvent{imagePath, mode});
     return {};
   };

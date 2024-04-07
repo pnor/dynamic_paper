@@ -18,7 +18,6 @@ using namespace dynamic_paper;
 namespace {
 
 constexpr std::string_view GENERAL_CONFIG_YAML = R""""(
-method: "wallutils"
 sun_poller: "sunwait"
 background_config: "./an_image_dir"
 hook_script: "./hook_script.sh"
@@ -27,62 +26,27 @@ cache_dir: "~/.cache/backgrounds"
 
 constexpr std::string EMPTY_YAML;
 
-constexpr std::string_view GENERAL_CONFIG_ONLY_METHOD_YAML = R""""(
-method: "wallutils"
-)"""";
-
-constexpr std::string_view METHOD_WALLUTILS = R""""(
-method: "wallutils"
-sun_poller: "sunwait"
-background_config: "./image"
-)"""";
-
-constexpr std::string_view METHOD_SCRIPT = R""""(
-method: "script"
-method_script: "./script.sh"
-sun_poller: "sunwait"
-background_config: "./image"
-)"""";
-
-constexpr std::string_view BOTH_METHOD_AND_SCRIPT = R""""(
-method: "wallutils"
-method_script: "./script.sh"
-sun_poller: "sunwait"
-background_config: "./image"
-)"""";
-
-constexpr std::string_view SCRIPT_WITH_NO_SCRIPT = R""""(
-method: "script"
-sun_poller: "sunwait"
-background_config: "./image"
-)"""";
-
 constexpr std::string_view LATITUDE_AND_LONGITUDE = R""""(
-method: "wallutils"
 background_config: "./image"
 latitude: 70.0
 longitude: 70.0
 )"""";
 
 constexpr std::string_view ONLY_LATITUDE = R""""(
-method: "wallutils"
 background_config: "./image"
 latitude: 70.0
 )"""";
 
 constexpr std::string_view ONLY_LONGITUDE = R""""(
-method: "wallutils"
 background_config: "./image"
 longitude: 70.0
 )"""";
 
 constexpr std::string_view NO_LATITUDE_OR_LONGITUDE = R""""(
-method: "wallutils"
 background_config: "./image"
 )"""";
 
 constexpr std::string_view GET_LATITUDE_LONGITUDE_FROM_FILE = R""""(
-method: "wallutils"
 background_config: "./image"
 latitude: 70.0
 longitude: 70.0
@@ -90,14 +54,12 @@ use_config_file_location: true
 )"""";
 
 constexpr std::string_view GET_LATITUDE_LONGITUDE_FROM_FILE_NO_LATLONG = R""""(
-method: "wallutils"
 background_config: "./image"
 use_config_file_location: true
 )"""";
 
 constexpr std::string_view GET_LATITUDE_LONGITUDE_FROM_FILE_JUST_LATITUDE =
     R""""(
-method: "wallutils"
 background_config: "./image"
 use_config_file_location: true
 latitude: 70.0
@@ -134,9 +96,6 @@ TEST(GeneralConfig, AllFilled) {
 
   const Config &cfg = expectedConfig.value();
 
-  EXPECT_EQ(
-      std::get<BackgroundSetterMethodWallUtils>(cfg.backgroundSetterMethod),
-      BackgroundSetterMethodWallUtils());
   EXPECT_EQ(cfg.sunEventPollerMethod, SunEventPollerMethod::Sunwait);
   EXPECT_EQ(cfg.backgroundSetConfigFile,
             std::filesystem::path("./an_image_dir"));
@@ -154,91 +113,12 @@ TEST(GeneralConfig, DefaultValues) {
 
   const Config &cfg = expectedConfig.value();
 
-  EXPECT_EQ(
-      std::get<BackgroundSetterMethodWallUtils>(cfg.backgroundSetterMethod),
-      BackgroundSetterMethodWallUtils());
   EXPECT_EQ(cfg.sunEventPollerMethod, SunEventPollerMethod::Sunwait);
   EXPECT_EQ(cfg.backgroundSetConfigFile,
             std::filesystem::path(ConfigDefaults::backgroundSetConfigFile()));
   EXPECT_EQ(cfg.hookScript, std::nullopt);
   EXPECT_EQ(cfg.imageCacheDirectory,
             std::filesystem::path(ConfigDefaults::imageCacheDirectory()));
-}
-
-TEST(GeneralConfig, MethodOnly) {
-  const tl::expected<Config, ConfigError> expectedConfig =
-      loadConfigFromString(GENERAL_CONFIG_ONLY_METHOD_YAML);
-
-  EXPECT_TRUE(expectedConfig.has_value());
-
-  const Config &cfg = expectedConfig.value();
-
-  EXPECT_EQ(
-      std::get<BackgroundSetterMethodWallUtils>(cfg.backgroundSetterMethod),
-      BackgroundSetterMethodWallUtils());
-  EXPECT_EQ(cfg.sunEventPollerMethod, SunEventPollerMethod::Sunwait);
-  EXPECT_EQ(cfg.backgroundSetConfigFile,
-            std::filesystem::path(ConfigDefaults::backgroundSetConfigFile()));
-  EXPECT_EQ(cfg.hookScript, std::nullopt);
-}
-
-TEST(GeneralConfig, MethodWallUtils) {
-  const tl::expected<Config, ConfigError> expectedConfig =
-      loadConfigFromString(METHOD_WALLUTILS);
-
-  EXPECT_TRUE(expectedConfig.has_value());
-
-  const Config &cfg = expectedConfig.value();
-
-  EXPECT_EQ(
-      std::get<BackgroundSetterMethodWallUtils>(cfg.backgroundSetterMethod),
-      BackgroundSetterMethodWallUtils());
-
-  EXPECT_EQ(cfg.sunEventPollerMethod, SunEventPollerMethod::Sunwait);
-  EXPECT_EQ(cfg.backgroundSetConfigFile, std::filesystem::path("./image"));
-  EXPECT_EQ(cfg.hookScript, std::nullopt);
-}
-
-TEST(GeneralConfig, MethodScript) {
-  const tl::expected<Config, ConfigError> expectedConfig =
-      loadConfigFromString(METHOD_SCRIPT);
-
-  EXPECT_TRUE(expectedConfig.has_value());
-
-  const Config &cfg = expectedConfig.value();
-
-  EXPECT_EQ(std::get<BackgroundSetterMethodScript>(cfg.backgroundSetterMethod),
-            BackgroundSetterMethodScript(std::filesystem::path("./script.sh")));
-
-  EXPECT_EQ(cfg.sunEventPollerMethod, SunEventPollerMethod::Sunwait);
-  EXPECT_EQ(cfg.backgroundSetConfigFile, std::filesystem::path("./image"));
-  EXPECT_EQ(cfg.hookScript, std::nullopt);
-}
-
-TEST(GeneralConfig, BothMethodAndScript) {
-  const tl::expected<Config, ConfigError> expectedConfig =
-      loadConfigFromString(BOTH_METHOD_AND_SCRIPT);
-
-  EXPECT_TRUE(expectedConfig.has_value());
-
-  const Config &cfg = expectedConfig.value();
-
-  EXPECT_EQ(
-      std::get<BackgroundSetterMethodWallUtils>(cfg.backgroundSetterMethod),
-      BackgroundSetterMethodWallUtils());
-
-  EXPECT_EQ(cfg.sunEventPollerMethod, SunEventPollerMethod::Sunwait);
-  EXPECT_EQ(cfg.backgroundSetConfigFile, std::filesystem::path("./image"));
-  EXPECT_EQ(cfg.hookScript, std::nullopt);
-}
-
-TEST(GeneralConfig, ScriptWithNoScript) {
-  const tl::expected<Config, ConfigError> expectedConfig =
-      loadConfigFromString(SCRIPT_WITH_NO_SCRIPT);
-
-  EXPECT_FALSE(expectedConfig.has_value());
-
-  EXPECT_EQ(expectedConfig.error(), ConfigError::MethodParsingError);
 }
 
 TEST(GeneralConfig, LatLongBothProvided) {
