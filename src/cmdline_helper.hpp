@@ -10,6 +10,11 @@
 
 namespace dynamic_paper {
 
+// ===== Flag Names ===============
+
+constexpr std::string_view CONFIG_FLAG_NAME = "--config";
+constexpr std::string_view LOG_TO_STDOUT_FLAG_NAME = "--stdout";
+
 // ===== Logging ===============
 
 template <typename... Ts>
@@ -21,7 +26,7 @@ void errorMsg(const std::format_string<Ts...> msg, Ts &&...args) {
       std::format(msg, std::forward<Ts>(args)...);
   std::cout << std::format("{}{}{}", ANSI_COLOR_RED, formattedMessage,
                            ANSI_COLOR_RESET)
-            << std::endl;
+            << '\n';
 }
 
 // ===== Parsing ===============

@@ -17,6 +17,11 @@ enum class LogLevel { INFO, WARNING, ERROR, DEBUG, CRITICAL, TRACE, OFF };
 void setupLogging(
     std::pair<LogLevel, std::filesystem::path> &&logLevelAndLogFile);
 
+/**
+ * Sets up logging library to print to stdout, and no logfile
+ */
+void setupLoggingForStdout(LogLevel level);
+
 /** Prints a debug log message saying `msg`. Accepts `args` for use in a format
  * string. */
 template <typename... Ts>

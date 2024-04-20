@@ -84,6 +84,12 @@ void setupLoggingFromYAML(const YAML::Node &config) {
   setupLogging(std::move(levelAndFileName));
 }
 
+void setupLoggingFromYAMLForStdout(const YAML::Node &config) {
+  std::pair<LogLevel, std::filesystem::path> levelAndFileName =
+      loadLoggingInfoFromYAML(config);
+  setupLoggingForStdout(levelAndFileName.first);
+}
+
 YAML::Node loadConfigFileIntoYAML(const std::filesystem::path &file) {
   if (!std::filesystem::exists(file)) {
     errorMsg("Cannot create config from non-existant file: {}", file.string());
@@ -119,7 +125,9 @@ Config createConfigFromYAML(const YAML::Node &configYaml) {
 // ===== Header ====================
 
 Config getConfigAndSetupLogging(const argparse::ArgumentParser &program) {
-  const std::filesystem::path conf = program.get("--config");
+  const std::filesystem::path conf = program.get(CONFIG_FLAG_NAME);
+  const bool logToStdout = program.get<bool>(LOG_TO_STDOUT_FLAG_NAME);
+
   auto configFilePath = std::filesystem::path(expandPath(conf));
 
   if (configFilePath == expandPath(DEFAULT_CONFIG_FILE_NAME)) {
@@ -135,7 +143,11 @@ Config getConfigAndSetupLogging(const argparse::ArgumentParser &program) {
 
   const YAML::Node configYaml = loadConfigFileIntoYAML(configFilePath);
 
-  setupLoggingFromYAML(configYaml);
+  if (logToStdout) {
+    setupLoggingFromYAMLForStdout(configYaml);
+  } else {
+    setupLoggingFromYAML(configYaml);
+  }
 
   return createConfigFromYAML(configYaml);
 }

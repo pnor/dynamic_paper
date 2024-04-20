@@ -17,12 +17,12 @@ using namespace dynamic_paper;
 
 // TODO try and stop using less shell commands? (exec family maybe)
 // TODO better README
-// TODO config to just manually choose sunrise and sunset
 // TODO rehaul general config for cmdline options, then file then defualts?
 // TODO log to stdout option
 // TODO cache management (delete all and for one set + show location)
 // TODO high level defautl config options for background_sets.yaml (example:
 // specify default transition for all)
+// TODO make stdout flag a flagf and not a value
 
 namespace {
 
@@ -119,10 +119,13 @@ void showHelp(const argparse::ArgumentParser &program) {
 
 auto main(int argc, char *argv[]) -> int {
   argparse::ArgumentParser program("dynamic_paper");
-  program.add_argument("--config")
+  program.add_argument(CONFIG_FLAG_NAME)
       .default_value<std::string>(std::string(DEFAULT_CONFIG_FILE_NAME))
       .required()
       .help("Show optional config");
+  program.add_argument(LOG_TO_STDOUT_FLAG_NAME)
+      .flag()
+      .help("Whether to log to stdout instead of a logfile");
 
   argparse::ArgumentParser showCommand("show");
   showCommand.add_description("Show wallpaper set with name");

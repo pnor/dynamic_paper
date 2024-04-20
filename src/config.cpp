@@ -50,23 +50,33 @@ SolarDayProvider createSolarDayProviderFromParsedFields(
 
   // enough info for both
   if (canCreateLocationInfo && canCreateSolarDay) {
+    logDebug("Determining solar day using values provided in config: "
+             "sunrise={} sunset={}",
+             optSunriseTime.value(), optSunsetTime.value());
     return {SolarDay{.sunrise = optSunriseTime.value(),
                      .sunset = optSunsetTime.value()}};
   }
 
   // not enough info for either
   if (!canCreateLocationInfo && !canCreateSolarDay) {
+    logDebug("Determining solar day using default value");
     return {ConfigDefaults::solarDay};
   }
 
   // only info for location
   if (canCreateLocationInfo) {
+    logInfo("Determining solar day using latitude and longitude: latitude={} "
+            "longitude={}",
+            optLatitude.value(), optLongitude.value());
     return {createLocationInfoFromParsedFields(
         optLatitude, optLongitude,
         optUseLatitudeAndLongitudeOverLocationSearch)};
   }
 
   // only info for solar day
+  logDebug("Determining solar day using values provided in config: "
+           "sunrise={} sunset={}",
+           optSunriseTime.value(), optSunsetTime.value());
   return {SolarDay{.sunrise = optSunriseTime.value(),
                    .sunset = optSunsetTime.value()}};
 }
