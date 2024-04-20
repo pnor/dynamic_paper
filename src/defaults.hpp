@@ -2,20 +2,21 @@
 
 /** Default values used throughout */
 
-#include "config.hpp"
 #include "file_util.hpp"
+#include "time_util.hpp"
 
 namespace dynamic_paper {
 
 /** Default values used if a config option is not specified in the user config
  */
 struct ConfigDefaults {
-  static constexpr SunEventPollerMethod sunEventPollerMethod =
-      SunEventPollerMethod::Sunwait;
   static constexpr LogLevel logLevel = LogLevel::INFO;
   static constexpr LocationInfo locationInfo = {
       .latitudeAndLongitude = std::make_pair(40.730610, -73.935242),
-      .useLocationInfoOverSearch = false};
+      .useLatitudeAndLongitudeOverLocationSearch = false};
+  static constexpr SolarDay solarDay = {
+      .sunrise = convertTimeStringToTimeFromMidnightUnchecked("09:00"),
+      .sunset = convertTimeStringToTimeFromMidnightUnchecked("21:00")};
 
   static inline std::string logFileName() {
     return (getHomeDirectory() /

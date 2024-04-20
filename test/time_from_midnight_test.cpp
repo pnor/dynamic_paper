@@ -5,6 +5,7 @@
 #include <gtest/gtest.h>
 
 #include "src/time_from_midnight.hpp"
+#include "src/time_util.hpp"
 
 using namespace dynamic_paper;
 using namespace testing;
@@ -52,10 +53,14 @@ TEST(TimeFromMidnight, ComparisonInequality) {
 }
 
 TEST(TimeFromMidnight, FromStringTimes) {
-  const TimeFromMidnight beginningofDay = TimeFromMidnight::forTime("00:00");
-  const TimeFromMidnight oneSecond = TimeFromMidnight::forTime("00:00:01");
-  const TimeFromMidnight noon = TimeFromMidnight::forTime("12:00");
-  const TimeFromMidnight endOfDay = TimeFromMidnight::forTime("23:59:59");
+  const TimeFromMidnight beginningofDay =
+      convertTimeStringToTimeFromMidnightUnchecked("00:00");
+  const TimeFromMidnight oneSecond =
+      convertTimeStringToTimeFromMidnightUnchecked("00:00:01");
+  const TimeFromMidnight noon =
+      convertTimeStringToTimeFromMidnightUnchecked("12:00");
+  const TimeFromMidnight endOfDay =
+      convertTimeStringToTimeFromMidnightUnchecked("23:59:59");
 
   EXPECT_EQ(beginningofDay, TimeFromMidnight(std::chrono::seconds(0)));
   EXPECT_EQ(oneSecond, TimeFromMidnight(std::chrono::seconds(1)));

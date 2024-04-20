@@ -11,26 +11,18 @@
 #include <gtest/gtest.h>
 #include <yaml-cpp/yaml.h>
 
+#include "helper.hpp"
 #include "src/background_set.hpp"
 #include "src/background_set_enums.hpp"
-#include "src/config.hpp"
 #include "src/dynamic_background_set.hpp"
 #include "src/file_util.hpp"
 #include "src/static_background_set.hpp"
 #include "src/time_from_midnight.hpp"
-#include "src/time_util.hpp"
 
 using namespace dynamic_paper;
 using namespace testing;
 
 namespace {
-
-Config getConfig() {
-  return {"./images", SunEventPollerMethod::Dummy, std::nullopt,
-          "~/.cache/backgrounds",
-          LocationInfo{.latitudeAndLongitude = {0, 0},
-                       .useLocationInfoOverSearch = false}};
-}
 
 // Static
 const std::string_view STATIC_BACKGROUND_SET = R""""(
@@ -184,30 +176,35 @@ suntimes:
   times:
 )"""";
 
-// ===== Helper ===================
-BackgroundSet getBackgroundSetFrom(const std::string_view yamlString) {
-  const YAML::Node yaml = YAML::Load(std::string(yamlString));
-  auto yamlMap = yaml.as<std::unordered_map<std::string, YAML::Node>>();
-
-  // yamlMap only has 1 entry; mapping the name to all the yaml info
-  for (const auto &keyValue : yamlMap) {
-    tl::expected<BackgroundSet, BackgroundSetParseErrors> expBackgroundSet =
-        parseFromYAML(keyValue.first, keyValue.second, getConfig());
-    EXPECT_TRUE(expBackgroundSet.has_value());
-    return expBackgroundSet.value();
-  }
-
-  throw std::logic_error(
-      "Reached impossible cast when getting background set from string");
-}
-
 // ===== Test Fixture ===============
 class BackgroundSetTests : public testing::Test {
 public:
-  void SetUp() override {}
+  void SetUp() override {
+    const SolarDay solarDay = config.solarDayProvider.getSolarDay();
+    sunriseTime = solarDay.sunrise;
+    sunsetTime = solarDay.sunset;
+  }
 
-  TimeFromMidnight sunriseTime = dummySunriseTime();
-  TimeFromMidnight sunsetTime = dummySunsetTime();
+  [[nodiscard]] BackgroundSet
+  getBackgroundSetFrom(const std::string_view yamlString) const {
+    const YAML::Node yaml = YAML::Load(std::string(yamlString));
+    auto yamlMap = yaml.as<std::unordered_map<std::string, YAML::Node>>();
+
+    // yamlMap only has 1 entry; mapping the name to all the yaml info
+    for (const auto &keyValue : yamlMap) {
+      tl::expected<BackgroundSet, BackgroundSetParseErrors> expBackgroundSet =
+          parseFromYAML(keyValue.first, keyValue.second, config);
+      EXPECT_TRUE(expBackgroundSet.has_value());
+      return expBackgroundSet.value();
+    }
+
+    throw std::logic_error(
+        "Reached impossible cast when getting background set from string");
+  }
+
+  Config config = getConfig();
+  TimeFromMidnight sunriseTime = {std::chrono::seconds(0)};
+  TimeFromMidnight sunsetTime = {std::chrono::seconds(0)};
 };
 
 } // namespace

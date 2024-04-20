@@ -51,6 +51,7 @@ add_executable(
   cmdline_helper.cpp
   file_util.cpp
   location.cpp
+  solar_day_provider.cpp
   "${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a")
 
 # ===== Linking ===========

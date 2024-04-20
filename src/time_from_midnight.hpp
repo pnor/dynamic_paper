@@ -30,16 +30,11 @@ concept DayOrShorter = std::is_same_v<T, std::chrono::seconds> ||
  */
 class TimeFromMidnight {
 public:
-  /** Returns `TimeFromMidnight` representing `timeString`.
-   * Asserts that it is possible to parse `timeString` for a valid time,
-   * throwing an error otherwise. */
-  static TimeFromMidnight forTime(std::string_view timeString);
-
   constexpr operator std::chrono::seconds() const { return seconds; }
 
   inline TimeFromMidnight &operator=(const TimeFromMidnight &other) = default;
 
-  auto operator<=>(const TimeFromMidnight &) const = default;
+  constexpr auto operator<=>(const TimeFromMidnight &) const noexcept = default;
   template <DayOrShorter T>
   friend TimeFromMidnight operator<=>(const TimeFromMidnight &time, T rhs);
 

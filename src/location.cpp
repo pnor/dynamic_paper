@@ -13,6 +13,7 @@
 namespace dynamic_paper {
 
 namespace {
+
 constexpr std::string_view MOZILLA_LOCATION_URL =
     "https://location.services.mozilla.com/v1/geolocate?key=geoclue";
 constexpr long SUCESS_CODE = 200;
@@ -28,6 +29,10 @@ tl::expected<double, LocationError> tryParseDouble(const std::smatch &match) {
     }
   });
 }
+
+} // namespace
+
+// ===== Header ==========
 
 tl::expected<std::pair<double, double>, LocationError>
 getLatitudeAndLongitudeFromMozilla() {
@@ -64,15 +69,6 @@ getLatitudeAndLongitudeFromMozilla() {
     return tl::unexpected(expectedLongitude.error());
   }
   return {std::make_pair(expectedLatitude.value(), expectedLongitude.value())};
-}
-
-} // namespace
-
-// ===== Header ==========
-
-tl::expected<std::pair<double, double>, LocationError>
-getUserLatitudeAndLongitude(const Config &config) {
-  return getLatitudeAndLongitudeFromMozilla();
 }
 
 } // namespace dynamic_paper

@@ -6,6 +6,7 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include "helper.hpp"
 #include "src/cmdline_helper.hpp"
 #include "src/config.hpp"
 
@@ -15,12 +16,6 @@ namespace {
 
 constexpr std::string_view TEST_BACKGROUND_SET_FILE =
     "./files/test_background_sets.yaml";
-Config getConfig() {
-  return {TEST_BACKGROUND_SET_FILE, SunEventPollerMethod::Dummy, std::nullopt,
-          "~/.cache/backgrounds",
-          LocationInfo{.latitudeAndLongitude = std::make_pair(70, 70),
-                       .useLocationInfoOverSearch = false}};
-}
 
 std::string getDataFromSet(BackgroundSet &backgroundSet) {
   const std::optional<StaticBackgroundData> staticData =
@@ -56,7 +51,8 @@ TEST(ChooseRandomBackgroundSet, CmdlineMainLoop) {
   EXPECT_TRUE(
       std::filesystem::exists(std::filesystem::path(TEST_BACKGROUND_SET_FILE)));
 
-  const Config config = getConfig();
+  const Config config =
+      getConfig(std::filesystem::path(TEST_BACKGROUND_SET_FILE));
 
   std::optional<BackgroundSet> optBackgroundSet = std::nullopt;
 

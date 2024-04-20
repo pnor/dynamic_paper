@@ -11,30 +11,62 @@ namespace dynamic_paper {
 
 namespace {
 
-constexpr std::string_view SUN_POLL_METHOD_KEY = "sun_poller"; // TODO remove
 constexpr std::string_view BACKGROUND_SET_CONFIG_FILE = "background_config";
-constexpr std::string_view METHOD_SCRIPT_KEY = "method_script"; // TODO remove
 constexpr std::string_view HOOK_SCRIPT_KEY = "hook_script";
 constexpr std::string_view IMAGE_CACHE_DIR_KEY = "cache_dir";
 constexpr std::string_view LOGGING_KEY = "logging_level";
 constexpr std::string_view LOG_FILE_KEY = "log_file";
 constexpr std::string_view LATITUDE_KEY = "latitude";
 constexpr std::string_view LONGITUDE_KEY = "longitude";
+constexpr std::string_view SUNRISE_TIME_KEY = "sunrise";
+constexpr std::string_view SUNSET_TIME_KEY = "sunset";
 constexpr std::string_view USE_CONFIG_FILE_LOCATION_KEY =
     "use_config_file_location";
 
 LocationInfo createLocationInfoFromParsedFields(
     const std::optional<double> optLatitude,
     const std::optional<double> optLongitude,
-    const std::optional<bool> optUseLocationInfoOverSearch) {
+    const std::optional<bool> optUseLatitudeAndLongitudeOverLocationSearch) {
   if (!(optLatitude.has_value() && optLongitude.has_value())) {
     return ConfigDefaults::locationInfo;
   }
 
   return {.latitudeAndLongitude =
               std::make_pair(optLatitude.value(), optLongitude.value()),
-          .useLocationInfoOverSearch =
-              optUseLocationInfoOverSearch.value_or(false)};
+          .useLatitudeAndLongitudeOverLocationSearch =
+              optUseLatitudeAndLongitudeOverLocationSearch.value_or(false)};
+}
+
+SolarDayProvider createSolarDayProviderFromParsedFields(
+    const std::optional<double> optLatitude,
+    const std::optional<double> optLongitude,
+    const std::optional<bool> optUseLatitudeAndLongitudeOverLocationSearch,
+    const std::optional<TimeFromMidnight> optSunriseTime,
+    const std::optional<TimeFromMidnight> optSunsetTime) {
+  const bool canCreateLocationInfo =
+      optLatitude.has_value() && optLongitude.has_value();
+  const bool canCreateSolarDay =
+      optSunriseTime.has_value() && optSunsetTime.has_value();
+
+  if (canCreateLocationInfo && canCreateSolarDay) {
+    return {createLocationInfoFromParsedFields(
+        optLatitude, optLongitude,
+        optUseLatitudeAndLongitudeOverLocationSearch)};
+  }
+
+  if (!canCreateLocationInfo && !canCreateSolarDay) {
+    return {ConfigDefaults::solarDay};
+  }
+
+  if (canCreateLocationInfo) { // only info for location
+    return {createLocationInfoFromParsedFields(
+        optLatitude, optLongitude,
+        optUseLatitudeAndLongitudeOverLocationSearch)};
+  }
+
+  // only info for solar day
+  return {SolarDay{.sunrise = optSunriseTime.value(),
+                   .sunset = optSunsetTime.value()}};
 }
 
 } // namespace
@@ -42,19 +74,15 @@ LocationInfo createLocationInfoFromParsedFields(
 // ===== Header ===============
 
 Config::Config(std::filesystem::path backgroundSetConfigFile,
-               SunEventPollerMethod sunMethod,
                std::optional<std::filesystem::path> hookScript,
                std::filesystem::path imageCacheDirectory,
-               LocationInfo locationInfo)
+               SolarDayProvider solarDayProvider)
     : backgroundSetConfigFile(std::move(backgroundSetConfigFile)),
-      sunEventPollerMethod(sunMethod), hookScript(std::move(hookScript)),
+      hookScript(std::move(hookScript)),
       imageCacheDirectory(std::move(imageCacheDirectory)),
-      locationInfo(std::move(locationInfo)) {}
+      solarDayProvider(std::move(solarDayProvider)) {}
 
 tl::expected<Config, ConfigError> loadConfigFromYAML(const YAML::Node &config) {
-  const auto sunMethod = generalConfigParseOrUseDefault<SunEventPollerMethod>(
-      config, SUN_POLL_METHOD_KEY, ConfigDefaults::sunEventPollerMethod);
-
   auto backgroundSetConfigFile =
       generalConfigParseOrUseDefault<std::filesystem::path>(
           config, BACKGROUND_SET_CONFIG_FILE,
@@ -81,11 +109,19 @@ tl::expected<Config, ConfigError> loadConfigFromYAML(const YAML::Node &config) {
   const auto optUseLocationInfoOverSearch =
       generalConfigParseOrUseDefault<std::optional<bool>>(
           config, USE_CONFIG_FILE_LOCATION_KEY, std::nullopt);
-  LocationInfo locationInfo = createLocationInfoFromParsedFields(
-      optLatitude, optLongitude, optUseLocationInfoOverSearch);
+  const auto optSunriseTime =
+      generalConfigParseOrUseDefault<std::optional<TimeFromMidnight>>(
+          config, SUNRISE_TIME_KEY, std::nullopt);
+  const auto optSunsetTime =
+      generalConfigParseOrUseDefault<std::optional<TimeFromMidnight>>(
+          config, SUNSET_TIME_KEY, std::nullopt);
 
-  return Config(backgroundSetConfigFile, sunMethod, hookScript, imageCacheDir,
-                locationInfo);
+  SolarDayProvider solarDayProvider = createSolarDayProviderFromParsedFields(
+      optLatitude, optLongitude, optUseLocationInfoOverSearch, optSunriseTime,
+      optSunsetTime);
+
+  return Config(backgroundSetConfigFile, hookScript, imageCacheDir,
+                solarDayProvider);
 };
 
 std::pair<LogLevel, std::filesystem::path>

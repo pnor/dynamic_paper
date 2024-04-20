@@ -8,29 +8,18 @@
 #include <functional>
 
 #include "config.hpp"
+#include "solar_day.hpp"
 #include "time_from_midnight.hpp"
 
 namespace dynamic_paper {
 
+// TODO remove
 /** Time used for sunrise when testing using `SunEventPollerMethod::Dummy` */
 TimeFromMidnight dummySunriseTime();
 
+// TODO remove
 /** Time used for sunset when testing using `SunEventPollerMethod::Dummy` */
 TimeFromMidnight dummySunsetTime();
-
-/** Potential errors that can arrise when trying to poll for sunset and sunrise
- */
-enum class SunriseAndSetErrors {
-  CommandNotFound,
-  BadOutput,
-  UnableExecuteCommand
-};
-
-/** Storage class for sunrise and sunset times */
-struct SunriseAndSunsetTimes {
-  TimeFromMidnight sunrise;
-  TimeFromMidnight sunset;
-};
 
 /**
  * Returns the current time using the system clock, as seconds from midnight
@@ -39,12 +28,9 @@ TimeFromMidnight getCurrentTime();
 
 /**
  * Returns the time of sunrise and sunset by querying another program specified
- * by the Config.
- *
- * Returns nullopt if the query is unsucessful (cmd is not installed, cmd
- * failed, etc.)
+ * by `LocationInfo`.
  */
-SunriseAndSunsetTimes getSunriseAndSunsetTimes(const Config &config);
+SolarDay getSolarDayUsingLocation(const LocationInfo &locationInfo);
 
 /**
  *  Convert string formatted HH:MM or HH:MM:SS to number of seconds from
@@ -58,7 +44,7 @@ SunriseAndSunsetTimes getSunriseAndSunsetTimes(const Config &config);
  *  10:00:01 -> 36001
  */
 constexpr std::optional<TimeFromMidnight>
-convertRawTimeStringToTimeOffset(std::string_view timeString);
+convertTimeStringToTimeFromMidnight(std::string_view timeString);
 
 /**
  *  Convert string formatted HH:MM or HH:MM:SS to number of seconds, without
@@ -66,7 +52,7 @@ convertRawTimeStringToTimeOffset(std::string_view timeString);
  * time string. Will throw an error if it does not.
  */
 constexpr TimeFromMidnight
-convertRawTimeStringToTimeOffsetUnchecked(std::string_view timeString);
+convertTimeStringToTimeFromMidnightUnchecked(std::string_view timeString);
 
 /**
  * Converts a string formatted either a raw time
@@ -80,9 +66,8 @@ convertRawTimeStringToTimeOffsetUnchecked(std::string_view timeString);
  * Does this by converting the time to the time in the UTC timezone
  * on 1900-01-00 and the HH:MM based on the string.
  */
-std::optional<TimeFromMidnight>
-timeStringToTime(const std::string &origString,
-                 const SunriseAndSunsetTimes &sunriseAndSunsetTimes);
+std::optional<TimeFromMidnight> timeStringToTime(const std::string &origString,
+                                                 const SolarDay &solarDay);
 
 /**
  * Converts a vector of strings formatted either a raw time
@@ -97,12 +82,12 @@ timeStringToTime(const std::string &origString,
  */
 std::optional<std::vector<TimeFromMidnight>>
 timeStringsToTimes(const std::vector<std::string> &strings,
-                   const SunriseAndSunsetTimes &sunriseAndSunsetTimes);
+                   const SolarDay &solarDay);
 
 /**
  * Returns the amount of time it took to run `block`
  */
-std::chrono::milliseconds elapsedTimeToRunCodeBlock(std::invocable auto block);
+std::chrono::milliseconds timeToRunCodeBlock(std::invocable auto block);
 
 // ===== constexpr definition =======
 
@@ -121,7 +106,7 @@ constexpr std::optional<unsigned int>
 stringViewToInt(const std::string_view text) {
   int res = 0;
   for (const char character : text) {
-    res *= 10;
+    res *= 10; // NOLINT (radix is 10)
     if (isDigit(character)) {
       res += (character - '0');
     } else {
@@ -132,7 +117,7 @@ stringViewToInt(const std::string_view text) {
 }
 
 constexpr std::optional<TimeFromMidnight>
-convertRawTimeStringToTimeOffset(const std::string_view timeString) {
+convertTimeStringToTimeFromMidnight(const std::string_view timeString) {
   size_t colonPos = timeString.find(':');
   if (colonPos == std::string::npos) {
     return std::nullopt;
@@ -177,8 +162,10 @@ convertRawTimeStringToTimeOffset(const std::string_view timeString) {
   std::chrono::minutes minutes(parsedMinutes.value());
   std::chrono::seconds seconds(parsedSeconds.value());
 
-  if ((hours.count() < 0) || (minutes.count() < 0 || minutes.count() > 59) ||
-      (seconds.count() < 0 || seconds.count() > 59)) {
+  constexpr long TIME_RADIX = 59;
+  if ((hours.count() < 0) ||
+      (minutes.count() < 0 || minutes.count() > TIME_RADIX) ||
+      (seconds.count() < 0 || seconds.count() > TIME_RADIX)) {
     return std::nullopt;
   }
 
@@ -186,9 +173,9 @@ convertRawTimeStringToTimeOffset(const std::string_view timeString) {
 }
 
 constexpr TimeFromMidnight
-convertRawTimeStringToTimeOffsetUnchecked(std::string_view timeString) {
+convertTimeStringToTimeFromMidnightUnchecked(std::string_view timeString) {
   std::optional<TimeFromMidnight> optTime =
-      convertRawTimeStringToTimeOffset(timeString);
+      convertTimeStringToTimeFromMidnight(timeString);
   return optTime.value();
 }
 

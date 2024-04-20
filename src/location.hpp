@@ -9,8 +9,6 @@
 
 #include <tl/expected.hpp>
 
-#include "config.hpp"
-
 namespace dynamic_paper {
 
 enum class LocationError {
@@ -20,11 +18,11 @@ enum class LocationError {
 };
 
 /**
- * Gets the user's location
+ * Gets the user's location using mozilla location
  *
  * Returns pair of {latitude, longitude}
  */
 tl::expected<std::pair<double, double>, LocationError>
-getUserLatitudeAndLongitude(const Config &config);
+getLatitudeAndLongitudeFromMozilla();
 
 } // namespace dynamic_paper

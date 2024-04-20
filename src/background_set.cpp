@@ -233,17 +233,12 @@ createDynamicBackgroundSetFromInfo(const ParsingInfo &parsingInfo,
     return tl::unexpected(BackgroundSetParseErrors::NoTimes);
   }
 
-  std::optional<SunriseAndSunsetTimes> optSunriseAndSunsetTimes =
-      getSunriseAndSunsetTimes(config);
-  if (!optSunriseAndSunsetTimes.has_value()) {
-    return tl::unexpected(BackgroundSetParseErrors::MissingSunpollInfo);
-  }
-  logDebug("Sunrise time is {} and Sunset time is {}",
-           optSunriseAndSunsetTimes->sunrise, optSunriseAndSunsetTimes->sunset);
+  const SolarDay solarDay = config.solarDayProvider.getSolarDay();
+  logDebug("Sunrise time is {} and Sunset time is {}", solarDay.sunrise,
+           solarDay.sunset);
 
   std::optional<std::vector<TimeFromMidnight>> optTimeOffsets =
-      timeStringsToTimes(parsingInfo.timeStrings.value(),
-                         optSunriseAndSunsetTimes.value());
+      timeStringsToTimes(parsingInfo.timeStrings.value(), solarDay);
   if (!optTimeOffsets.has_value()) {
     return tl::unexpected(BackgroundSetParseErrors::BadTimes);
   }

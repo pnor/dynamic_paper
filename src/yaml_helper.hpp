@@ -10,9 +10,10 @@
 #include <yaml-cpp/yaml.h>
 
 #include "background_set_enums.hpp"
-#include "config.hpp"
 #include "logger.hpp"
 #include "string_util.hpp"
+#include "time_from_midnight.hpp"
+#include "time_util.hpp"
 #include "type_helper.hpp"
 
 namespace dynamic_paper {
@@ -44,6 +45,9 @@ constexpr std::string_view OFF_LOGGING_STRING = "off";
 
 /**
  * Attempts to convert `text` into type `T`, and if unable to, returns nullopt.
+ *
+ * Note: since it is returning optional<T>, specializations for this should NOT
+ * specialize for optional types (like T = optional<int> for example)
  */
 template <typename T>
 constexpr std::optional<T> yamlStringTo(const std::string &text);
@@ -56,7 +60,6 @@ constexpr std::optional<T> yamlStringTo(const std::string &text) {
 }
 
 // - boolean
-
 template <>
 constexpr std::optional<bool> yamlStringTo(const std::string &text) {
   if (text == "true") {
@@ -68,6 +71,13 @@ constexpr std::optional<bool> yamlStringTo(const std::string &text) {
   }
 
   return std::nullopt;
+}
+
+// - TimeFromMidnight
+template <>
+constexpr std::optional<TimeFromMidnight>
+yamlStringTo(const std::string &text) {
+  return convertTimeStringToTimeFromMidnight(text);
 }
 
 // - unsigned numeric
@@ -114,19 +124,6 @@ constexpr std::optional<T> yamlStringTo(const std::string & /*text*/) {
 }
 
 // --- Specialization Matching string to enums
-
-// - SunEventPollerMethod
-template <>
-constexpr std::optional<SunEventPollerMethod>
-yamlStringTo(const std::string &text) {
-  const std::string configString = normalize(text);
-
-  if (configString == SUNWAIT_STRING) {
-    return std::make_optional(SunEventPollerMethod::Sunwait);
-  }
-
-  return std::nullopt;
-}
 
 // - BackgroundSetMode
 template <>

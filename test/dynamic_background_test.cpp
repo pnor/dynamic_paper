@@ -71,10 +71,10 @@ class DynamicBackgroundTest : public testing::Test {
 public:
   void SetUp() override {}
 
-  Config config = {std::filesystem::path(), SunEventPollerMethod::Dummy,
-                   std::nullopt, std::filesystem::path(CACHE_DIR),
-                   LocationInfo{.latitudeAndLongitude = {0, 0},
-                                .useLocationInfoOverSearch = false}};
+  Config config = {
+      std::filesystem::path(), std::nullopt, std::filesystem::path(CACHE_DIR),
+      LocationInfo{.latitudeAndLongitude = {0, 0},
+                   .useLatitudeAndLongitudeOverLocationSearch = false}};
   std::filesystem::path testDataDir = DATA_DIR;
 };
 
@@ -111,7 +111,7 @@ struct Backgrounds {
 };
 
 constexpr TimeFromMidnight time(std::string_view timeString) {
-  return convertRawTimeStringToTimeOffsetUnchecked(timeString);
+  return convertTimeStringToTimeFromMidnightUnchecked(timeString);
 }
 
 std::vector<TimeFromMidnight>

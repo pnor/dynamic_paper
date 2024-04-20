@@ -52,6 +52,7 @@ add_executable(
   time_from_midnight_test.cpp
   current_time_test.cpp
   cmdline_helper_tests.cpp
+  helper.cpp
   # sources
   ${MAIN_SRC_DIR}/background_set.cpp
   ${MAIN_SRC_DIR}/time_from_midnight.cpp
@@ -66,6 +67,7 @@ add_executable(
   ${MAIN_SRC_DIR}/cmdline_helper.cpp
   ${MAIN_SRC_DIR}/file_util.cpp
   ${MAIN_SRC_DIR}/location.cpp
+  ${MAIN_SRC_DIR}/solar_day_provider.cpp
   "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a")
 
 # ===== Linking ===========

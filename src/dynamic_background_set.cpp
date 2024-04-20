@@ -353,9 +353,9 @@ std::chrono::seconds timeUntilNext(const TimeFromMidnight &now,
     sleepTime = std::chrono::seconds(later - now) - eventDuration;
   } else { // Sleep past a day boundary / now >= later
     constexpr TimeFromMidnight secondBeforeMidnight =
-        convertRawTimeStringToTimeOffsetUnchecked("23:59:59");
+        convertTimeStringToTimeFromMidnightUnchecked("23:59:59");
     constexpr TimeFromMidnight midnight =
-        convertRawTimeStringToTimeOffsetUnchecked("00:00:00");
+        convertTimeStringToTimeFromMidnightUnchecked("00:00:00");
 
     sleepTime =
         std::chrono::seconds((secondBeforeMidnight - now) +
