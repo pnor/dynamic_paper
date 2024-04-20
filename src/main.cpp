@@ -16,8 +16,6 @@
 using namespace dynamic_paper;
 
 // TODO try and stop using less shell commands? (exec family maybe)
-// - libgeoclue for location
-// - buelowp sunset
 // TODO better README
 // TODO config to just manually choose sunrise and sunset
 // TODO rehaul general config for cmdline options, then file then defualts?

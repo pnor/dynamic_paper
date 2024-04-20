@@ -48,17 +48,19 @@ SolarDayProvider createSolarDayProviderFromParsedFields(
   const bool canCreateSolarDay =
       optSunriseTime.has_value() && optSunsetTime.has_value();
 
+  // enough info for both
   if (canCreateLocationInfo && canCreateSolarDay) {
-    return {createLocationInfoFromParsedFields(
-        optLatitude, optLongitude,
-        optUseLatitudeAndLongitudeOverLocationSearch)};
+    return {SolarDay{.sunrise = optSunriseTime.value(),
+                     .sunset = optSunsetTime.value()}};
   }
 
+  // not enough info for either
   if (!canCreateLocationInfo && !canCreateSolarDay) {
     return {ConfigDefaults::solarDay};
   }
 
-  if (canCreateLocationInfo) { // only info for location
+  // only info for location
+  if (canCreateLocationInfo) {
     return {createLocationInfoFromParsedFields(
         optLatitude, optLongitude,
         optUseLatitudeAndLongitudeOverLocationSearch)};
