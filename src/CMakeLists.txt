@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.27)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # ===== Common Locations ==========
@@ -52,6 +52,7 @@ add_executable(
   file_util.cpp
   location.cpp
   solar_day_provider.cpp
+  nolint/cimg_compositor.cpp
   "${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a")
 
 # ===== Linking ===========

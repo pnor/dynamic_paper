@@ -40,7 +40,7 @@ public:
   Config(std::filesystem::path backgroundSetConfigFile,
          std::optional<std::filesystem::path> hookScript,
          std::filesystem::path imageCacheDirectory,
-         SolarDayProvider solaDayProvider);
+         SolarDayProvider solarDayProvider);
 };
 
 // ===== Loading config from files ====================

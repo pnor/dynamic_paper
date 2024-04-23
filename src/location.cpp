@@ -36,7 +36,7 @@ tl::expected<double, LocationError> tryParseDouble(const std::smatch &match) {
 
 tl::expected<std::pair<double, double>, LocationError>
 getLatitudeAndLongitudeFromMozilla() {
-  cpr::Response response = cpr::Get(cpr::Url{MOZILLA_LOCATION_URL});
+  const cpr::Response response = cpr::Get(cpr::Url{MOZILLA_LOCATION_URL});
 
   if (response.status_code != SUCESS_CODE) {
     return tl::unexpected(LocationError::RequestFailed);

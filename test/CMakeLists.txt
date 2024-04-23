@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.27)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(POLICY CMP0135)
@@ -68,6 +68,7 @@ add_executable(
   ${MAIN_SRC_DIR}/file_util.cpp
   ${MAIN_SRC_DIR}/location.cpp
   ${MAIN_SRC_DIR}/solar_day_provider.cpp
+  ${MAIN_SRC_DIR}/nolint/cimg_compositor.cpp
   "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a")
 
 # ===== Linking ===========
@@ -115,9 +116,11 @@ target_include_directories(${CURRENT_TARGET}
 
 # ===== Clang Tidy ==========
 
-# find_program(CLANG_TIDY_EXE NAMES "clang-tidy") set(CLANG_TIDY_COMMAND
-# "${CLANG_TIDY_EXE}") set_target_properties(${CURRENT_TARGET} PROPERTIES
-# CXX_CLANG_TIDY
-# "${CLANG_TIDY_COMMAND}")
+find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
+set(CLANG_TIDY_COMMAND "${CLANG_TIDY_EXE}")
+set_target_properties(${CURRENT_TARGET} PROPERTIES CXX_CLANG_TIDY
+                                                   "${CLANG_TIDY_COMMAND}")
+
+set_source_files_properties(image_compositor.cpp PROPERTIES SKIP_LINTING ON)
 
 add_test(NAME runTests COMMAND dynamic_background_test)

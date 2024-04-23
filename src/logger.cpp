@@ -1,5 +1,6 @@
 #include "logger.hpp"
 
+#include <csignal>
 #include <filesystem>
 
 #include <spdlog/sinks/basic_file_sink.h>
@@ -9,6 +10,8 @@
 namespace dynamic_paper {
 
 namespace {
+
+constexpr std::string GLOBAL_LOGGER_NAME = "main logger";
 
 void setShouldShowDebugLogs(const LogLevel logLevel) {
   switch (logLevel) {
@@ -43,6 +46,18 @@ void setShouldShowDebugLogs(const LogLevel logLevel) {
   }
 }
 
+void flushLogger(int /*unused*/) { spdlog::get(GLOBAL_LOGGER_NAME)->flush(); }
+
+void setupFlushingOnSIGINT() {
+  struct sigaction sigIntHandler = {};
+
+  sigIntHandler.sa_handler = flushLogger;
+  sigemptyset(&sigIntHandler.sa_mask);
+  sigIntHandler.sa_flags = 0;
+
+  sigaction(SIGINT, &sigIntHandler, nullptr);
+}
+
 } // namespace
 
 // ===== Header ===============
@@ -52,12 +67,14 @@ void setupLogging(
   const std::pair<LogLevel, std::filesystem::path> levelAndFile =
       std::move(logLevelAndLogFile);
 
-  const std::shared_ptr<spdlog::logger> console =
-      spdlog::basic_logger_mt("main logger", std::string(levelAndFile.second));
+  const std::shared_ptr<spdlog::logger> console = spdlog::basic_logger_mt(
+      GLOBAL_LOGGER_NAME, std::string(levelAndFile.second));
   spdlog::set_default_logger(console);
 
   spdlog::set_pattern("[%H:%M:%S %z] [%^--%L--%$] %v");
   setShouldShowDebugLogs(levelAndFile.first);
+
+  setupFlushingOnSIGINT();
 }
 
 void setupLoggingForStdout(LogLevel level) {

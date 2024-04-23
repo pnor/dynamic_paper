@@ -2,9 +2,8 @@
 
 #include <format>
 
-#include <CImg.h>
-
 #include "logger.hpp"
+#include "nolint/cimg_compositor.hpp"
 
 namespace dynamic_paper {
 
@@ -65,11 +64,8 @@ createCompositeImage(const std::filesystem::path &startImagePath,
     logWarning("Creating a new composite image that already exists in cache!");
   }
 
-  using namespace cimg_library;
-  CImg<unsigned char> baseImage = CImg<>(startImagePath.c_str());
-  CImg<unsigned char> compositeImage = CImg<>(endImagePath.c_str());
-  baseImage.draw_image(compositeImage, static_cast<float>(percentage) / 100.0F);
-  baseImage.save(destinationImagePath.c_str());
+  compositeUsingCImg(startImagePath, endImagePath, destinationImagePath,
+                     percentage);
 
   return destinationImagePath;
 }

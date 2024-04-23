@@ -9,6 +9,7 @@
 #include <utility>
 
 #include <gtest/gtest.h>
+#include <spdlog/common.h>
 #include <spdlog/spdlog.h>
 #include <yaml-cpp/parser.h>
 

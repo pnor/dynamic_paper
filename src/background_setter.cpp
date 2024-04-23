@@ -7,10 +7,10 @@
 
 #include <tl/expected.hpp>
 
+#include "background_set_enums.hpp"
 #include "command_executor.hpp"
 #include "golang/go-background.h"
 #include "logger.hpp"
-#include "variant_visitor_templ.hpp"
 
 namespace dynamic_paper {
 
@@ -29,38 +29,6 @@ void callSetBackground(const std::string &imageName,
   char *modeStringPtr = const_cast<char *>(modeString.c_str()); // NOLINT
 
   SetBackground(imageNamePtr, modeStringPtr);
-}
-
-// ===== Heleper ===============
-
-inline std::string convertScriptNameToCommand(const std::string &scriptName,
-                                              const BackgroundSetMode mode,
-                                              const std::string &imageName) {
-  std::string modeString;
-  switch (mode) {
-  case BackgroundSetMode::Center: {
-    modeString = "center";
-    break;
-  }
-  case BackgroundSetMode::Fill: {
-    modeString = "fill";
-    break;
-  }
-  }
-
-  return std::format("{} -m {} {}", scriptName, modeString, imageName);
-}
-
-tl::expected<void, BackgroundError>
-runCommandHandleError(const std::string &command) {
-  const int result = runCommandExitCode(command);
-
-  if (result != 0) {
-    logError("Command '{}' did not run succesfully", command);
-    return tl::unexpected(BackgroundError::CommandError);
-  }
-
-  return {};
 }
 
 } // namespace

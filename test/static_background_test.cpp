@@ -3,6 +3,8 @@
  */
 
 #include <filesystem>
+#include <optional>
+#include <string>
 #include <string_view>
 
 #include <gmock/gmock.h>
@@ -12,7 +14,9 @@
 
 #include "background_test_setter.hpp"
 #include "src/background_set_enums.hpp"
+#include "src/background_setter.hpp"
 #include "src/config.hpp"
+#include "src/location_info.hpp"
 #include "src/static_background_set.hpp"
 
 using namespace dynamic_paper_test;

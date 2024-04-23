@@ -2,13 +2,20 @@
  *   Test Functions used in the cmdline main loop
  */
 
+#include <filesystem>
+#include <optional>
+#include <string>
+#include <string_view>
+#include <utility>
+
 #include <gtest/gtest.h>
 
-#include <yaml-cpp/yaml.h>
-
 #include "helper.hpp"
+#include "src/background_set.hpp"
 #include "src/cmdline_helper.hpp"
 #include "src/config.hpp"
+#include "src/dynamic_background_set.hpp"
+#include "src/static_background_set.hpp"
 
 using namespace dynamic_paper;
 

@@ -52,7 +52,7 @@ void handleRandomCommand(const Config &config) {
 
   if (!optBackgroundSet.has_value()) {
     std::cout << "Unable to parse any background set from the config file at : "
-              << config.backgroundSetConfigFile.string() << std::endl;
+              << config.backgroundSetConfigFile.string() << '\n';
     return;
   }
 

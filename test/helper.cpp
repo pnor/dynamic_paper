@@ -1,5 +1,7 @@
 #include "helper.hpp"
 
+#include <filesystem>
+
 #include "src/config.hpp"
 
 dynamic_paper::Config getConfig() {

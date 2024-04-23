@@ -4,10 +4,12 @@
 
 #include <array>
 #include <chrono>
+#include <cstddef>
 #include <filesystem>
 #include <optional>
 #include <string>
 #include <string_view>
+#include <vector>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -16,6 +18,7 @@
 
 #include "background_test_setter.hpp"
 #include "src/background_set_enums.hpp"
+#include "src/background_setter.hpp"
 #include "src/config.hpp"
 #include "src/dynamic_background_set.hpp"
 #include "src/time_from_midnight.hpp"

@@ -8,7 +8,6 @@
 #include <sunset.h>
 #include <tl/expected.hpp>
 
-#include "config.hpp"
 #include "location.hpp"
 #include "logger.hpp"
 #include "string_util.hpp"
@@ -55,7 +54,7 @@ getLatitudeAndLongitude(const LocationInfo &locationInfo) {
 }
 
 int timeZoneOffset() {
-  time_t timeNow = time(nullptr);
+  const time_t timeNow = time(nullptr);
   struct tm timeStruct = {};
 
   localtime_r(&timeNow, &timeStruct);

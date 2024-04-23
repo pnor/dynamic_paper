@@ -5,12 +5,17 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <utility>
 
 #include <gtest/gtest.h>
+#include <tl/expected.hpp>
 
 #include "src/config.hpp"
 #include "src/defaults.hpp"
 #include "src/file_util.hpp"
+#include "src/location_info.hpp"
+#include "src/solar_day.hpp"
+#include "src/time_from_midnight.hpp"
 
 using namespace dynamic_paper;
 

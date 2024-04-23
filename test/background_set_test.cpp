@@ -3,19 +3,27 @@
  */
 
 #include <cassert>
+#include <chrono>
+#include <filesystem>
 #include <optional>
 #include <stdexcept>
+#include <string>
 #include <string_view>
+#include <unordered_map>
+#include <vector>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <tl/expected.hpp>
 #include <yaml-cpp/yaml.h>
 
 #include "helper.hpp"
 #include "src/background_set.hpp"
 #include "src/background_set_enums.hpp"
+#include "src/config.hpp"
 #include "src/dynamic_background_set.hpp"
 #include "src/file_util.hpp"
+#include "src/solar_day.hpp"
 #include "src/static_background_set.hpp"
 #include "src/time_from_midnight.hpp"
 

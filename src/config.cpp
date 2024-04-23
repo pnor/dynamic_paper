@@ -1,10 +1,19 @@
 #include "config.hpp"
 
+#include <filesystem>
+#include <optional>
+#include <string_view>
 #include <utility>
 
-#include <yaml-cpp/yaml.h>
+#include <yaml-cpp/node/node.h>
 
 #include "defaults.hpp"
+#include "file_util.hpp"
+#include "location_info.hpp"
+#include "logger.hpp"
+#include "solar_day.hpp"
+#include "solar_day_provider.hpp"
+#include "time_from_midnight.hpp"
 #include "yaml_helper.hpp"
 
 namespace dynamic_paper {
@@ -128,9 +137,10 @@ tl::expected<Config, ConfigError> loadConfigFromYAML(const YAML::Node &config) {
       generalConfigParseOrUseDefault<std::optional<TimeFromMidnight>>(
           config, SUNSET_TIME_KEY, std::nullopt);
 
-  SolarDayProvider solarDayProvider = createSolarDayProviderFromParsedFields(
-      optLatitude, optLongitude, optUseLocationInfoOverSearch, optSunriseTime,
-      optSunsetTime);
+  const SolarDayProvider solarDayProvider =
+      createSolarDayProviderFromParsedFields(optLatitude, optLongitude,
+                                             optUseLocationInfoOverSearch,
+                                             optSunriseTime, optSunsetTime);
 
   return Config(backgroundSetConfigFile, hookScript, imageCacheDir,
                 solarDayProvider);

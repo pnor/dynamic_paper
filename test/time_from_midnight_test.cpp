@@ -2,6 +2,8 @@
  * Test how TimeFromMidnight represents times
  */
 
+#include <chrono>
+
 #include <gtest/gtest.h>
 
 #include "src/time_from_midnight.hpp"

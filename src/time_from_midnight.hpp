@@ -6,6 +6,7 @@
  */
 
 #include <chrono>
+#include <ostream>
 #include <type_traits>
 
 #include "math_util.hpp"

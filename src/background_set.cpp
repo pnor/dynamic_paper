@@ -2,20 +2,29 @@
 
 #include <algorithm>
 #include <cassert>
+#include <chrono>
 #include <filesystem>
 #include <format>
 #include <optional>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <type_traits>
 #include <utility>
 #include <variant>
+#include <vector>
 
-#include <yaml-cpp/yaml.h>
+#include <tl/expected.hpp>
+#include <yaml-cpp/node/node.h>
 
 #include "background_set_enums.hpp"
+#include "config.hpp"
+#include "dynamic_background_set.hpp"
 #include "file_util.hpp"
+#include "logger.hpp"
+#include "static_background_set.hpp"
 #include "time_util.hpp"
+#include "transition_info.hpp"
 #include "type_helper.hpp"
 #include "variant_visitor_templ.hpp"
 #include "yaml_helper.hpp"

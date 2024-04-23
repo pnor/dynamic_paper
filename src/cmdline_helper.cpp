@@ -1,13 +1,28 @@
 #include "cmdline_helper.hpp"
 
+#include <algorithm>
+#include <chrono>
 #include <cstdio>
+#include <optional>
 #include <random>
-#include <ranges>
+#include <string>
+#include <string_view>
+#include <thread>
 #include <unistd.h>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
+#include <tl/expected.hpp>
+#include <yaml-cpp/node/node.h>
 
 #include "background_set.hpp"
+#include "background_set_enums.hpp"
+#include "background_setter.hpp"
+#include "config.hpp"
 #include "defaults.hpp"
-#include "logger.hpp"
+#include "dynamic_background_set.hpp"
+#include "time_from_midnight.hpp"
 
 namespace dynamic_paper {
 
@@ -85,7 +100,7 @@ void setupLoggingFromYAML(const YAML::Node &config) {
 }
 
 void setupLoggingFromYAMLForStdout(const YAML::Node &config) {
-  std::pair<LogLevel, std::filesystem::path> levelAndFileName =
+  const std::pair<LogLevel, std::filesystem::path> levelAndFileName =
       loadLoggingInfoFromYAML(config);
   setupLoggingForStdout(levelAndFileName.first);
 }

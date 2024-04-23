@@ -16,11 +16,16 @@
  * (2 * (60 * 60)) + (<time between sunrise and sunset>)
  *
  */
+
 #include <cassert>
 #include <chrono>
+#include <optional>
+#include <vector>
 
 #include <gtest/gtest.h>
 
+#include "src/solar_day.hpp"
+#include "src/time_from_midnight.hpp"
 #include "src/time_util.hpp"
 
 using namespace dynamic_paper;
