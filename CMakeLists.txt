@@ -16,16 +16,15 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 set(CMAKE_CXX_FLAGS_DEBUG
-    "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -Werror=switch -Wno-error=sign-compare -ggdb -O0"
+    "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -Werror=switch -Wno-error=sign-compare -ggdb -O0 -fsanitize=address"
 )
 
 set(CMAKE_CXX_FLAGS_RELEASE
     "${CMAKE_CXX_FLAGS_RELEASE} -O3 -Wall -Wextra -Werror=switch -Wno-error=sign-compare"
 )
 
-# For all targets
-add_compile_options(-fsanitize=address)
-add_link_options(-fsanitize=address)
+# For all targets add_compile_options(-fsanitize=address)
+# add_link_options(-fsanitize=address)
 
 add_subdirectory(third-party)
 

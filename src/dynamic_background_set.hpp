@@ -13,6 +13,7 @@
 #include "background_set_enums.hpp"
 #include "background_setter_definition.hpp"
 #include "config.hpp"
+#include "hook_script_executor.hpp"
 #include "time_from_midnight.hpp"
 #include "transition_info.hpp"
 #include "variant_visitor_templ.hpp"
@@ -112,40 +113,46 @@ void doEvent(const Event &event, const DynamicBackgroundData *backgroundData,
              const Config &config, T &&backgroundSetFunction) {
 
   std::visit(
-      overloaded{[&config, backgroundData,
-                  backgroundSetFunction](const SetBackgroundEvent &event) {
-                   tl::expected<void, BackgroundError> result =
-                       backgroundSetFunction(event.imagePath,
-                                             backgroundData->mode);
+      overloaded{
+          [&config, backgroundData,
+           backgroundSetFunction](const SetBackgroundEvent &event) {
+            tl::expected<void, BackgroundError> result =
+                backgroundSetFunction(event.imagePath, backgroundData->mode);
 
-                   logTrace("Did Set background event, set to {}",
-                            event.imagePath.string());
+            logTrace("Did Set background event, set to {}",
+                     event.imagePath.string());
 
-                   if (!result.has_value()) {
-                     describeError(result.error());
-                   }
+            if (!result.has_value()) {
+              describeError(result.error());
+            }
 
-                   if (config.hookScript.has_value()) {
-                     runHookCommand(config.hookScript.value(), event.imagePath);
-                   }
-                 },
-                 [&config, backgroundData,
-                  backgroundSetFunction](const LerpBackgroundEvent &event) {
-                   std::decay_t<T> func = backgroundSetFunction;
+            if (config.hookScript.has_value()) {
+              tl::expected<void, HookError> hookResult =
+                  runHookScript(config.hookScript.value(), event.imagePath);
 
-                   logTrace("About to start lerping background");
+              if (!hookResult.has_value()) {
+                logError("Error occured relating to forking when running "
+                         "hook script");
+              }
+            }
+          },
+          [&config, backgroundData,
+           backgroundSetFunction](const LerpBackgroundEvent &event) {
+            std::decay_t<T> func = backgroundSetFunction;
 
-                   tl::expected<void, BackgroundError> result =
-                       lerpBackgroundBetweenImages<std::decay_t<T>, Files,
-                                                   CompositeImages>(
-                           event.commonImageDirectory, event.startImageName,
-                           event.endImageName, config.imageCacheDirectory,
-                           event.transition, backgroundData->mode, func);
+            logTrace("About to start lerping background");
 
-                   if (!result.has_value()) {
-                     describeError(result.error());
-                   }
-                 }},
+            tl::expected<void, BackgroundError> result =
+                lerpBackgroundBetweenImages<std::decay_t<T>, Files,
+                                            CompositeImages>(
+                    event.commonImageDirectory, event.startImageName,
+                    event.endImageName, config.imageCacheDirectory,
+                    event.transition, backgroundData->mode, func);
+
+            if (!result.has_value()) {
+              describeError(result.error());
+            }
+          }},
       event);
 }
 

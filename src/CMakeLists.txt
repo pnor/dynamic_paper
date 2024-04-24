@@ -52,6 +52,7 @@ add_executable(
   file_util.cpp
   location.cpp
   solar_day_provider.cpp
+  hook_script_executor.cpp
   nolint/cimg_compositor.cpp
   "${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a")
 

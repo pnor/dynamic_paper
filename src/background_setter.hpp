@@ -8,7 +8,6 @@
 #include <tl/expected.hpp>
 
 #include "background_set_enums.hpp"
-#include "config.hpp"
 #include "file_util.hpp"
 #include "image_compositor.hpp"
 
@@ -61,12 +60,4 @@ tl::expected<void, BackgroundError> lerpBackgroundBetweenImages(
     const std::filesystem::path &cacheDirectory, std::chrono::seconds duration,
     unsigned int numSteps, BackgroundSetMode mode, T backgroundSetFunction);
 
-/**
- * Runs the script at `hookScriptPath` on the image at `imagePath`.
- *
- * Used to run user defined hooks after the background changes.
- */
-tl::expected<void, HookCommandError>
-runHookCommand(const std::filesystem::path &hookScriptPath,
-               const std::filesystem::path &imagePath);
 } // namespace dynamic_paper

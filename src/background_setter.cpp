@@ -1,6 +1,5 @@
 #include "background_setter.hpp"
 
-#include <cstdlib>
 #include <filesystem>
 #include <format>
 #include <string>
@@ -8,7 +7,6 @@
 #include <tl/expected.hpp>
 
 #include "background_set_enums.hpp"
-#include "command_executor.hpp"
 #include "golang/go-background.h"
 #include "logger.hpp"
 
@@ -47,19 +45,4 @@ setBackgroundToImage(const std::filesystem::path &imagePath,
   return {};
 }
 
-tl::expected<void, HookCommandError>
-runHookCommand(const std::filesystem::path &hookScriptPath,
-               const std::filesystem::path &imagePath) {
-  logTrace("Running hook command: ({})", hookScriptPath.string());
-
-  const std::string commandStr =
-      std::format("{} {}", hookScriptPath.string(), imagePath.string());
-  const int result = runCommandExitCode(commandStr);
-
-  if (result != EXIT_SUCCESS) {
-    return tl::unexpected(HookCommandError::CommandError);
-  }
-
-  return {};
-}
 } // namespace dynamic_paper

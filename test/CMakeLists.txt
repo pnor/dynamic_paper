@@ -68,6 +68,7 @@ add_executable(
   ${MAIN_SRC_DIR}/file_util.cpp
   ${MAIN_SRC_DIR}/location.cpp
   ${MAIN_SRC_DIR}/solar_day_provider.cpp
+  ${MAIN_SRC_DIR}/hook_script_executor.cpp
   ${MAIN_SRC_DIR}/nolint/cimg_compositor.cpp
   "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a")
 

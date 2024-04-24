@@ -3,11 +3,12 @@
 /** Static Background Sets show a wallpaper once and exit */
 
 #include <filesystem>
-#include <optional>
 #include <vector>
 
 #include "background_set_enums.hpp"
 #include "background_setter.hpp"
+#include "config.hpp"
+#include "hook_script_executor.hpp"
 
 namespace dynamic_paper {
 
@@ -59,7 +60,12 @@ void StaticBackgroundData::show(const Config &config,
   }
 
   if (config.hookScript.has_value()) {
-    runHookCommand(config.hookScript.value(), imagePath);
+    tl::expected<void, HookError> hookResult =
+        runHookScript(config.hookScript.value(), imagePath);
+
+    if (!hookResult.has_value()) {
+      logError("Error relating to forking occured when running hook script");
+    }
   }
 }
 
