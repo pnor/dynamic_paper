@@ -46,18 +46,6 @@ void setShouldShowDebugLogs(const LogLevel logLevel) {
   }
 }
 
-void flushLogger(int /*unused*/) { spdlog::get(GLOBAL_LOGGER_NAME)->flush(); }
-
-void setupFlushingOnSIGINT() {
-  struct sigaction sigIntHandler = {};
-
-  sigIntHandler.sa_handler = flushLogger;
-  sigemptyset(&sigIntHandler.sa_mask);
-  sigIntHandler.sa_flags = 0;
-
-  sigaction(SIGINT, &sigIntHandler, nullptr);
-}
-
 } // namespace
 
 // ===== Header ===============
@@ -75,8 +63,6 @@ void setupLogging(
 
   spdlog::set_pattern("[%H:%M:%S %z] [%^--%L--%$] %v");
   setShouldShowDebugLogs(levelAndFile.first);
-
-  setupFlushingOnSIGINT();
 }
 
 void setupLoggingForStdout(LogLevel level) {
