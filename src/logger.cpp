@@ -1,6 +1,5 @@
 #include "logger.hpp"
 
-#include <csignal>
 #include <filesystem>
 
 #include <spdlog/sinks/basic_file_sink.h>

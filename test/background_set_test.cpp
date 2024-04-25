@@ -188,7 +188,8 @@ suntimes:
 class BackgroundSetTests : public testing::Test {
 public:
   void SetUp() override {
-    const SolarDay solarDay = config.solarDayProvider.getSolarDay();
+    const SolarDay day = config.solarDayProvider.getSolarDay();
+    solarDay = day;
     sunriseTime = solarDay.sunrise;
     sunsetTime = solarDay.sunset;
   }
@@ -201,7 +202,7 @@ public:
     // yamlMap only has 1 entry; mapping the name to all the yaml info
     for (const auto &keyValue : yamlMap) {
       tl::expected<BackgroundSet, BackgroundSetParseErrors> expBackgroundSet =
-          parseFromYAML(keyValue.first, keyValue.second, config);
+          parseFromYAML(keyValue.first, keyValue.second, solarDay);
       EXPECT_TRUE(expBackgroundSet.has_value());
       return expBackgroundSet.value();
     }
@@ -211,6 +212,7 @@ public:
   }
 
   Config config = getConfig();
+  SolarDay solarDay = {std::chrono::seconds(0), std::chrono::seconds(0)};
   TimeFromMidnight sunriseTime = {std::chrono::seconds(0)};
   TimeFromMidnight sunsetTime = {std::chrono::seconds(0)};
 };
@@ -420,7 +422,7 @@ TEST_F(BackgroundSetTests, DynamicBackgroundSetNoImagesOrTimes) {
 
   for (const auto &keyValue : yamlMap) {
     tl::expected<BackgroundSet, BackgroundSetParseErrors> expBackgroundSet =
-        parseFromYAML(keyValue.first, keyValue.second, getConfig());
+        parseFromYAML(keyValue.first, keyValue.second, solarDay);
     EXPECT_FALSE(expBackgroundSet.has_value());
     EXPECT_EQ(expBackgroundSet.error(), BackgroundSetParseErrors::NoImages);
   }

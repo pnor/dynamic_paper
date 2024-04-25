@@ -11,8 +11,8 @@ namespace dynamic_paper {
 namespace {
 
 inline bool statusIsAbnormal(const int status) {
-  bool exitedNormally = WIFEXITED(status);
-  bool exitCodeIsZero = WEXITSTATUS(status) == 0;
+  const bool exitedNormally = WIFEXITED(status);
+  const bool exitCodeIsZero = WEXITSTATUS(status) == 0;
   return !exitedNormally || !exitCodeIsZero;
 }
 
@@ -22,7 +22,9 @@ void monitorHookScript(const pid_t pid) {
 
   while ((ret = waitpid(pid, &status, 0)) == -1) {
     if (errno != EINTR) {
-      logError("Hook Script was interrupted while running!");
+      logError(
+          "(thread) Hook Script was interrupted while running! \nerrno msg: {}",
+          strerror(errno));
       break;
     }
   }
@@ -37,12 +39,12 @@ inline void checkHookScriptStatus(const pid_t pid) {
   scriptCheckerThread.detach();
 }
 
-[[noreturn]] inline void
+[[noreturn]] void
 becomeAndRunHookScript(const std::filesystem::path &hookScriptPath,
                        const std::filesystem::path &imagePath) {
   // NOLINTNEXTLINE: Need to call execl to execute the hook script
   if (execl(hookScriptPath.c_str(), hookScriptPath.filename().c_str(),
-            imagePath.c_str()) == -1) {
+            imagePath.c_str(), nullptr) == -1) {
     logError(
         "Error when trying to run hook script: {} {}.\nError from errno: {}",
         hookScriptPath.string(), imagePath.string(), strerror(errno));

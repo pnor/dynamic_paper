@@ -3,7 +3,6 @@
 /** Object that represents a static/dynamic background to be shown */
 
 #include <expected>
-#include <filesystem>
 #include <optional>
 #include <variant>
 
@@ -11,7 +10,6 @@
 #include <yaml-cpp/yaml.h>
 
 #include "background_set_enums.hpp"
-#include "config.hpp"
 #include "dynamic_background_set.hpp"
 #include "static_background_set.hpp"
 
@@ -48,5 +46,5 @@ enum class BackgroundSetParseErrors {
 
 tl::expected<BackgroundSet, BackgroundSetParseErrors>
 parseFromYAML(const std::string &name, const YAML::Node &yaml,
-              const Config &config);
+              const SolarDay &solarDay);
 } // namespace dynamic_paper

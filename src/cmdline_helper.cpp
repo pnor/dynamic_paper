@@ -188,9 +188,11 @@ std::vector<BackgroundSet> getBackgroundSetsFromFile(const Config &config) {
   std::vector<BackgroundSet> backgroundSets;
   backgroundSets.reserve(yamlMap.size());
 
+  const SolarDay solarDay = config.solarDayProvider.getSolarDay();
+
   for (const auto &keyValue : yamlMap) {
     tl::expected<BackgroundSet, BackgroundSetParseErrors> expBackgroundSet =
-        parseFromYAML(keyValue.first, keyValue.second, config);
+        parseFromYAML(keyValue.first, keyValue.second, solarDay);
 
     if (expBackgroundSet.has_value()) {
       const BackgroundSet &backgroundSet = expBackgroundSet.value();
@@ -226,7 +228,8 @@ getBackgroundSetWithNameFromFile(const std::string_view name,
   for (const auto &keyValue : yamlMap) {
     if (keyValue.first == name) {
       tl::expected<BackgroundSet, BackgroundSetParseErrors> expBackgroundSet =
-          parseFromYAML(keyValue.first, keyValue.second, config);
+          parseFromYAML(keyValue.first, keyValue.second,
+                        config.solarDayProvider.getSolarDay());
 
       if (expBackgroundSet.has_value()) {
         return expBackgroundSet.value();
@@ -267,7 +270,7 @@ std::optional<BackgroundSet> getRandomBackgroundSet(const Config &config) {
     const auto &yamlNode = yamlMap.at(name);
 
     tl::expected<BackgroundSet, BackgroundSetParseErrors> expBackgroundSet =
-        parseFromYAML(name, yamlNode, config);
+        parseFromYAML(name, yamlNode, config.solarDayProvider.getSolarDay());
 
     if (expBackgroundSet.has_value()) {
       logDebug("success; returning {}", expBackgroundSet->getName());

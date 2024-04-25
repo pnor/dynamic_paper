@@ -222,7 +222,7 @@ createStaticBackgroundSetFromInfo(const ParsingInfo &parsingInfo) {
 
 tl::expected<BackgroundSet, BackgroundSetParseErrors>
 createDynamicBackgroundSetFromInfo(const ParsingInfo &parsingInfo,
-                                   const Config &config) {
+                                   const SolarDay &solarDay) {
   assert((void("Parsing info should have name by time this helper function "
                "is called"),
           parsingInfo.name.has_value()));
@@ -242,7 +242,6 @@ createDynamicBackgroundSetFromInfo(const ParsingInfo &parsingInfo,
     return tl::unexpected(BackgroundSetParseErrors::NoTimes);
   }
 
-  const SolarDay solarDay = config.solarDayProvider.getSolarDay();
   logDebug("Sunrise time is {} and Sunset time is {}", solarDay.sunrise,
            solarDay.sunset);
 
@@ -265,7 +264,7 @@ createDynamicBackgroundSetFromInfo(const ParsingInfo &parsingInfo,
 
 tl::expected<BackgroundSet, BackgroundSetParseErrors>
 createBackgroundSetFromInfo(const ParsingInfo &parsingInfo,
-                            const Config &config) {
+                            const SolarDay &solarDay) {
   if (!parsingInfo.name.has_value()) {
     return tl::unexpected(BackgroundSetParseErrors::NoName);
   }
@@ -279,7 +278,7 @@ createBackgroundSetFromInfo(const ParsingInfo &parsingInfo,
     return createStaticBackgroundSetFromInfo(parsingInfo);
   }
   case BackgroundSetType::Dynamic: {
-    return createDynamicBackgroundSetFromInfo(parsingInfo, config);
+    return createDynamicBackgroundSetFromInfo(parsingInfo, solarDay);
   }
   }
 
@@ -330,7 +329,7 @@ std::optional<DynamicBackgroundData> BackgroundSet::getDynamicBackgroundData() {
 
 tl::expected<BackgroundSet, BackgroundSetParseErrors>
 parseFromYAML(const std::string &name, const YAML::Node &yaml,
-              const Config &config) {
+              const SolarDay &solarDay) {
   // TODO make this take optional sunrise set times for caching
   ParsingInfo parsingInfo;
 
@@ -343,6 +342,6 @@ parseFromYAML(const std::string &name, const YAML::Node &yaml,
                                   parsingInfo);
   }
 
-  return createBackgroundSetFromInfo(parsingInfo, config);
+  return createBackgroundSetFromInfo(parsingInfo, solarDay);
 }
 } // namespace dynamic_paper
