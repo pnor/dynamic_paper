@@ -40,10 +40,13 @@ inline void checkHookScriptStatus(const pid_t pid) {
 [[noreturn]] inline void
 becomeAndRunHookScript(const std::filesystem::path &hookScriptPath,
                        const std::filesystem::path &imagePath) {
+  // TODO this no calling with arg
   // NOLINTNEXTLINE: Need to call execl to execute the hook script
-  if (execl(hookScriptPath.c_str(), imagePath.c_str()) == -1) {
-    logError("Error when trying to run hook script: {} {}",
-             hookScriptPath.string(), imagePath.string());
+  if (execl(hookScriptPath.c_str(), hookScriptPath.filename().c_str(),
+            imagePath.c_str()) == -1) {
+    logError(
+        "Error when trying to run hook script: {} {}.\nError from errno: {}",
+        hookScriptPath.string(), imagePath.string(), strerror(errno));
     exit(EXIT_FAILURE);
   }
   std::unreachable();
