@@ -300,6 +300,7 @@ void showBackgroundSet(BackgroundSet &backgroundSet, const Config &config) {
           std::chrono::seconds(1);
 
       logDebug("Sleeping for {} seconds...", sleepTime);
+      flushLogger();
       std::this_thread::sleep_for(sleepTime);
     }
   }

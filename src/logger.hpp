@@ -12,6 +12,11 @@ namespace dynamic_paper {
 /** To determine which log messages should be shown */
 enum class LogLevel { INFO, WARNING, ERROR, DEBUG, CRITICAL, TRACE, OFF };
 
+/**
+ * Flush the logger on all levels
+ */
+void flushLogger();
+
 /** Sets up logging library, by setting the format and pattern of logs, what
  * logs should be shown, and where to log to */
 void setupLogging(

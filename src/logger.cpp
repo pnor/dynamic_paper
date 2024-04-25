@@ -62,6 +62,8 @@ void setupFlushingOnSIGINT() {
 
 // ===== Header ===============
 
+void flushLogger() { spdlog::get(GLOBAL_LOGGER_NAME)->flush(); }
+
 void setupLogging(
     std::pair<LogLevel, std::filesystem::path> &&logLevelAndLogFile) {
   const std::pair<LogLevel, std::filesystem::path> levelAndFile =
