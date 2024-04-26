@@ -8,8 +8,7 @@
 
 namespace dynamic_paper {
 
-// TODO include stretch tile and scale
-enum class BackgroundSetMode { Center, Fill };
+enum class BackgroundSetMode { Center, Fill, Tile, Scale };
 
 constexpr std::string backgroundSetModeString(const BackgroundSetMode mode) {
   switch (mode) {
@@ -18,6 +17,12 @@ constexpr std::string backgroundSetModeString(const BackgroundSetMode mode) {
   }
   case BackgroundSetMode::Fill: {
     return "fill";
+  }
+  case BackgroundSetMode::Tile: {
+    return "tile";
+  }
+  case BackgroundSetMode::Scale: {
+    return "scale";
   }
   }
 

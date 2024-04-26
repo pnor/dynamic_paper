@@ -213,12 +213,6 @@ void describeError(const BackgroundError error) {
              "to create composite image");
     break;
   }
-  case BackgroundError::SetBackgroundError: {
-    logError(
-        "Error occured when trying to interpolate the background: unable to "
-        "set the background");
-    break;
-  }
   case BackgroundError::NoCacheDir: {
     logError("Error occured when trying to interpolate the background: unable "
              "to access or create a cache directory");

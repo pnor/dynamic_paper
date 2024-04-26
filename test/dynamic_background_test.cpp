@@ -133,12 +133,9 @@ testDynamicBackground(TestBackgroundSetterHistory &history,
                       const DynamicSetConfig setConfig,
                       const Backgrounds &backgrounds,
                       std::array<TimeFromMidnight, N> timesToUpdateWith) {
-  auto setBackgroundFunc =
-      [&history](
-          const std::filesystem::path &imagePath,
-          BackgroundSetMode mode) -> tl::expected<void, BackgroundError> {
+  auto setBackgroundFunc = [&history](const std::filesystem::path &imagePath,
+                                      BackgroundSetMode mode) -> void {
     history.addEvent(SetEvent{imagePath, mode});
-    return {};
   };
 
   using LambdaType = decltype(setBackgroundFunc);
@@ -215,6 +212,82 @@ TEST_F(DynamicBackgroundTest, ShowBasic) {
           // lerp 2->1
           SetEvent{.imagePath = cache("test_dir-2-1-33.jpg"), .mode = mode},
           SetEvent{.imagePath = cache("test_dir-2-1-66.jpg"), .mode = mode}));
+}
+
+TEST_F(DynamicBackgroundTest, ShowBasicTile) {
+  TestBackgroundSetterHistory history{};
+
+  // Config options for the type of dynamic background set
+  const BackgroundSetMode mode = BackgroundSetMode::Tile;
+  const std::optional<TransitionInfo> transition(
+      TransitionInfo(std::chrono::seconds(1), 2));
+  const BackgroundSetOrder order = BackgroundSetOrder::Linear;
+
+  const std::vector<std::string> imageNames = {"1.jpg", "2.jpg"};
+  const std::vector<TimeFromMidnight> times = timesArray({"01:00", "03:00"});
+
+  // Times to test with
+  const std::array timesToCallUpdateBackground{time("01:00:00")};
+
+  // Do the testing
+  const std::array<std::chrono::seconds, timesToCallUpdateBackground.size()>
+      waitTimesReturned =
+          testDynamicBackground(history,
+                                {.dataDir = this->testDataDir,
+                                 .config = this->config,
+                                 .transition = transition,
+                                 .order = order,
+                                 .times = times},
+                                {.names = imageNames, .mode = mode},
+                                timesToCallUpdateBackground);
+
+  // Expectations
+  EXPECT_EQ(
+      waitTimesReturned[0],
+      std::chrono::seconds(std::chrono::hours(2) - std::chrono::seconds(1)));
+
+  EXPECT_THAT(history.getHistory(),
+              ElementsAre(
+                  // show 1
+                  SetEvent{.imagePath = data("1.jpg"), .mode = mode}));
+}
+
+TEST_F(DynamicBackgroundTest, ShowBasicScale) {
+  TestBackgroundSetterHistory history{};
+
+  // Config options for the type of dynamic background set
+  const BackgroundSetMode mode = BackgroundSetMode::Scale;
+  const std::optional<TransitionInfo> transition(
+      TransitionInfo(std::chrono::seconds(1), 2));
+  const BackgroundSetOrder order = BackgroundSetOrder::Linear;
+
+  const std::vector<std::string> imageNames = {"1.jpg", "2.jpg"};
+  const std::vector<TimeFromMidnight> times = timesArray({"01:00", "03:00"});
+
+  // Times to test with
+  const std::array timesToCallUpdateBackground{time("01:00:00")};
+
+  // Do the testing
+  const std::array<std::chrono::seconds, timesToCallUpdateBackground.size()>
+      waitTimesReturned =
+          testDynamicBackground(history,
+                                {.dataDir = this->testDataDir,
+                                 .config = this->config,
+                                 .transition = transition,
+                                 .order = order,
+                                 .times = times},
+                                {.names = imageNames, .mode = mode},
+                                timesToCallUpdateBackground);
+
+  // Expectations
+  EXPECT_EQ(
+      waitTimesReturned[0],
+      std::chrono::seconds(std::chrono::hours(2) - std::chrono::seconds(1)));
+
+  EXPECT_THAT(history.getHistory(),
+              ElementsAre(
+                  // show 1
+                  SetEvent{.imagePath = data("1.jpg"), .mode = mode}));
 }
 
 TEST_F(DynamicBackgroundTest, OneImage) {

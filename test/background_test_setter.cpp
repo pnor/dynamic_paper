@@ -20,8 +20,15 @@ constexpr std::string setEventString(const SetEvent &event) {
   case dynamic_paper::BackgroundSetMode::Fill: {
     return "[mode = Fill   | " + event.imagePath.string() + " ]";
   };
+  case dynamic_paper::BackgroundSetMode::Tile: {
+    return "[mode = Tile   | " + event.imagePath.string() + " ]";
+  };
+  case dynamic_paper::BackgroundSetMode::Scale: {
+    return "[mode = Scale   | " + event.imagePath.string() + " ]";
+  };
   }
-  dynamic_paper::logAssert(false, "Unreachable");
+  dynamic_paper::logAssert(false,
+                           "Unreachable section reached in `setEventString`");
   return "[?]";
 }
 

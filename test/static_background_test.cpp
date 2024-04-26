@@ -14,7 +14,6 @@
 
 #include "background_test_setter.hpp"
 #include "src/background_set_enums.hpp"
-#include "src/background_setter.hpp"
 #include "src/config.hpp"
 #include "src/location_info.hpp"
 #include "src/static_background_set.hpp"
@@ -57,12 +56,9 @@ void showBackgroundOnStaticData(StaticBackgroundTest &test,
                                 TestBackgroundSetterHistory &history,
                                 const std::vector<std::string> &imageNames,
                                 const BackgroundSetMode mode) {
-  auto setBackgroundFunc =
-      [&history](
-          const std::filesystem::path &imagePath,
-          BackgroundSetMode mode) -> tl::expected<void, BackgroundError> {
+  auto setBackgroundFunc = [&history](const std::filesystem::path &imagePath,
+                                      BackgroundSetMode mode) -> void {
     history.addEvent(SetEvent{imagePath, mode});
-    return {};
   };
 
   const StaticBackgroundData staticData(test.testDataDir, mode, imageNames);
@@ -77,6 +73,26 @@ void showBackgroundOnStaticData(StaticBackgroundTest &test,
 TEST_F(StaticBackgroundTest, ShowBasic) {
   TestBackgroundSetterHistory history{};
   const BackgroundSetMode mode = BackgroundSetMode::Center;
+
+  showBackgroundOnStaticData(*this, history, {"1.jpg"}, mode);
+
+  EXPECT_THAT(history.getHistory(),
+              ElementsAre(SetEvent{.imagePath = image("1.jpg"), .mode = mode}));
+}
+
+TEST_F(StaticBackgroundTest, ShowBasicTile) {
+  TestBackgroundSetterHistory history{};
+  const BackgroundSetMode mode = BackgroundSetMode::Tile;
+
+  showBackgroundOnStaticData(*this, history, {"1.jpg"}, mode);
+
+  EXPECT_THAT(history.getHistory(),
+              ElementsAre(SetEvent{.imagePath = image("1.jpg"), .mode = mode}));
+}
+
+TEST_F(StaticBackgroundTest, ShowBasicScale) {
+  TestBackgroundSetterHistory history{};
+  const BackgroundSetMode mode = BackgroundSetMode::Scale;
 
   showBackgroundOnStaticData(*this, history, {"1.jpg"}, mode);
 

@@ -48,16 +48,8 @@ void StaticBackgroundData::show(const Config &config,
       imageNames.at(detail::randomNumber(imageNames.size()));
   const std::filesystem::path imagePath = dataDirectory / imageName;
 
-  const tl::expected<void, BackgroundError> result =
-      backgroundSetFunction(imagePath, mode);
-
-  if (!result.has_value()) {
-    std::string modeString = backgroundSetModeString(this->mode);
-    logWarning(
-        "Encountered error in attempting to set the background for static "
-        "background set. Image name was {} with mode {}",
-        imageName, modeString);
-  }
+  // TODO forwward?
+  backgroundSetFunction(imagePath, mode);
 
   if (config.hookScript.has_value()) {
     tl::expected<void, HookError> hookResult =

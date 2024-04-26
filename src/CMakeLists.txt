@@ -40,7 +40,6 @@ add_executable(
   main.cpp
   background_set.cpp
   background_setter.cpp
-  command_executor.cpp
   config.cpp
   dynamic_background_set.cpp
   image_compositor.cpp

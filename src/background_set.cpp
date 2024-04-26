@@ -330,7 +330,6 @@ std::optional<DynamicBackgroundData> BackgroundSet::getDynamicBackgroundData() {
 tl::expected<BackgroundSet, BackgroundSetParseErrors>
 parseFromYAML(const std::string &name, const YAML::Node &yaml,
               const SolarDay &solarDay) {
-  // TODO make this take optional sunrise set times for caching
   ParsingInfo parsingInfo;
 
   const auto yamlMap = yaml.as<std::unordered_map<std::string, YAML::Node>>();

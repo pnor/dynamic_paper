@@ -116,15 +116,10 @@ void doEvent(const Event &event, const DynamicBackgroundData *backgroundData,
       overloaded{
           [&config, backgroundData,
            backgroundSetFunction](const SetBackgroundEvent &event) {
-            tl::expected<void, BackgroundError> result =
-                backgroundSetFunction(event.imagePath, backgroundData->mode);
+            backgroundSetFunction(event.imagePath, backgroundData->mode);
 
             logTrace("Did Set background event, set to {}",
                      event.imagePath.string());
-
-            if (!result.has_value()) {
-              describeError(result.error());
-            }
 
             if (config.hookScript.has_value()) {
               tl::expected<void, HookError> hookResult =

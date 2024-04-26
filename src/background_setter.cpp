@@ -33,16 +33,13 @@ void callSetBackground(const std::string &imageName,
 
 // ===== Header ===============
 
-// TODO remove expected?
-tl::expected<void, BackgroundError>
-setBackgroundToImage(const std::filesystem::path &imagePath,
-                     const BackgroundSetMode mode) {
+void setBackgroundToImage(const std::filesystem::path &imagePath,
+                          const BackgroundSetMode mode) {
   logTrace("Setting background to image ({})", imagePath.string());
 
   const std::string imageName = imagePath.string();
 
   callSetBackground(imageName, backgroundSetModeString(mode));
-  return {};
 }
 
 } // namespace dynamic_paper

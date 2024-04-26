@@ -57,7 +57,6 @@ add_executable(
   ${MAIN_SRC_DIR}/background_set.cpp
   ${MAIN_SRC_DIR}/time_from_midnight.cpp
   ${MAIN_SRC_DIR}/background_setter.cpp
-  ${MAIN_SRC_DIR}/command_executor.cpp
   ${MAIN_SRC_DIR}/config.cpp
   ${MAIN_SRC_DIR}/dynamic_background_set.cpp
   ${MAIN_SRC_DIR}/image_compositor.cpp

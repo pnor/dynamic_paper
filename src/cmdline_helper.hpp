@@ -80,7 +80,7 @@ getNamesAndTypes(const std::vector<BackgroundSet> &backgroundSets);
  */
 std::optional<BackgroundSet>
 getBackgroundSetWithNameFromFile(std::string_view name,
-                                 const SolarDay &solarDay);
+                                 const Config &config);
 
 /**
  * Returns a random `BackgroundSet` from the config file.

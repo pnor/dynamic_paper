@@ -17,7 +17,6 @@ namespace dynamic_paper {
 enum class BackgroundError {
   CommandError,
   CompositeImageError,
-  SetBackgroundError,
   NoCacheDir,
 };
 /** Errors that occur when running a hook command */
@@ -32,14 +31,11 @@ template <typename T>
 concept CanSetBackgroundTrait =
     requires(T &&func, const std::filesystem::path &imagePath,
              const BackgroundSetMode mode) {
-      {
-        func(imagePath, mode)
-      } -> std::convertible_to<tl::expected<void, BackgroundError>>;
+      { func(imagePath, mode) } -> std::convertible_to<void>;
     };
 
-tl::expected<void, BackgroundError>
-setBackgroundToImage(const std::filesystem::path &imagePath,
-                     BackgroundSetMode mode);
+void setBackgroundToImage(const std::filesystem::path &imagePath,
+                          BackgroundSetMode mode);
 
 /**
  * TODO change docstring to remove "program"
