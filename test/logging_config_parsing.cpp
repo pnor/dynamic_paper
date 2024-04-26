@@ -109,7 +109,6 @@ std::string getConfigFileNameFromYAML(const YAML::Node &yaml) {
 } // namespace
 
 TEST(GeneralConfigLogging, ConfigNoLogging) {
-  // TODO fix this
   const LogLevel level =
       getLogLevelFromYAML(YAML::Load(std::string(CONFIG_NO_LOGGING)));
   EXPECT_EQ(level, ConfigDefaults::logLevel);

@@ -30,16 +30,6 @@ cache_dir: "~/.cache/backgrounds"
 
 constexpr std::string EMPTY_YAML;
 
-// TODO what to test
-// test it prefers soalr over location
-// both provided
-// none provided
-// opne provided and rthw orhwe in seperate tests
-// one provided and not the other but one partially provided both tests
-// both partially provided
-// TODO need to mock the act of globally getting the location from mozilla
-// - could manually just set it actually
-
 // These should match the values in the strings
 const double TEST_LATITUDE = 70.0;
 const double TEST_LONGITUDE = 70.0;

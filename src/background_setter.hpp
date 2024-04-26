@@ -38,13 +38,11 @@ void setBackgroundToImage(const std::filesystem::path &imagePath,
                           BackgroundSetMode mode);
 
 /**
- * TODO change docstring to remove "program"
- * Using a program specified by `method`, changes the background from
- * `commonImageDirectory / beforeImageName` to `commonImageDirectory /
- * afterImageName`. This effect occurs for `duration` seconds and happens in
- * `numSteps` steps. Sets the background using a program specified by `method`,
- * with a display mode of `mode`. Uses `cacheDirectory` to store and get
- * composited images.
+ * Changes the background from `commonImageDirectory / beforeImageName` to
+ * `commonImageDirectory / afterImageName`. This effect occurs for `duration`
+ * seconds and happens in `numSteps` steps. Sets the background using a program
+ * specified by `method`, with a display mode of `mode`.
+ * Uses `cacheDirectory` to store and get composited images.
  *
  * Uses the library CImg to create interpolated images.
  */

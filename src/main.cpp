@@ -15,14 +15,12 @@
 
 using namespace dynamic_paper;
 
-// TODO try and stop using less shell commands? (exec family maybe)
 // TODO better README
 // TODO rehaul general config for cmdline options, then file then defualts?
 // TODO log to stdout option
 // TODO cache management (delete all and for one set + show location)
 // TODO high level defautl config options for background_sets.yaml (example:
 // specify default transition for all)
-// TODO make stdout flag a flagf and not a value
 
 namespace {
 

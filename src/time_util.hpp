@@ -13,14 +13,6 @@
 
 namespace dynamic_paper {
 
-// TODO remove
-/** Time used for sunrise when testing using `SunEventPollerMethod::Dummy` */
-TimeFromMidnight dummySunriseTime();
-
-// TODO remove
-/** Time used for sunset when testing using `SunEventPollerMethod::Dummy` */
-TimeFromMidnight dummySunsetTime();
-
 /**
  * Returns the current time using the system clock, as seconds from midnight
  */
