@@ -24,6 +24,8 @@
 
 #include <gtest/gtest.h>
 
+#include "helper.hpp"
+
 #include "src/solar_day.hpp"
 #include "src/time_from_midnight.hpp"
 #include "src/time_util.hpp"
@@ -36,8 +38,7 @@ class TimeStringConversion : public testing::Test {
 public:
   void SetUp() override {}
 
-  SolarDay testSolarDay = {.sunrise = dynamic_paper::dummySunriseTime(),
-                           .sunset = dynamic_paper::dummySunsetTime()};
+  SolarDay testSolarDay = testSolarDayProvider().getSolarDay();
 
   std::chrono::seconds sunriseSunsetGap =
       testSolarDay.sunset - testSolarDay.sunrise;

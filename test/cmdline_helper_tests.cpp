@@ -29,13 +29,13 @@ std::string getDataFromSet(BackgroundSet &backgroundSet) {
       backgroundSet.getStaticBackgroundData();
 
   if (staticData.has_value()) {
-    return staticData->dataDirectory / *(staticData->imageNames.begin());
+    return staticData->imageDirectory / *(staticData->imageNames.begin());
   }
 
   const DynamicBackgroundData dynamicData =
       backgroundSet.getDynamicBackgroundData().value();
 
-  return dynamicData.dataDirectory / *(dynamicData.imageNames.begin());
+  return dynamicData.imageDirectory / *(dynamicData.imageNames.begin());
 }
 
 } // namespace

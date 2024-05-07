@@ -26,7 +26,7 @@ using namespace testing;
 
 namespace {
 
-constexpr std::string_view DATA_DIR = "./test_dir";
+constexpr std::string_view IMAGE_DIR = "./test_dir";
 constexpr std::string_view CACHE_DIR = "./test_cache_dir";
 
 } // namespace
@@ -41,7 +41,7 @@ public:
       std::filesystem::path(), std::nullopt, std::filesystem::path(CACHE_DIR),
       LocationInfo{.latitudeAndLongitude = {0, 0},
                    .useLatitudeAndLongitudeOverLocationSearch = false}};
-  std::filesystem::path testDataDir = DATA_DIR;
+  std::filesystem::path testDataDir = IMAGE_DIR;
 };
 
 // ===== Helper Functions ===============
@@ -49,7 +49,7 @@ public:
 namespace {
 
 std::filesystem::path image(const std::string_view name) {
-  return std::filesystem::path(DATA_DIR) / name;
+  return std::filesystem::path(IMAGE_DIR) / name;
 }
 
 void showBackgroundOnStaticData(StaticBackgroundTest &test,

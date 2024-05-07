@@ -16,16 +16,16 @@ function help_message {
     Build script to build this project
 
     command:
-        ./build               : no-args defers to make-debug
-        ./build make-debug    : build debug build
-        ./build make-release  : build release build
-        ./build run           : builds and runs in debug mode. Args after 1st are passed to executable
-        ./build r             : make and runs debug without rerunning cmake
-        ./build run-release   : builds and runs in release mode.  Args after 1st are passed to executable
-        ./build test          : builds and runs tests (in debug mode)
-        ./build t             : make and runs debug tests without rerunning cmake
-        ./build test-release  : builds and runs tests in release mode.
-        ./build clean         : Delete Releases
+        ./build.sh               : no-args defers to make-debug
+        ./build.sh make-debug    : build debug build
+        ./build.sh make-release  : build release build
+        ./build.sh run           : builds and runs in debug mode. Args after 1st are passed to executable
+        ./build.sh r             : make and runs debug without rerunning cmake
+        ./build.sh run-release   : builds and runs in release mode.  Args after 1st are passed to executable
+        ./build.sh test          : builds and runs tests (in debug mode)
+        ./build.sh t             : make and runs debug tests without rerunning cmake
+        ./build.sh test-release  : builds and runs tests in release mode.
+        ./build.sh clean         : Delete Releases
 
     flags:
        -h (--help)          Help prompt

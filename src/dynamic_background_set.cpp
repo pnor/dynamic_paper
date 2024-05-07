@@ -73,7 +73,7 @@ singleEventList(const DynamicBackgroundData *dynamicData,
 
   eventList.emplace_back(
       timesAndNames.begin()->first,
-      SetBackgroundEvent{.imagePath = dynamicData->dataDirectory /
+      SetBackgroundEvent{.imagePath = dynamicData->imageDirectory /
                                       timesAndNames.begin()->second});
   return eventList;
 }
@@ -103,7 +103,7 @@ multipleEventList(const DynamicBackgroundData *dynamicData,
 
       if (actualDuration > std::chrono::seconds(0)) {
         const LerpBackgroundEvent lerpEvent = {
-            .commonImageDirectory = dynamicData->dataDirectory,
+            .commonImageDirectory = dynamicData->imageDirectory,
             .startImageName = beforeTimeName.second,
             .endImageName = afterTimeName.second,
             .transition = TransitionInfo(actualDuration, transition->steps)};
@@ -114,7 +114,7 @@ multipleEventList(const DynamicBackgroundData *dynamicData,
     // set background event
     eventList.emplace_back(
         timesAndNames[i].first,
-        SetBackgroundEvent{.imagePath = dynamicData->dataDirectory /
+        SetBackgroundEvent{.imagePath = dynamicData->imageDirectory /
                                         timesAndNames[i].second});
   }
 
@@ -376,10 +376,10 @@ void logPrintEventList(const EventList &eventList) {
 // ===== Header ===============
 
 DynamicBackgroundData::DynamicBackgroundData(
-    std::filesystem::path dataDirectory, BackgroundSetMode mode,
+    std::filesystem::path imageDirectory, BackgroundSetMode mode,
     std::optional<TransitionInfo> transition, BackgroundSetOrder order,
     std::vector<std::string> imageNames, std::vector<TimeFromMidnight> times)
-    : dataDirectory(std::move(dataDirectory)), mode(mode),
+    : imageDirectory(std::move(imageDirectory)), mode(mode),
       transition(transition), order(order), imageNames(std::move(imageNames)),
       times(std::move(times)) {}
 

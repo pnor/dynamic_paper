@@ -136,14 +136,6 @@ sunOffsetStringToTimeOffset(const SolarDay &solarDay,
 
 // ===== header ====================
 
-TimeFromMidnight dummySunriseTime() {
-  return convertTimeStringToTimeFromMidnightUnchecked("08:00");
-}
-
-TimeFromMidnight dummySunsetTime() {
-  return convertTimeStringToTimeFromMidnightUnchecked("20:00");
-}
-
 TimeFromMidnight getCurrentTime() {
   // HH:MM:SS
   constexpr size_t HOURS_MINUTES_SIZE = 8;

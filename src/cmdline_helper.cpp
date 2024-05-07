@@ -143,6 +143,7 @@ Config getConfigAndSetupLogging(const argparse::ArgumentParser &program) {
   const std::filesystem::path conf = program.get(CONFIG_FLAG_NAME);
   const bool logToStdout = program.get<bool>(LOG_TO_STDOUT_FLAG_NAME);
 
+  // TODO not taking this value?
   auto configFilePath = std::filesystem::path(expandPath(conf));
 
   if (configFilePath == expandPath(DEFAULT_CONFIG_FILE_NAME)) {

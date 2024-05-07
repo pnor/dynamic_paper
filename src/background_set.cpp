@@ -18,7 +18,7 @@
 #include <yaml-cpp/node/node.h>
 
 #include "background_set_enums.hpp"
-#include "config.hpp"
+#include "defaults.hpp"
 #include "dynamic_background_set.hpp"
 #include "file_util.hpp"
 #include "logger.hpp"
@@ -37,7 +37,7 @@ namespace dynamic_paper {
 namespace {
 
 // YAML Dict Key
-constexpr std::string_view DATA_DIRECTORY = "data_directory";
+constexpr std::string_view IMAGE_DIRECTORY = "image_directory";
 constexpr std::string_view IMAGES = "images";
 constexpr std::string_view IMAGE = "image";
 constexpr std::string_view MODE = "mode";
@@ -46,11 +46,6 @@ constexpr std::string_view TIMES = "times";
 constexpr std::string_view TRANSITION_LENGTH = "transition_length";
 constexpr std::string_view TYPE = "type";
 constexpr std::string_view NUM_TRANSITION_STEPS = "number_transition_steps";
-
-// Default value
-constexpr BackgroundSetMode DEFAULT_MODE = BackgroundSetMode::Center;
-constexpr BackgroundSetOrder DEFAULT_ORDER = BackgroundSetOrder::Linear;
-constexpr unsigned int DEFAULT_TRANSITION_STEPS = 5;
 
 // ===== Helper ===============
 
@@ -108,7 +103,7 @@ void insertIntoParsingInfo(const YAML::Node &yaml, std::optional<T> &field) {
 /** Information parsed from the body of the yaml as it reads */
 struct ParsingInfo {
   std::optional<std::string> name = std::nullopt;
-  std::optional<std::filesystem::path> dataDirectory = std::nullopt;
+  std::optional<std::filesystem::path> imageDirectory = std::nullopt;
   std::optional<BackgroundSetType> type = std::nullopt;
   std::optional<BackgroundSetMode> mode = std::nullopt;
   std::optional<unsigned int> transitionLength = std::nullopt;
@@ -122,9 +117,9 @@ struct ParsingInfo {
 void updateParsingInfoWithYamlNode(const std::string &key,
                                    const YAML::Node &value,
                                    ParsingInfo &parsingInfo) {
-  if (key == DATA_DIRECTORY && value.IsScalar()) {
+  if (key == IMAGE_DIRECTORY && value.IsScalar()) {
     insertIntoParsingInfo<std::filesystem::path>(value,
-                                                 parsingInfo.dataDirectory);
+                                                 parsingInfo.imageDirectory);
   } else if (key == IMAGES && value.IsSequence()) {
     insertIntoParsingInfo<std::vector<std::string>>(value, parsingInfo.images);
   } else if (key == IMAGE) {
@@ -167,7 +162,7 @@ tryCreateTransitionInfoFrom(const ParsingInfo &parsingInfo) {
         "No number of transition steps was provided so using default steps");
     return std::make_optional<TransitionInfo>(
         std::chrono::seconds(parsingInfo.transitionLength.value()),
-        DEFAULT_TRANSITION_STEPS);
+        BackgroundSetDefaults::transitionSteps);
   }
   if (parsingInfo.numberTransitionSteps.has_value() &&
       !parsingInfo.transitionLength.has_value()) {
@@ -195,7 +190,7 @@ createStaticBackgroundSetFromInfo(const ParsingInfo &parsingInfo) {
     }
   }
 
-  if (!parsingInfo.dataDirectory.has_value()) {
+  if (!parsingInfo.imageDirectory.has_value()) {
     return tl::unexpected(BackgroundSetParseErrors::NoImageDirectory);
   }
 
@@ -204,16 +199,18 @@ createStaticBackgroundSetFromInfo(const ParsingInfo &parsingInfo) {
 
   if (parsingInfo.images.has_value()) {
     return BackgroundSet(
-        name, StaticBackgroundData(parsingInfo.dataDirectory.value(),
-                                   parsingInfo.mode.value_or(DEFAULT_MODE),
-                                   parsingInfo.images.value()));
+        name, StaticBackgroundData(
+                  parsingInfo.imageDirectory.value(),
+                  parsingInfo.mode.value_or(BackgroundSetDefaults::mode),
+                  parsingInfo.images.value()));
   }
 
   if (parsingInfo.image.has_value()) {
     return BackgroundSet(
-        name, StaticBackgroundData(parsingInfo.dataDirectory.value(),
-                                   parsingInfo.mode.value_or(DEFAULT_MODE),
-                                   {parsingInfo.image.value()}));
+        name, StaticBackgroundData(
+                  parsingInfo.imageDirectory.value(),
+                  parsingInfo.mode.value_or(BackgroundSetDefaults::mode),
+                  {parsingInfo.image.value()}));
   }
 
   throw std::logic_error("Got to end of Static BackgroundSet with both "
@@ -233,7 +230,7 @@ createDynamicBackgroundSetFromInfo(const ParsingInfo &parsingInfo,
     return tl::unexpected(BackgroundSetParseErrors::NoImages);
   }
 
-  if (!parsingInfo.dataDirectory.has_value()) {
+  if (!parsingInfo.imageDirectory.has_value()) {
     return tl::unexpected(BackgroundSetParseErrors::NoImageDirectory);
   }
 
@@ -254,12 +251,13 @@ createDynamicBackgroundSetFromInfo(const ParsingInfo &parsingInfo,
   const std::optional<TransitionInfo> transition =
       tryCreateTransitionInfoFrom(parsingInfo);
 
-  return BackgroundSet(name,
-                       DynamicBackgroundData(
-                           parsingInfo.dataDirectory.value(),
-                           parsingInfo.mode.value_or(DEFAULT_MODE), transition,
-                           parsingInfo.order.value_or(DEFAULT_ORDER),
-                           parsingInfo.images.value(), optTimeOffsets.value()));
+  return BackgroundSet(
+      name,
+      DynamicBackgroundData(
+          parsingInfo.imageDirectory.value(),
+          parsingInfo.mode.value_or(BackgroundSetDefaults::mode), transition,
+          parsingInfo.order.value_or(BackgroundSetDefaults::order),
+          parsingInfo.images.value(), optTimeOffsets.value()));
 }
 
 tl::expected<BackgroundSet, BackgroundSetParseErrors>

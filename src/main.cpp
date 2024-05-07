@@ -17,8 +17,6 @@ using namespace dynamic_paper;
 
 // TODO better README
 // TODO rehaul general config for cmdline options, then file then defualts?
-// TODO log to stdout option
-// TODO cache management (delete all and for one set + show location)
 // TODO high level defautl config options for background_sets.yaml (example:
 // specify default transition for all)
 
@@ -120,7 +118,7 @@ auto main(int argc, char *argv[]) -> int {
   program.add_argument(CONFIG_FLAG_NAME)
       .default_value<std::string>(std::string(DEFAULT_CONFIG_FILE_NAME))
       .required()
-      .help("Show optional config");
+      .help("Which config file to use for settings");
   program.add_argument(LOG_TO_STDOUT_FLAG_NAME)
       .flag()
       .help("Whether to log to stdout instead of a logfile");

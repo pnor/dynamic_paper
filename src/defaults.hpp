@@ -2,12 +2,14 @@
 
 /** Default values used throughout */
 
+#include "background_set_enums.hpp"
 #include "file_util.hpp"
 #include "time_util.hpp"
 
 namespace dynamic_paper {
 
-/** Default values used if a config option is not specified in the user config
+/**
+ * Default values used if a config option is not specified in the user config
  */
 struct ConfigDefaults {
   static constexpr LogLevel logLevel = LogLevel::INFO;
@@ -37,9 +39,23 @@ struct ConfigDefaults {
 
   ConfigDefaults() = delete;
   ConfigDefaults &operator=(const ConfigDefaults &) = delete;
-  ConfigDefaults(ConfigDefaults &other) = delete;
+  ConfigDefaults &operator=(ConfigDefaults &&) = delete;
+  ConfigDefaults(const ConfigDefaults &other) = delete;
   ConfigDefaults(ConfigDefaults &&other) = delete;
   ~ConfigDefaults() = delete;
+};
+
+struct BackgroundSetDefaults {
+  static constexpr BackgroundSetMode mode = BackgroundSetMode::Center;
+  static constexpr BackgroundSetOrder order = BackgroundSetOrder::Linear;
+  static constexpr unsigned int transitionSteps = 5;
+
+  BackgroundSetDefaults() = delete;
+  BackgroundSetDefaults &operator=(const BackgroundSetDefaults &) = delete;
+  BackgroundSetDefaults &operator=(BackgroundSetDefaults &&) = delete;
+  BackgroundSetDefaults(const BackgroundSetDefaults &other) = delete;
+  BackgroundSetDefaults(BackgroundSetDefaults &&other) = delete;
+  ~BackgroundSetDefaults() = delete;
 };
 
 constexpr std::string_view DEFAULT_CONFIG_FILE_NAME =

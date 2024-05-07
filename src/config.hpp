@@ -12,12 +12,12 @@
 
 #include "logger.hpp"
 #include "solar_day_provider.hpp"
-#include "variant_visitor_templ.hpp"
 
 namespace dynamic_paper {
 
 // ===== Config ===============
 
+// TODO remove
 enum class ConfigError { MethodParsingError };
 
 /** Config options specified for user that control which images are used and how

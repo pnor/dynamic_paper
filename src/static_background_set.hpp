@@ -14,11 +14,11 @@ namespace dynamic_paper {
 
 /** Type of `BackgroundSet` that shows a wallpaper once and exits */
 struct StaticBackgroundData {
-  std::filesystem::path dataDirectory;
+  std::filesystem::path imageDirectory;
   BackgroundSetMode mode;
   std::vector<std::string> imageNames;
 
-  StaticBackgroundData(std::filesystem::path dataDirectory,
+  StaticBackgroundData(std::filesystem::path imageDirectory,
                        BackgroundSetMode mode,
                        std::vector<std::string> imageNames);
 
@@ -46,7 +46,7 @@ void StaticBackgroundData::show(const Config &config,
 
   const std::string imageName =
       imageNames.at(detail::randomNumber(imageNames.size()));
-  const std::filesystem::path imagePath = dataDirectory / imageName;
+  const std::filesystem::path imagePath = imageDirectory / imageName;
 
   // TODO forwward?
   backgroundSetFunction(imagePath, mode);

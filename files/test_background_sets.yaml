@@ -1,17 +1,17 @@
 static_example:
   type: static
-  data_directory: "~/dev/src/dynamic_paper/dynamic_paper/files/backgrounds/static"
+  image_directory: "~/dev/src/dynamic_paper/dynamic_paper/files/backgrounds/static"
   mode: center
   images:
     - 1.png
 static_example2:
   type: static
-  data_directory: "~/dev/src/dynamic_paper/dynamic_paper/files/backgrounds/static"
+  image_directory: "~/dev/src/dynamic_paper/dynamic_paper/files/backgrounds/static"
   mode: center
   image: 2.png
 static_example3:
   type: static
-  data_directory: "~/dev/src/dynamic_paper/dynamic_paper/files/backgrounds/static"
+  image_directory: "~/dev/src/dynamic_paper/dynamic_paper/files/backgrounds/static"
   mode: center
   images:
     - 3.png
@@ -19,7 +19,7 @@ static_example3:
     - 4.png
 dynamic_example:
   type: dynamic
-  data_directory: "~/dev/src/dynamic_paper/dynamic_paper/files/backgrounds/dynamic"
+  image_directory: "~/dev/src/dynamic_paper/dynamic_paper/files/backgrounds/dynamic"
   mode: center
   order: linear
   images:
@@ -34,7 +34,7 @@ dynamic_example:
     - 21:14
 dynamic_example2:
   type: dynamic
-  data_directory: "~/dev/src/dynamic_paper/dynamic_paper/files/backgrounds/dynamic"
+  image_directory: "~/dev/src/dynamic_paper/dynamic_paper/files/backgrounds/dynamic"
   mode: center
   order: linear
   transition: true

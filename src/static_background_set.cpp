@@ -19,10 +19,10 @@ size_t randomNumber(const size_t max) {
 
 } // namespace detail
 
-StaticBackgroundData::StaticBackgroundData(std::filesystem::path dataDirectory,
+StaticBackgroundData::StaticBackgroundData(std::filesystem::path imageDirectory,
                                            BackgroundSetMode mode,
                                            std::vector<std::string> imageNames)
-    : dataDirectory(std::move(dataDirectory)), mode(mode),
+    : imageDirectory(std::move(imageDirectory)), mode(mode),
       imageNames(std::move(imageNames)) {}
 
 } // namespace dynamic_paper

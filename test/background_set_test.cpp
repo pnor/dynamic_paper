@@ -35,7 +35,7 @@ namespace {
 // Static
 const std::string_view STATIC_BACKGROUND_SET = R""""(
 static_paper:
-  data_directory: "~/backgrounds"
+  image_directory: "~/backgrounds"
   type: static
   mode: center
   image: 1.jpg
@@ -43,7 +43,7 @@ static_paper:
 
 const std::string_view STATIC_BACKGROUND_IMAGE_LIST_SET = R""""(
 static_paper:
-  data_directory: "~/backgrounds2"
+  image_directory: "~/backgrounds2"
   type: static
   mode: fill
   images:
@@ -54,7 +54,7 @@ static_paper:
 // Dynamic
 const std::string_view DYNAMIC_BACKGROUND_SET = R""""(
 dynamic_paper:
-  data_directory: "./backgrounds/dynamic"
+  image_directory: "./backgrounds/dynamic"
   type: dynamic
   mode: center
   transition_length: 55
@@ -73,7 +73,7 @@ dynamic_paper:
 
 const std::string_view DYNAMIC_BACKGROUND_SET_RANDOM = R""""(
 dynamic_paper:
-  data_directory: "./backgrounds/dynamic"
+  image_directory: "./backgrounds/dynamic"
   type: dynamic
   mode: center
   transition_length: 55
@@ -92,7 +92,7 @@ dynamic_paper:
 
 const std::string_view DYNAMIC_BACKGROUND_SET_STEPS_NO_LENGTH = R""""(
 dynamic_paper:
-  data_directory: "./backgrounds/dynamic"
+  image_directory: "./backgrounds/dynamic"
   type: dynamic
   mode: center
   number_transition_steps: 10
@@ -110,7 +110,7 @@ dynamic_paper:
 
 const std::string_view DYNAMIC_BACKGROUND_SET_EMPTY = R""""(
 dynamic_paper:
-  data_directory: "./backgrounds/dynamic"
+  image_directory: "./backgrounds/dynamic"
   type: dynamic
   images:
     - 1.jpg
@@ -122,7 +122,7 @@ dynamic_paper:
 
 const std::string_view DYNAMIC_BACKGROUND_SUNTIMES = R""""(
 suntimes:
-  data_directory: "./backgrounds/dynamic"
+  image_directory: "./backgrounds/dynamic"
   type: dynamic
   images:
     -  1.jpg
@@ -154,7 +154,7 @@ suntimes:
 
 const std::string_view DYNAMIC_BACKGROUND_STRICT_TIMES = R""""(
 suntimes:
-  data_directory: "./backgrounds/dynamic"
+  image_directory: "./backgrounds/dynamic"
   type: dynamic
   images:
     -  1.jpg
@@ -178,7 +178,7 @@ suntimes:
 
 const std::string_view DYNAMIC_BACKGROUND_NO_IMAGES_OR_TIMES = R""""(
 suntimes:
-  data_directory: "./backgrounds/dynamic"
+  image_directory: "./backgrounds/dynamic"
   type: dynamic
   images:
   times:
@@ -230,7 +230,7 @@ TEST_F(BackgroundSetTests, StaticBackgroundSetOneImage) {
   EXPECT_TRUE(staticDataOpt.has_value());
   assert(staticDataOpt.has_value());
 
-  EXPECT_EQ(staticDataOpt->dataDirectory,
+  EXPECT_EQ(staticDataOpt->imageDirectory,
             getHomeDirectory() / std::filesystem::path("backgrounds"));
   EXPECT_EQ(staticDataOpt->imageNames, std::vector<std::string>({"1.jpg"}));
   EXPECT_EQ(staticDataOpt->mode, BackgroundSetMode::Center);
@@ -246,7 +246,7 @@ TEST_F(BackgroundSetTests, StaticBackgroundSetImageList) {
   EXPECT_TRUE(staticData.has_value());
   assert(staticData.has_value());
 
-  EXPECT_EQ(staticData->dataDirectory,
+  EXPECT_EQ(staticData->imageDirectory,
             getHomeDirectory() / std::filesystem::path("backgrounds2"));
   EXPECT_EQ(staticData->imageNames,
             std::vector<std::string>({"1.jpg", "2.jpg"}));
@@ -263,7 +263,7 @@ TEST_F(BackgroundSetTests, DynamicBackgroundSet) {
   EXPECT_TRUE(dynamicData.has_value());
   assert(dynamicData.has_value());
 
-  EXPECT_EQ(dynamicData->dataDirectory,
+  EXPECT_EQ(dynamicData->imageDirectory,
             std::filesystem::path("./backgrounds/dynamic"));
 
   EXPECT_EQ(dynamicData->mode, BackgroundSetMode::Center);
@@ -293,7 +293,7 @@ TEST_F(BackgroundSetTests, DynamicBackgroundSetRandom) {
   EXPECT_TRUE(dynamicData.has_value());
   assert(dynamicData.has_value());
 
-  EXPECT_EQ(dynamicData->dataDirectory,
+  EXPECT_EQ(dynamicData->imageDirectory,
             std::filesystem::path("./backgrounds/dynamic"));
 
   EXPECT_EQ(dynamicData->mode, BackgroundSetMode::Center);
@@ -323,7 +323,7 @@ TEST_F(BackgroundSetTests, DynamicBackgroundSetEmptyDefaults) {
   EXPECT_TRUE(dynamicData.has_value());
   assert(dynamicData.has_value());
 
-  EXPECT_EQ(dynamicData->dataDirectory,
+  EXPECT_EQ(dynamicData->imageDirectory,
             std::filesystem::path("./backgrounds/dynamic"));
 
   EXPECT_EQ(dynamicData->mode, BackgroundSetMode::Center);
@@ -349,7 +349,7 @@ TEST_F(BackgroundSetTests, DynamicBackgroundSetSunTimes) {
   EXPECT_TRUE(dynamicData.has_value());
   assert(dynamicData.has_value());
 
-  EXPECT_EQ(dynamicData->dataDirectory,
+  EXPECT_EQ(dynamicData->imageDirectory,
             std::filesystem::path("./backgrounds/dynamic"));
 
   EXPECT_EQ(dynamicData->mode, BackgroundSetMode::Center);
@@ -391,7 +391,7 @@ TEST_F(BackgroundSetTests, DynamicBackgroundSetStrictTimes) {
   EXPECT_TRUE(dynamicData.has_value());
   assert(dynamicData.has_value());
 
-  EXPECT_EQ(dynamicData->dataDirectory,
+  EXPECT_EQ(dynamicData->imageDirectory,
             std::filesystem::path("./backgrounds/dynamic"));
 
   EXPECT_EQ(dynamicData->mode, BackgroundSetMode::Center);
