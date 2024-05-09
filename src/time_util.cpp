@@ -5,6 +5,7 @@
 #include <format>
 #include <string>
 
+#include <boost/xpressive/xpressive.hpp>
 #include <sunset.h>
 #include <tl/expected.hpp>
 
@@ -70,7 +71,7 @@ TimeFromMidnight minutesFromMidnightToTimFromMidnight(const double minutes) {
 
 std::optional<TimeFromMidnight>
 sunsetOrRiseStringToTimeOffset(const SolarDay &solarDay,
-                               const std::smatch &groupMatches) {
+                               const boost::xpressive::smatch &groupMatches) {
   std::string sunsetOrRiseStr = trim_copy(groupMatches[1].str());
   std::ranges::transform(
       sunsetOrRiseStr.begin(), sunsetOrRiseStr.end(), sunsetOrRiseStr.begin(),
@@ -89,7 +90,7 @@ sunsetOrRiseStringToTimeOffset(const SolarDay &solarDay,
 
 std::optional<TimeFromMidnight>
 sunOffsetStringToTimeOffset(const SolarDay &solarDay,
-                            const std::smatch &groupMatches) {
+                            const boost::xpressive::smatch &groupMatches) {
   const std::string &addOrSubtractStr = groupMatches[1].str();
   const std::string &offsetStr = groupMatches[2].str();
   std::string sunsetOrRiseStr = trim_copy(groupMatches[3].str());
@@ -175,29 +176,34 @@ SolarDay getSolarDayUsingLocation(const LocationInfo &locationInfo) {
 std::optional<TimeFromMidnight> timeStringToTime(const std::string &origString,
                                                  const SolarDay &solarDay) {
 
-  std::string timeString = trim_copy(origString);
+  const std::string timeString = trim_copy(origString);
 
   // "sunrise" or "sunset"
-  const std::regex sunRegex("\\s*(sunrise|sunset)\\s*",
-                            std::regex_constants::icase);
+  const boost::xpressive::sregex sunRegex = boost::xpressive::sregex::compile(
+      "\\s*(sunrise|sunset)\\s*", boost::xpressive::icase);
 
   // (+/-) xx:xx (sunrise/sunset)
-  const std::regex sunOffsetRegex(R"(^(\+|-)\s*(\d+:\d\d)\s*(sunrise|sunset))",
-                                  std::regex_constants::icase);
+  const boost::xpressive::sregex sunOffsetRegex =
+      boost::xpressive::sregex::compile(
+          R"(^(\+|-)\s*(\d+:\d\d)\s*(sunrise|sunset))",
+          boost::xpressive::icase);
 
   // (+/-) xx:xx:xx (sunrise/sunset)
-  const std::regex sunOffsetSecondsRegex(
-      R"(^(\+|-)\s*(\d+:\d\d:\d\d)\s*(sunrise|sunset))",
-      std::regex_constants::icase);
+  const boost::xpressive::sregex sunOffsetSecondsRegex =
+      boost::xpressive::sregex::compile(
+          R"(^(\+|-)\s*(\d+:\d\d:\d\d)\s*(sunrise|sunset))",
+          boost::xpressive::icase);
 
   // xx:xx
-  const std::regex timeRegex(R"(^(\d+:\d\d))", std::regex_constants::icase);
+  const boost::xpressive::sregex timeRegex = boost::xpressive::sregex::compile(
+      R"(^(\d+:\d\d))", boost::xpressive::icase);
 
   // xx:xx:xx
-  const std::regex timeWithSecondsRegex(R"(^(\d+:\d\d:\d\d))",
-                                        std::regex_constants::icase);
+  const boost::xpressive::sregex timeWithSecondsRegex =
+      boost::xpressive::sregex::compile(R"(^(\d+:\d\d:\d\d))",
+                                        boost::xpressive::icase);
 
-  std::smatch groupMatches;
+  boost::xpressive::smatch groupMatches;
 
   if (tryRegexes(timeString, groupMatches, sunRegex)) {
     return sunsetOrRiseStringToTimeOffset(solarDay, groupMatches);

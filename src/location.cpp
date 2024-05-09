@@ -2,9 +2,9 @@
 
 #include <exception>
 #include <functional>
-#include <regex>
 #include <string>
 
+#include <boost/xpressive/xpressive.hpp>
 #include <cpr/cpr.h>
 #include <tl/expected.hpp>
 
@@ -18,7 +18,8 @@ constexpr std::string_view MOZILLA_LOCATION_URL =
     "https://location.services.mozilla.com/v1/geolocate?key=geoclue";
 constexpr long SUCESS_CODE = 200;
 
-tl::expected<double, LocationError> tryParseDouble(const std::smatch &match) {
+tl::expected<double, LocationError>
+tryParseDouble(const boost::xpressive::smatch &match) {
   return std::invoke([&match]() -> tl::expected<double, LocationError> {
     try {
       return std::stod(match[1]);
@@ -44,15 +45,17 @@ getLatitudeAndLongitudeFromMozilla() {
 
   const std::string &text = response.text;
 
-  const std::regex latitudeRegex(R"("lat": (-?\d+\.\d*))");
-  std::smatch latitudeGroupMatches{};
+  const boost::xpressive::sregex latitudeRegex =
+      boost::xpressive::sregex::compile(R"("lat": (-?\d+\.\d*))");
+  boost::xpressive::smatch latitudeGroupMatches{};
   const bool foundLatitude =
-      std::regex_search(text, latitudeGroupMatches, latitudeRegex);
+      boost::xpressive::regex_search(text, latitudeGroupMatches, latitudeRegex);
 
-  const std::regex longitudeRegex(R"("lng": (-?\d+\.\d*))");
-  std::smatch longitudeGroupMatches{};
-  const bool foundLongitude =
-      std::regex_search(text, longitudeGroupMatches, longitudeRegex);
+  const boost::xpressive::sregex longitudeRegex =
+      boost::xpressive::sregex::compile(R"("lng": (-?\d+\.\d*))");
+  boost::xpressive::smatch longitudeGroupMatches{};
+  const bool foundLongitude = boost::xpressive::regex_search(
+      text, longitudeGroupMatches, longitudeRegex);
   if (!foundLatitude || !foundLongitude) {
     return tl::unexpected(LocationError::UnableParseJsonResponse);
   }

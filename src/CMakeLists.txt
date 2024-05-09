@@ -57,6 +57,14 @@ add_executable(
 
 # ===== Linking ===========
 
+# Boost Xpressive
+find_package(Boost 1.83.0)
+if(NOT Boost_FOUND)
+  message(FATAL_ERROR "Boost not found; needed to use Boost Xpressive!")
+endif()
+include_directories(${Boost_INCLUDE_DIRS})
+target_link_libraries(${CURRENT_TARGET} PRIVATE ${Boost_LIBRARIES})
+
 # argparse
 target_include_directories(argparse INTERFACE ${argparse_SOURCE_DIR}/include)
 target_link_libraries(${CURRENT_TARGET} PRIVATE argparse)

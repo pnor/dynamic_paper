@@ -3,8 +3,9 @@
 /** Utility functions to operate on strings */
 
 #include <algorithm>
-#include <regex>
 #include <string>
+
+#include <boost/xpressive/xpressive.hpp>
 
 // === string manip ===
 
@@ -56,12 +57,13 @@ constexpr std::string normalize(const std::string &text) {
  * `false` otherwise. Stores regex match information in `groupMatches`.
  */
 template <typename... Ts>
-inline bool tryRegexes(const std::string &text, std::smatch &groupMatches,
-                       const std::regex &regex, Ts... otherRegexes) {
+inline bool
+tryRegexes(const std::string &text, boost::xpressive::smatch &groupMatches,
+           const boost::xpressive::sregex &regex, Ts... otherRegexes) {
   if constexpr (sizeof...(Ts) == 0) {
-    return std::regex_match(text, groupMatches, regex);
+    return boost::xpressive::regex_match(text, groupMatches, regex);
   } else {
-    return std::regex_match(text, groupMatches, regex) ||
+    return boost::xpressive::regex_match(text, groupMatches, regex) ||
            tryRegexes(text, groupMatches, otherRegexes...);
   }
 }
