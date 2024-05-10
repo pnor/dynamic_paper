@@ -124,10 +124,10 @@ target_include_directories(${CURRENT_TARGET}
 
 # ===== Clang Tidy ==========
 
-find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
-set(CLANG_TIDY_COMMAND "${CLANG_TIDY_EXE}")
-set_target_properties(${CURRENT_TARGET} PROPERTIES CXX_CLANG_TIDY
-                                                   "${CLANG_TIDY_COMMAND}")
+# find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
+# set(CLANG_TIDY_COMMAND "${CLANG_TIDY_EXE}")
+# set_target_properties(${CURRENT_TARGET} PROPERTIES CXX_CLANG_TIDY
+#                                                    "${CLANG_TIDY_COMMAND}")
 
 set_source_files_properties(image_compositor.cpp PROPERTIES SKIP_LINTING ON)
 

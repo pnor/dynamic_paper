@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <string>
 
-#include <boost/xpressive/xpressive.hpp>
+#include <boost/xpressive/xpressive_static.hpp>
 
 // === string manip ===
 

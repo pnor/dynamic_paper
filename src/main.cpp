@@ -15,7 +15,7 @@
 
 using namespace dynamic_paper;
 
-// TODO better README
+// TODO change xpressive regex to be static so it doesnt compile inline runtime
 // TODO rehaul general config for cmdline options, then file then defualts?
 // TODO high level defautl config options for background_sets.yaml (example:
 // specify default transition for all)

@@ -4,7 +4,7 @@
 #include <functional>
 #include <string>
 
-#include <boost/xpressive/xpressive.hpp>
+#include <boost/xpressive/xpressive_static.hpp>
 #include <cpr/cpr.h>
 #include <tl/expected.hpp>
 
@@ -45,17 +45,20 @@ getLatitudeAndLongitudeFromMozilla() {
 
   const std::string &text = response.text;
 
+  using namespace boost::xpressive;
+
   const boost::xpressive::sregex latitudeRegex =
-      boost::xpressive::sregex::compile(R"("lat": (-?\d+\.\d*))");
+      R"("lat: )" >> ('-' >> !+_d >> '.' >> *_d);
   boost::xpressive::smatch latitudeGroupMatches{};
   const bool foundLatitude =
       boost::xpressive::regex_search(text, latitudeGroupMatches, latitudeRegex);
 
   const boost::xpressive::sregex longitudeRegex =
-      boost::xpressive::sregex::compile(R"("lng": (-?\d+\.\d*))");
+      R"("lng: )" >> ('-' >> !+_d >> '.' >> *_d);
   boost::xpressive::smatch longitudeGroupMatches{};
   const bool foundLongitude = boost::xpressive::regex_search(
       text, longitudeGroupMatches, longitudeRegex);
+
   if (!foundLatitude || !foundLongitude) {
     return tl::unexpected(LocationError::UnableParseJsonResponse);
   }
