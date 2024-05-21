@@ -16,7 +16,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 set(CMAKE_CXX_FLAGS_DEBUG
-    "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -Wfatal-errors -Werror=switch -Wno-error=sign-compare -ggdb -O0"
+    "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -Wfatal-errors -Werror=switch -Wno-error=sign-compare -ggdb -O0 -fsanitize=address"
 )
 
 set(CMAKE_CXX_FLAGS_RELEASE
