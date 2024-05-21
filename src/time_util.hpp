@@ -3,11 +3,10 @@
 /** Handling of time based events */
 
 #include <chrono>
-#include <concepts>
 #include <ctime>
 #include <functional>
 
-#include "config.hpp"
+#include "location_info.hpp"
 #include "solar_day.hpp"
 #include "time_from_midnight.hpp"
 

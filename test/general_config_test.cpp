@@ -106,8 +106,7 @@ longitude: 70.0
 use_config_file_location: true
 )"""";
 
-tl::expected<Config, ConfigError>
-loadConfigFromString(const std::string_view configString) {
+Config loadConfigFromString(const std::string_view configString) {
   return loadConfigFromYAML(YAML::Load(std::string(configString)));
 }
 
@@ -124,56 +123,36 @@ inline bool solarDayIsDefault(const SolarDay solarDay) {
 } // namespace
 
 TEST(GeneralConfig, AllFilled) {
-  const tl::expected<Config, ConfigError> expectedConfig =
-      loadConfigFromString(GENERAL_CONFIG_YAML);
+  const Config config = loadConfigFromString(GENERAL_CONFIG_YAML);
 
-  EXPECT_TRUE(expectedConfig.has_value());
-
-  const Config &cfg = expectedConfig.value();
-
-  EXPECT_EQ(cfg.backgroundSetConfigFile,
+  EXPECT_EQ(config.backgroundSetConfigFile,
             std::filesystem::path("./an_image_dir"));
-  EXPECT_EQ(cfg.hookScript,
+  EXPECT_EQ(config.hookScript,
             std::make_optional(std::filesystem::path("./hook_script.sh")));
-  EXPECT_EQ(cfg.imageCacheDirectory,
+  EXPECT_EQ(config.imageCacheDirectory,
             getHomeDirectory() / std::filesystem::path(".cache/backgrounds"));
 }
 
 TEST(GeneralConfig, DefaultValues) {
-  const tl::expected<Config, ConfigError> expectedConfig =
-      loadConfigFromString(EMPTY_YAML);
+  const Config config = loadConfigFromString(EMPTY_YAML);
 
-  EXPECT_TRUE(expectedConfig.has_value());
-
-  const Config &cfg = expectedConfig.value();
-
-  EXPECT_EQ(cfg.backgroundSetConfigFile,
+  EXPECT_EQ(config.backgroundSetConfigFile,
             std::filesystem::path(ConfigDefaults::backgroundSetConfigFile()));
-  EXPECT_EQ(cfg.hookScript, std::nullopt);
-  EXPECT_EQ(cfg.imageCacheDirectory,
+  EXPECT_EQ(config.hookScript, std::nullopt);
+  EXPECT_EQ(config.imageCacheDirectory,
             std::filesystem::path(ConfigDefaults::imageCacheDirectory()));
 }
 
 // Should use default solar day times if no info related to it is provided
 TEST(GeneralConfig, PreferDefaultSolarDayWhenNoOptionsProvided) {
-  const tl::expected<Config, ConfigError> expectedConfig =
-      loadConfigFromString(EMPTY_YAML);
+  const Config config = loadConfigFromString(EMPTY_YAML);
 
-  EXPECT_TRUE(expectedConfig.has_value());
-
-  const Config &cfg = expectedConfig.value();
-
-  EXPECT_TRUE(solarDayIsDefault(cfg.solarDayProvider.getSolarDay()));
+  EXPECT_TRUE(solarDayIsDefault(config.solarDayProvider.getSolarDay()));
 }
 
 // Should create sunrise/sunset times using location info provided
 TEST(GeneralConfig, LatLongBothProvided) {
-  const tl::expected<Config, ConfigError> expectedConfig =
-      loadConfigFromString(LATITUDE_AND_LONGITUDE);
-
-  EXPECT_TRUE(expectedConfig.has_value());
-
-  const Config &config = expectedConfig.value();
+  const Config config = loadConfigFromString(LATITUDE_AND_LONGITUDE);
 
   const LocationInfo testLocation = {
       .latitudeAndLongitude = std::make_pair(TEST_LATITUDE, TEST_LONGITUDE),
@@ -186,48 +165,28 @@ TEST(GeneralConfig, LatLongBothProvided) {
 // If only location info is incomplete, treat same as having no information and
 // choose the default sunrise/sunset times
 TEST(GeneralConfig, LatLongOnlyLatitude) {
-  const tl::expected<Config, ConfigError> expectedConfig =
-      loadConfigFromString(ONLY_LATITUDE);
-
-  EXPECT_TRUE(expectedConfig.has_value());
-
-  const Config &config = expectedConfig.value();
+  const Config config = loadConfigFromString(ONLY_LATITUDE);
   EXPECT_TRUE(solarDayIsDefault(config.solarDayProvider.getSolarDay()));
 }
 
 // If only location info is incomplete, treat same as having no information and
 // choose the default sunrise/sunset times
 TEST(GeneralConfig, LatLongOnlyLongitude) {
-  const tl::expected<Config, ConfigError> expectedConfig =
-      loadConfigFromString(ONLY_LONGITUDE);
-
-  EXPECT_TRUE(expectedConfig.has_value());
-
-  const Config &config = expectedConfig.value();
+  const Config config = loadConfigFromString(ONLY_LONGITUDE);
   EXPECT_TRUE(solarDayIsDefault(config.solarDayProvider.getSolarDay()));
 }
 
 // If only location info is incomplete, treat same as having no information and
 // choose the default sunrise/sunset times
 TEST(GeneralConfig, LatLongNoLatitudeOrLongitude) {
-  const tl::expected<Config, ConfigError> expectedConfig =
-      loadConfigFromString(NO_LATITUDE_OR_LONGITUDE);
-
-  EXPECT_TRUE(expectedConfig.has_value());
-
-  const Config &config = expectedConfig.value();
+  const Config config = loadConfigFromString(NO_LATITUDE_OR_LONGITUDE);
   EXPECT_TRUE(solarDayIsDefault(config.solarDayProvider.getSolarDay()));
 }
 
 // Getting from file for location should count as a complete location, so use
 // solar day lcoation based off of it
 TEST(GeneralConfig, LatLongGetFromFile) {
-  const tl::expected<Config, ConfigError> expectedConfig =
-      loadConfigFromString(GET_LATITUDE_LONGITUDE_FROM_FILE);
-
-  EXPECT_TRUE(expectedConfig.has_value());
-
-  const Config &config = expectedConfig.value();
+  const Config config = loadConfigFromString(GET_LATITUDE_LONGITUDE_FROM_FILE);
 
   const LocationInfo testLocation = {
       .latitudeAndLongitude = std::make_pair(TEST_LATITUDE, TEST_LONGITUDE),
@@ -240,35 +199,22 @@ TEST(GeneralConfig, LatLongGetFromFile) {
 // If attempts to get location but there is none provided from file, and there
 // is no sunrise/sunset, should use default
 TEST(GeneralConfig, LatLongGetFromFileNoLatLong) {
-  const tl::expected<Config, ConfigError> expectedConfig =
+  const Config config =
       loadConfigFromString(GET_LATITUDE_LONGITUDE_FROM_FILE_NO_LATLONG);
-
-  EXPECT_TRUE(expectedConfig.has_value());
-
-  const Config &config = expectedConfig.value();
   EXPECT_TRUE(solarDayIsDefault(config.solarDayProvider.getSolarDay()));
 }
 
 // If unable to get an entire location, and no sunrise/sunset is provided,
 // should use default
 TEST(GeneralConfig, LatLongGetFromFileJustLatitude) {
-  const tl::expected<Config, ConfigError> expectedConfig =
+  const Config config =
       loadConfigFromString(GET_LATITUDE_LONGITUDE_FROM_FILE_JUST_LATITUDE);
-
-  EXPECT_TRUE(expectedConfig.has_value());
-
-  const Config &config = expectedConfig.value();
   EXPECT_TRUE(solarDayIsDefault(config.solarDayProvider.getSolarDay()));
 }
 
 // If both are provided, should prefer the solar day
 TEST(GeneralConfig, SolarDayAndLocation) {
-  const tl::expected<Config, ConfigError> expectedConfig =
-      loadConfigFromString(SOLAR_DAY_AND_LOCATION_PROVIDED);
-
-  EXPECT_TRUE(expectedConfig.has_value());
-
-  const Config &config = expectedConfig.value();
+  const Config config = loadConfigFromString(SOLAR_DAY_AND_LOCATION_PROVIDED);
 
   const SolarDay expectedSolarDay = {
       .sunrise = convertTimeStringToTimeFromMidnightUnchecked("10:00"),
@@ -278,12 +224,7 @@ TEST(GeneralConfig, SolarDayAndLocation) {
 }
 
 TEST(GeneralConfig, SolarDayOnly) {
-  const tl::expected<Config, ConfigError> expectedConfig =
-      loadConfigFromString(SOLAR_DAY_ONLY);
-
-  EXPECT_TRUE(expectedConfig.has_value());
-
-  const Config &config = expectedConfig.value();
+  const Config config = loadConfigFromString(SOLAR_DAY_ONLY);
 
   const SolarDay expectedSolarDay = {
       .sunrise = convertTimeStringToTimeFromMidnightUnchecked("10:00"),
@@ -294,24 +235,14 @@ TEST(GeneralConfig, SolarDayOnly) {
 
 // If unable to create a valid solar day, use the default
 TEST(GeneralConfig, SolarDayJustSunrise) {
-  const tl::expected<Config, ConfigError> expectedConfig =
-      loadConfigFromString(SOLAR_DAY_JUST_SUNRISE);
-
-  EXPECT_TRUE(expectedConfig.has_value());
-
-  const Config &config = expectedConfig.value();
+  const Config config = loadConfigFromString(SOLAR_DAY_JUST_SUNRISE);
 
   EXPECT_TRUE(solarDayIsDefault(config.solarDayProvider.getSolarDay()));
 }
 
 // If unable to create a valid solar day, use the default
 TEST(GeneralConfig, SolarDayJustSunset) {
-  const tl::expected<Config, ConfigError> expectedConfig =
-      loadConfigFromString(SOLAR_DAY_JUST_SUNSET);
-
-  EXPECT_TRUE(expectedConfig.has_value());
-
-  const Config &config = expectedConfig.value();
+  const Config config = loadConfigFromString(SOLAR_DAY_JUST_SUNSET);
 
   EXPECT_TRUE(solarDayIsDefault(config.solarDayProvider.getSolarDay()));
 }
@@ -319,12 +250,8 @@ TEST(GeneralConfig, SolarDayJustSunset) {
 // If solar day informatino is incomplete, but has a location, should use the
 // location to get the solar day
 TEST(GeneralConfig, SolarDayIncompleteButHasLocation) {
-  const tl::expected<Config, ConfigError> expectedConfig =
+  const Config config =
       loadConfigFromString(INCOMPLETE_SOLAR_DAY_AND_COMPLETE_LOCATION);
-
-  EXPECT_TRUE(expectedConfig.has_value());
-
-  const Config &config = expectedConfig.value();
 
   const LocationInfo testLocation = {
       .latitudeAndLongitude = std::make_pair(TEST_LATITUDE, TEST_LONGITUDE),

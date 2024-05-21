@@ -197,7 +197,7 @@ public:
   [[nodiscard]] BackgroundSet
   getBackgroundSetFrom(const std::string_view yamlString) const {
     const YAML::Node yaml = YAML::Load(std::string(yamlString));
-    auto yamlMap = yaml.as<std::unordered_map<std::string, YAML::Node>>();
+    const auto yamlMap = yaml.as<std::unordered_map<std::string, YAML::Node>>();
 
     // yamlMap only has 1 entry; mapping the name to all the yaml info
     for (const auto &keyValue : yamlMap) {

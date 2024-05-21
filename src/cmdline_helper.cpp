@@ -120,19 +120,7 @@ YAML::Node loadConfigFileIntoYAML(const std::filesystem::path &file) {
 }
 
 Config createConfigFromYAML(const YAML::Node &configYaml) {
-  tl::expected<Config, ConfigError> expConfig = loadConfigFromYAML(configYaml);
-
-  if (!expConfig.has_value()) {
-    switch (expConfig.error()) {
-    case ConfigError::MethodParsingError: {
-      errorMsg("Unable to parse general config; invalid method");
-      break;
-    }
-    }
-    exit(1);
-  }
-
-  return expConfig.value();
+  return loadConfigFromYAML(configYaml);
 }
 
 } // namespace

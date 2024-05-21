@@ -17,9 +17,6 @@ namespace dynamic_paper {
 
 // ===== Config ===============
 
-// TODO remove
-enum class ConfigError { MethodParsingError };
-
 /** Config options specified for user that control which images are used and how
  * they are shown*/
 class Config {
@@ -46,7 +43,7 @@ public:
 // ===== Loading config from files ====================
 
 /** Loads the general config from a yaml file representing the config */
-tl::expected<Config, ConfigError> loadConfigFromYAML(const YAML::Node &config);
+Config loadConfigFromYAML(const YAML::Node &config);
 
 /** Laods just the logging related information from the general config file*/
 std::pair<LogLevel, std::filesystem::path>
