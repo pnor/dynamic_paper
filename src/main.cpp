@@ -15,7 +15,10 @@
 
 using namespace dynamic_paper;
 
-// TODO rehaul general config for cmdline options, then file then defualts?
+// TODO gpu composit image using opencv ? optional depends ??
+// TODO choose any 1 image selection, in any set
+// TODO rehaul general config for cmdline options, then file then defualts? (!
+// fixes a lot)
 // TODO high level defautl config options for background_sets.yaml (example:
 // specify default transition for all)
 

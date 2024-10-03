@@ -13,6 +13,7 @@ namespace dynamic_paper {
 struct TransitionInfo {
   std::chrono::seconds duration;
   unsigned int steps;
+
   constexpr TransitionInfo(const std::chrono::seconds duration,
                            const unsigned int steps)
       : duration(duration), steps(steps) {

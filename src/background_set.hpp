@@ -16,7 +16,10 @@
 namespace dynamic_paper {
 
 /** Collection of information used to determine how to display a background.
- * Identified by its `name` */
+ * Identified by its `name`.
+ * A Background Set has either a dynamic or static background, along with
+ * information to describe itself
+ * */
 class BackgroundSet {
 public:
   [[nodiscard]] std::string_view getName() const;
