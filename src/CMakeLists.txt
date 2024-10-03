@@ -1,45 +1,61 @@
 cmake_minimum_required(VERSION 3.27)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# ===== OS check ==================
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    set(MACOSX TRUE)
+  else()
+    set(LINUX TRUE) # default to Linux
+endif()
+
 # ===== Common Locations ==========
 
 set(MAIN_SRC_DIR "${dynamic_paper_SOURCE_DIR}/src")
 set(CURRENT_TARGET dynamic_paper)
 
 # ===== Golang Build ==========
-set(GOLANG_SRC_FILE_NAMES background.go)
-set(GOLANG_DIR_NAME golang)
+if(LINUX)
+  set(GOLANG_SRC_FILE_NAMES background.go)
+  set(GOLANG_DIR_NAME golang)
 
-# prepend full path to the srcs for GOLANG_SRCS
-set(GOLANG_SRCS ${GOLANG_SRC_FILE_NAMES})
-list(TRANSFORM GOLANG_SRCS
-     PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/${GOLANG_DIR_NAME}/")
-set(GOLANG_OUTPUT_NAME go-background)
-set(GOLANG_COMPILE_SCRIPT compile_go.sh)
+  # prepend full path to the srcs for GOLANG_SRCS
+  set(GOLANG_SRCS ${GOLANG_SRC_FILE_NAMES})
+  list(TRANSFORM GOLANG_SRCS
+    PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/${GOLANG_DIR_NAME}/")
+  set(GOLANG_OUTPUT_NAME go-background)
+  set(GOLANG_COMPILE_SCRIPT compile_go.sh)
 
-set(FULL_GO "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}")
+  set(FULL_GO "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}")
 
-add_custom_command(
-  OUTPUT "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a"
-         "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.h"
-  COMMAND "./compile_go.sh"
-  WORKING_DIRECTORY "${dynamic_paper_SOURCE_DIR}/src/${GOLANG_DIR_NAME}"
-  DEPENDS ${GOLANG_SRCS}
-  COMMENT "[src] Building archive and header file for golang src")
+  add_custom_command(
+    OUTPUT "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a"
+    "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.h"
+    COMMAND "./compile_go.sh"
+    WORKING_DIRECTORY "${dynamic_paper_SOURCE_DIR}/src/${GOLANG_DIR_NAME}"
+    DEPENDS ${GOLANG_SRCS}
+    COMMENT "[src] Building archive and header file for golang src")
 
-add_custom_target(
-  build-golang ALL
-  DEPENDS "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a"
-          "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.h"
-          "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_COMPILE_SCRIPT}")
+  add_custom_target(
+    build-golang ALL
+    DEPENDS "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a"
+    "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.h"
+    "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_COMPILE_SCRIPT}")
+endif()
 
 # ===== Add Sources ==========
+if(MACOSX)
+  set(BACKGROUND_SETTER_CALLER_SRC_FILE "${BACKGROUND_SETTER_CALLER_SRC_FILE}")
+else()
+  set(BACKGROUND_SETTER_CALLER_SRC_FILE background_setter.cpp)
+  set(BACKGROUND_SETTER_FILE "${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a")
+endif()
+
 add_executable(
   dynamic_paper
   # sources
   main.cpp
   background_set.cpp
-  background_setter.cpp
+  # background_setter.cpp
   config.cpp
   dynamic_background_set.cpp
   image_compositor.cpp
@@ -53,7 +69,8 @@ add_executable(
   solar_day_provider.cpp
   hook_script_executor.cpp
   nolint/cimg_compositor.cpp
-  "${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a")
+  "${BACKGROUND_SETTER_CALLER_SRC_FILE}"
+  "${BACKGROUND_SETTER_FILE}")
 
 # ===== Linking ===========
 
@@ -78,9 +95,11 @@ target_include_directories(expected INTERFACE ${expected_SOURCE_DIR}/include)
 target_link_libraries(${CURRENT_TARGET} PRIVATE expected)
 
 # golang lib
-target_link_libraries(
-  ${CURRENT_TARGET}
-  PRIVATE ${CMAKE_SOURCE_DIR}/src/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a)
+if (LINUX)
+  target_link_libraries(
+    ${CURRENT_TARGET}
+    PRIVATE ${CMAKE_SOURCE_DIR}/src/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a)
+endif()
 
 # cpr
 target_link_libraries(${CURRENT_TARGET} PRIVATE cpr::cpr)
@@ -100,11 +119,13 @@ target_link_libraries(${CURRENT_TARGET} PRIVATE ${X11_LIBRARIES})
 
 # ===== Clean Command ==========
 
-set_property(
-  TARGET ${CURRENT_TARGET}
-  APPEND
-  PROPERTY ADDITIONAL_CLEAN_FILES {GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a
-           ${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.h)
+if(LINUX)
+  set_property(
+    TARGET ${CURRENT_TARGET}
+    APPEND
+    PROPERTY ADDITIONAL_CLEAN_FILES {GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a
+    ${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.h)
+endif()
 
 # ===== Clang Tidy ==========
 
