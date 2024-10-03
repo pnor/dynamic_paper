@@ -44,7 +44,7 @@ endif()
 
 # ===== Add Sources ==========
 if(MACOSX)
-  set(BACKGROUND_SETTER_CALLER_SRC_FILE "${BACKGROUND_SETTER_CALLER_SRC_FILE}")
+  set(BACKGROUND_SETTER_CALLER_SRC_FILE background_setter_macos.cpp)
 else()
   set(BACKGROUND_SETTER_CALLER_SRC_FILE background_setter.cpp)
   set(BACKGROUND_SETTER_FILE "${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a")

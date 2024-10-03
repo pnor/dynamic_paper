@@ -6,39 +6,56 @@ if(POLICY CMP0135)
   set(CMAKE_POLICY_DEFAULT_CMP0135 NEW)
 endif()
 
+# ===== OS check ==================
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  set(MACOSX TRUE)
+else()
+  set(LINUX TRUE) # default to Linux
+endif()
+
 # ===== Common Locations ==========
 
 set(MAIN_SRC_DIR "${dynamic_paper_SOURCE_DIR}/src")
 set(CURRENT_TARGET dynamic_paper_test)
 
 # ===== Golang Build ==========
-set(GOLANG_DIR_NAME golang)
+if(LINUX)
+  set(GOLANG_DIR_NAME golang)
 
-set(GOLANG_SRC_FILE_NAMES background.go)
-set(GOLANG_SRCS ${GOLANG_SRC_FILE_NAMES})
-list(TRANSFORM GOLANG_SRCS PREPEND "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/")
+  set(GOLANG_SRC_FILE_NAMES background.go)
+  set(GOLANG_SRCS ${GOLANG_SRC_FILE_NAMES})
+  list(TRANSFORM GOLANG_SRCS PREPEND "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/")
 
-set(GOLANG_OUTPUT_NAME go-background)
-set(GOLANG_COMPILE_SCRIPT compile_go.sh)
+  set(GOLANG_OUTPUT_NAME go-background)
+  set(GOLANG_COMPILE_SCRIPT compile_go.sh)
 
-set(GOLANG_DIR_FULL_PATH "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/")
+  set(GOLANG_DIR_FULL_PATH "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/")
 
-add_custom_command(
-  OUTPUT "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a"
-         "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.h"
-  COMMAND "./compile_go.sh"
-  WORKING_DIRECTORY "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}"
-  DEPENDS ${GOLANG_SRCS}
-  COMMENT "[test] Building archive and header file for golang src")
+  add_custom_command(
+    OUTPUT "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a"
+    "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.h"
+    COMMAND "./compile_go.sh"
+    WORKING_DIRECTORY "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}"
+    DEPENDS ${GOLANG_SRCS}
+    COMMENT "[test] Building archive and header file for golang src")
 
-# add_custom_target(build-golang-test ALL DEPENDS ${GOLANG_SRCS})
-add_custom_target(
-  build-golang-test ALL
-  DEPENDS "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a"
-          "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.h"
-          "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_COMPILE_SCRIPT}")
+  # add_custom_target(build-golang-test ALL DEPENDS ${GOLANG_SRCS})
+  add_custom_target(
+    build-golang-test ALL
+    DEPENDS "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a"
+    "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.h"
+    "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_COMPILE_SCRIPT}")
+
+endif()
 
 # ===== Add Sources ==========
+if(MACOSX)
+  set(BACKGROUND_SETTER_CALLER_SRC_FILE ${MAIN_SRC_DIR}/background_setter_macos.cpp)
+else()
+  set(BACKGROUND_SETTER_CALLER_SRC_FILE ${MAIN_SRC_DIR}/background_setter.cpp)
+  set(BACKGROUND_SETTER_FILE ${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a)
+endif()
+
 add_executable(
   ${CURRENT_TARGET}
   # test sources
@@ -56,7 +73,6 @@ add_executable(
   # sources
   ${MAIN_SRC_DIR}/background_set.cpp
   ${MAIN_SRC_DIR}/time_from_midnight.cpp
-  ${MAIN_SRC_DIR}/background_setter.cpp
   ${MAIN_SRC_DIR}/config.cpp
   ${MAIN_SRC_DIR}/dynamic_background_set.cpp
   ${MAIN_SRC_DIR}/image_compositor.cpp
@@ -69,7 +85,8 @@ add_executable(
   ${MAIN_SRC_DIR}/solar_day_provider.cpp
   ${MAIN_SRC_DIR}/hook_script_executor.cpp
   ${MAIN_SRC_DIR}/nolint/cimg_compositor.cpp
-  "${MAIN_SRC_DIR}/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a")
+  "${BACKGROUND_SETTER_CALLER_SRC_FILE}"
+  "${BACKGROUND_SETTER_FILE}")
 
 # ===== Linking ===========
 
@@ -98,9 +115,11 @@ target_include_directories(expected INTERFACE ${expected_SOURCE_DIR}/include)
 target_link_libraries(${CURRENT_TARGET} PRIVATE expected)
 
 # golang lib
-target_link_libraries(
-  ${CURRENT_TARGET}
-  PRIVATE ${CMAKE_SOURCE_DIR}/src/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a)
+if(LINUX)
+  target_link_libraries(
+    ${CURRENT_TARGET}
+    PRIVATE ${CMAKE_SOURCE_DIR}/src/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a)
+endif()
 
 # cpr
 target_link_libraries(${CURRENT_TARGET} PRIVATE cpr::cpr)
@@ -120,7 +139,7 @@ target_link_libraries(${CURRENT_TARGET} PRIVATE ${X11_LIBRARIES})
 
 # The main project
 target_include_directories(${CURRENT_TARGET}
-                           PRIVATE ${dynamic_paper_SOURCE_DIR})
+  PRIVATE ${dynamic_paper_SOURCE_DIR})
 
 # ===== Clang Tidy ==========
 
