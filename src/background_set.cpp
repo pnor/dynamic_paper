@@ -153,7 +153,7 @@ tryCreateTransitionInfoFrom(const ParsingInfo &parsingInfo) {
 
     return std::make_optional<TransitionInfo>(
         std::chrono::seconds(parsingInfo.transitionLength.value()),
-        parsingInfo.numberTransitionSteps.value());
+        parsingInfo.numberTransitionSteps.value(), false);
   }
 
   if (!parsingInfo.numberTransitionSteps.has_value() &&
@@ -162,7 +162,7 @@ tryCreateTransitionInfoFrom(const ParsingInfo &parsingInfo) {
         "No number of transition steps was provided so using default steps");
     return std::make_optional<TransitionInfo>(
         std::chrono::seconds(parsingInfo.transitionLength.value()),
-        BackgroundSetDefaults::transitionSteps);
+        BackgroundSetDefaults::transitionSteps, false);
   }
   if (parsingInfo.numberTransitionSteps.has_value() &&
       !parsingInfo.transitionLength.has_value()) {

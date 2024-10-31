@@ -167,7 +167,7 @@ TEST_F(DynamicBackgroundTest, ShowBasic) {
   // Config options for the type of dynamic background set
   const BackgroundSetMode mode = BackgroundSetMode::Center;
   const std::optional<TransitionInfo> transition(
-      TransitionInfo(std::chrono::seconds(1), 2));
+      TransitionInfo(std::chrono::seconds(1), 2, false));
   const BackgroundSetOrder order = BackgroundSetOrder::Linear;
 
   const std::vector<std::string> imageNames = {"1.jpg", "2.jpg"};
@@ -220,7 +220,7 @@ TEST_F(DynamicBackgroundTest, ShowBasicTile) {
   // Config options for the type of dynamic background set
   const BackgroundSetMode mode = BackgroundSetMode::Tile;
   const std::optional<TransitionInfo> transition(
-      TransitionInfo(std::chrono::seconds(1), 2));
+      TransitionInfo(std::chrono::seconds(1), 2, false));
   const BackgroundSetOrder order = BackgroundSetOrder::Linear;
 
   const std::vector<std::string> imageNames = {"1.jpg", "2.jpg"};
@@ -258,7 +258,7 @@ TEST_F(DynamicBackgroundTest, ShowBasicScale) {
   // Config options for the type of dynamic background set
   const BackgroundSetMode mode = BackgroundSetMode::Scale;
   const std::optional<TransitionInfo> transition(
-      TransitionInfo(std::chrono::seconds(1), 2));
+      TransitionInfo(std::chrono::seconds(1), 2, false));
   const BackgroundSetOrder order = BackgroundSetOrder::Linear;
 
   const std::vector<std::string> imageNames = {"1.jpg", "2.jpg"};
@@ -296,7 +296,7 @@ TEST_F(DynamicBackgroundTest, OneImage) {
   // Config options for the type of dynamic background set
   const BackgroundSetMode mode = BackgroundSetMode::Center;
   const std::optional<TransitionInfo> transition(
-      TransitionInfo(std::chrono::seconds(1), 2));
+      TransitionInfo(std::chrono::seconds(1), 2, false));
   const BackgroundSetOrder order = BackgroundSetOrder::Linear;
 
   const std::vector<std::string> imageNames = {"1.jpg"};
@@ -340,7 +340,7 @@ TEST_F(DynamicBackgroundTest, MoreTransitions) {
   // Config options for the type of dynamic background set
   const BackgroundSetMode mode = BackgroundSetMode::Fill;
   const std::optional<TransitionInfo> transition(
-      TransitionInfo(std::chrono::seconds(5), 5));
+      TransitionInfo(std::chrono::seconds(5), 5, false));
   const BackgroundSetOrder order = BackgroundSetOrder::Linear;
 
   const std::vector<std::string> imageNames = {"1.jpg", "2.jpg", "3.jpg",
@@ -402,7 +402,7 @@ TEST_F(DynamicBackgroundTest, MidnightTransition) {
   // Config options for the type of dynamic background set
   const BackgroundSetMode mode = BackgroundSetMode::Fill;
   const std::optional<TransitionInfo> transition(
-      TransitionInfo(std::chrono::seconds(5), 5));
+      TransitionInfo(std::chrono::seconds(5), 5, false));
   const BackgroundSetOrder order = BackgroundSetOrder::Linear;
 
   const std::vector<std::string> imageNames = {"1.jpg", "2.jpg"};
@@ -506,7 +506,7 @@ TEST_F(DynamicBackgroundTest, RandomTransition) {
   // Config options for the type of dynamic background set
   const BackgroundSetMode mode = BackgroundSetMode::Fill;
   const std::optional<TransitionInfo> transition(
-      TransitionInfo(std::chrono::seconds(1), 2));
+      TransitionInfo(std::chrono::seconds(1), 2, false));
   const BackgroundSetOrder order = BackgroundSetOrder::Random;
 
   const std::vector<std::string> imageNames = {"apple.jpg", "orange.jpg",
@@ -582,7 +582,7 @@ TEST_F(DynamicBackgroundTest, NoFileExtensionOnFirst) {
   // Config options for the type of dynamic background set
   const BackgroundSetMode mode = BackgroundSetMode::Fill;
   const std::optional<TransitionInfo> transition(
-      TransitionInfo(std::chrono::seconds(1), 2));
+      TransitionInfo(std::chrono::seconds(1), 2, false));
   const BackgroundSetOrder order = BackgroundSetOrder::Linear;
 
   const std::vector<std::string> imageNames = {"start", "end.jpg"};
@@ -627,7 +627,7 @@ TEST_F(DynamicBackgroundTest, NoFileExtensionOnSecond) {
   // Config options for the type of dynamic background set
   const BackgroundSetMode mode = BackgroundSetMode::Fill;
   const std::optional<TransitionInfo> transition(
-      TransitionInfo(std::chrono::seconds(1), 2));
+      TransitionInfo(std::chrono::seconds(1), 2, false));
   const BackgroundSetOrder order = BackgroundSetOrder::Linear;
 
   const std::vector<std::string> imageNames = {"start.png", "end"};
@@ -672,7 +672,7 @@ TEST_F(DynamicBackgroundTest, NoFileExtensionOnBoth) {
   // Config options for the type of dynamic background set
   const BackgroundSetMode mode = BackgroundSetMode::Fill;
   const std::optional<TransitionInfo> transition(
-      TransitionInfo(std::chrono::seconds(1), 2));
+      TransitionInfo(std::chrono::seconds(1), 2, false));
   const BackgroundSetOrder order = BackgroundSetOrder::Linear;
 
   const std::vector<std::string> imageNames = {"start", "end"};
@@ -716,7 +716,7 @@ TEST_F(DynamicBackgroundTest, FileExtensionsDiffer) {
   // Config options for the type of dynamic background set
   const BackgroundSetMode mode = BackgroundSetMode::Fill;
   const std::optional<TransitionInfo> transition(
-      TransitionInfo(std::chrono::seconds(1), 2));
+      TransitionInfo(std::chrono::seconds(1), 2, false));
   const BackgroundSetOrder order = BackgroundSetOrder::Linear;
 
   const std::vector<std::string> imageNames = {"start.png", "end.jpg"};
@@ -761,7 +761,7 @@ TEST_F(DynamicBackgroundTest, OverlappingTransitions) {
   // Config options for the type of dynamic background set
   const BackgroundSetMode mode = BackgroundSetMode::Fill;
   const std::optional<TransitionInfo> transition(
-      TransitionInfo(std::chrono::seconds(10), 2));
+      TransitionInfo(std::chrono::seconds(10), 2, false));
   const BackgroundSetOrder order = BackgroundSetOrder::Linear;
 
   const std::vector<std::string> imageNames = {"1.jpg", "2.jpg", "3.jpg"};
@@ -811,7 +811,7 @@ TEST_F(DynamicBackgroundTest, OverlappingTransitions2) {
   // Config options for the type of dynamic background set
   const BackgroundSetMode mode = BackgroundSetMode::Fill;
   const std::optional<TransitionInfo> transition(
-      TransitionInfo(std::chrono::hours(10), 2));
+      TransitionInfo(std::chrono::hours(10), 2, false));
   const BackgroundSetOrder order = BackgroundSetOrder::Linear;
 
   const std::vector<std::string> imageNames = {"1.jpg", "2.jpg", "3.jpg"};
@@ -878,7 +878,7 @@ TEST_F(DynamicBackgroundTest, SameTimeTransitions) {
   // Config options for the type of dynamic background set
   const BackgroundSetMode mode = BackgroundSetMode::Fill;
   const std::optional<TransitionInfo> transition(
-      TransitionInfo(std::chrono::seconds(1), 2));
+      TransitionInfo(std::chrono::seconds(1), 2, false));
   const BackgroundSetOrder order = BackgroundSetOrder::Linear;
 
   const std::vector<std::string> imageNames = {"1.jpg", "2.jpg", "3.jpg",

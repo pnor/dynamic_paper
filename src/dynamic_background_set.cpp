@@ -78,10 +78,10 @@ singleEventList(const DynamicBackgroundData *dynamicData,
   return eventList;
 }
 
-EventList
-multipleEventList(const DynamicBackgroundData *dynamicData,
-                  const std::vector<std::pair<TimeFromMidnight, std::string>>
-                      &timesAndNames) {
+EventList parseTimesAndNamesToEventList(
+    const DynamicBackgroundData *dynamicData,
+    const std::vector<std::pair<TimeFromMidnight, std::string>>
+        &timesAndNames) {
   const std::optional<TransitionInfo> &transition = dynamicData->transition;
   EventList eventList;
   eventList.reserve(transition.has_value() ? (2 * timesAndNames.size()) + 1
@@ -106,7 +106,8 @@ multipleEventList(const DynamicBackgroundData *dynamicData,
             .commonImageDirectory = dynamicData->imageDirectory,
             .startImageName = beforeTimeName.second,
             .endImageName = afterTimeName.second,
-            .transition = TransitionInfo(actualDuration, transition->steps)};
+            .transition =
+                TransitionInfo(actualDuration, transition->steps, false)};
 
         eventList.emplace_back(transitionTime, lerpEvent);
       }
@@ -176,7 +177,8 @@ EventList createEventListFromTimesAndNames(
     return singleEventList(dynamicData, timesAndNames);
   }
 
-  EventList eventList = multipleEventList(dynamicData, timesAndNames);
+  EventList eventList =
+      parseTimesAndNamesToEventList(dynamicData, timesAndNames);
 
   std::ranges::sort(eventList, {}, &std::pair<TimeFromMidnight, Event>::first);
 

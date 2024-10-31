@@ -23,13 +23,18 @@ namespace dynamic_paper {
 /** Type of `BackgroundSet` that shows different wallpapers at different times,
  * and changes over time*/
 struct DynamicBackgroundData {
+
   std::filesystem::path imageDirectory;
+
   BackgroundSetMode mode;
+
   /** nullopt if does not transition. */
   std::optional<TransitionInfo> transition;
 
   BackgroundSetOrder order;
+
   std::vector<std::string> imageNames;
+
   /** each entry represents number seconds after 00:00 to do a transition */
   std::vector<TimeFromMidnight> times;
 
