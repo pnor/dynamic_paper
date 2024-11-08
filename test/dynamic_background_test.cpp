@@ -6,6 +6,7 @@
 #include <chrono>
 #include <cstddef>
 #include <filesystem>
+#include <format>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -99,6 +100,11 @@ std::filesystem::path cache(const std::string_view name) {
 
 std::filesystem::path data(const std::string_view name) {
   return std::filesystem::path(DATA_DIR) / name;
+}
+
+std::filesystem::path tempFileWithExtension(const std::string_view extension) {
+  return std::filesystem::temp_directory_path() /
+         std::format("{}.{}", IN_PLACE_FILE_NAME, extension);
 }
 
 struct DynamicSetConfig {

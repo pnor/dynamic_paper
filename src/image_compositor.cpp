@@ -2,6 +2,7 @@
 
 #include <format>
 
+#include "file_util.hpp"
 #include "logger.hpp"
 #include "nolint/cimg_compositor.hpp"
 
@@ -114,7 +115,8 @@ ImageCompositor::getCompositedImage(
     const std::filesystem::path &cacheDirectory,
     const unsigned int percentage) {
   logAssert(percentage <= MAX_PERCENT,
-            "percentage must be in range [0..100] but was {}", percentage);
+            "percentage must be in range [0..{}] but was {}", MAX_PERCENT,
+            percentage);
 
   if (percentage == EMPTY_PERCENT) {
     return commonImageDirectory / startImageName;
@@ -139,6 +141,34 @@ ImageCompositor::getCompositedImage(
   return createCompositeImage(commonImageDirectory / startImageName,
                               commonImageDirectory / endImageName,
                               compositeImagePath.value(), percentage);
+}
+
+tl::expected<std::filesystem::path, CompositeImageError>
+ImageCompositorInPlace::getCompositedImage(
+    const std::filesystem::path &commonImageDirectory,
+    const std::string &startImageName, const std::string &endImageName,
+    const std::filesystem::path &cacheDirectory,
+    const unsigned int percentage) {
+  if (percentage == EMPTY_PERCENT) {
+    return commonImageDirectory / startImageName;
+  }
+  if (percentage == MAX_PERCENT) {
+    return commonImageDirectory / endImageName;
+  }
+
+  const std::string compositeExtension =
+      getExtension(startImageName, endImageName);
+  const std::string compositeFileName =
+      std::format("{}.{}", IN_PLACE_FILE_NAME, compositeExtension);
+
+  const std::filesystem::path compositeImagePath =
+      std::filesystem::temp_directory_path() / compositeFileName;
+
+  FilesystemHandler::createFileIfDoesntExist(compositeImagePath, "");
+
+  return createCompositeImage(commonImageDirectory / startImageName,
+                              commonImageDirectory / endImageName,
+                              compositeImagePath, percentage);
 }
 
 } // namespace dynamic_paper

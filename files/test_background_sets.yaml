@@ -50,3 +50,22 @@ dynamic_example2:
     - 14:25
     - 14:26
     - 14:27
+in_place:
+  type: dynamic
+  image_directory: "~/dev/src/dynamic_paper/dynamic_paper/files/backgrounds/dynamic"
+  mode: center
+  order: linear
+  in_place: true
+  transition: true
+  number_transition_steps: 50
+  transition_length: 5
+  images:
+    - 1.png
+    - 2.png
+    - 3.png
+    - 4.png
+  times:
+    - 14:24
+    - 14:25
+    - 14:26
+    - 14:27

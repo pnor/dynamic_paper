@@ -142,8 +142,7 @@ Config loadConfigFromYAML(const YAML::Node &config) {
                                              optUseLocationInfoOverSearch,
                                              optSunriseTime, optSunsetTime);
 
-  return Config(backgroundSetConfigFile, hookScript, imageCacheDir,
-                solarDayProvider);
+  return {backgroundSetConfigFile, hookScript, imageCacheDir, solarDayProvider};
 };
 
 std::pair<LogLevel, std::filesystem::path>

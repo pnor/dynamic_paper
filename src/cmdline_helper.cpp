@@ -123,6 +123,10 @@ Config createConfigFromYAML(const YAML::Node &configYaml) {
   return loadConfigFromYAML(configYaml);
 }
 
+bool usesInPlaceTransitions(const DynamicBackgroundData &data) {
+  return data.transition.has_value() && data.transition->inPlace;
+}
+
 } // namespace
 
 // ===== Header ====================
@@ -286,10 +290,20 @@ void showBackgroundSet(BackgroundSet &backgroundSet, const Config &config) {
       const TimeFromMidnight currentTime = getCurrentTime();
       logDebug("Current time is {}", currentTime);
 
-      const std::chrono::seconds sleepTime =
-          dynamicData->updateBackground(currentTime, config,
-                                        &setBackgroundToImage) +
-          std::chrono::seconds(1);
+      std::chrono::seconds sleepTime{};
+
+      if (usesInPlaceTransitions(dynamicData.value())) {
+        sleepTime =
+            dynamicData
+                ->updateBackground<decltype(&setBackgroundToImage),
+                                   FilesystemHandler, ImageCompositorInPlace>(
+                    currentTime, config, &setBackgroundToImage) +
+            std::chrono::seconds(1);
+      } else {
+        sleepTime = dynamicData->updateBackground(currentTime, config,
+                                                  &setBackgroundToImage) +
+                    std::chrono::seconds(1);
+      }
 
       logDebug("Sleeping for {} seconds...", sleepTime);
       flushLogger();
