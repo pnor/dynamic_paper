@@ -159,7 +159,7 @@ ImageCompositorInPlace::getCompositedImage(
   const std::string compositeExtension =
       getExtension(startImageName, endImageName);
   const std::string compositeFileName =
-      std::format("{}.{}", IN_PLACE_FILE_NAME, compositeExtension);
+      std::format("{}{}", IN_PLACE_FILE_NAME, compositeExtension);
 
   const std::filesystem::path compositeImagePath =
       std::filesystem::temp_directory_path() / compositeFileName;
