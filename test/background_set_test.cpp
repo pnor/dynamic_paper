@@ -184,6 +184,46 @@ suntimes:
   times:
 )"""";
 
+const std::string_view DYNAMIC_BACKGROUND_IN_PLACE = R""""(
+dynamic_paper:
+  image_directory: "./backgrounds/dynamic"
+  type: dynamic
+  mode: center
+  transition_length: 55
+  in_place: true
+  order: linear
+  images:
+    - 1.jpg
+    - 2.jpg
+    - 3.jpg
+    - 4.jpg
+  times:
+    - "-1:00 sunrise"
+    - "sunrise"
+    - "-1:00 sunset"
+    - "sunset"
+)"""";
+
+const std::string_view DYNAMIC_BACKGROUND_NOT_IN_PLACE = R""""(
+dynamic_paper:
+  image_directory: "./backgrounds/dynamic"
+  type: dynamic
+  mode: center
+  transition_length: 55
+  in_place: false
+  order: linear
+  images:
+    - 1.jpg
+    - 2.jpg
+    - 3.jpg
+    - 4.jpg
+  times:
+    - "-1:00 sunrise"
+    - "sunrise"
+    - "-1:00 sunset"
+    - "sunset"
+)"""";
+
 // ===== Test Fixture ===============
 class BackgroundSetTests : public testing::Test {
 public:
@@ -440,4 +480,66 @@ TEST_F(BackgroundSetTests, DynamicBackgroundSetTransitionStepsNoLength) {
   assert(dynamicData.has_value());
 
   EXPECT_EQ(dynamicData->transition, std::nullopt);
+}
+
+TEST_F(BackgroundSetTests, DynamicBackgroundSetInPlace) {
+  BackgroundSet backgroundSet =
+      getBackgroundSetFrom(DYNAMIC_BACKGROUND_IN_PLACE);
+
+  EXPECT_EQ(backgroundSet.getName(), "dynamic_paper");
+
+  const std::optional<DynamicBackgroundData> dynamicData =
+      backgroundSet.getDynamicBackgroundData();
+  EXPECT_TRUE(dynamicData.has_value());
+  assert(dynamicData.has_value());
+
+  EXPECT_EQ(dynamicData->imageDirectory,
+            std::filesystem::path("./backgrounds/dynamic"));
+
+  EXPECT_EQ(dynamicData->mode, BackgroundSetMode::Center);
+
+  EXPECT_EQ(dynamicData->transition.has_value(), true);
+  assert(dynamicData->transition.has_value());
+  EXPECT_EQ(dynamicData->transition->duration, std::chrono::seconds(55));
+  EXPECT_TRUE(dynamicData->transition->inPlace);
+
+  EXPECT_EQ(dynamicData->order, BackgroundSetOrder::Linear);
+
+  ASSERT_THAT(dynamicData->imageNames,
+              ElementsAre("1.jpg", "2.jpg", "3.jpg", "4.jpg"));
+
+  ASSERT_THAT(dynamicData->times,
+              ElementsAre(sunriseTime - std::chrono::hours(1), sunriseTime,
+                          sunsetTime - std::chrono::hours(1), sunsetTime));
+}
+
+TEST_F(BackgroundSetTests, DynamicBackgroundSetInPlaceIsFalse) {
+  BackgroundSet backgroundSet =
+      getBackgroundSetFrom(DYNAMIC_BACKGROUND_NOT_IN_PLACE);
+
+  EXPECT_EQ(backgroundSet.getName(), "dynamic_paper");
+
+  const std::optional<DynamicBackgroundData> dynamicData =
+      backgroundSet.getDynamicBackgroundData();
+  EXPECT_TRUE(dynamicData.has_value());
+  assert(dynamicData.has_value());
+
+  EXPECT_EQ(dynamicData->imageDirectory,
+            std::filesystem::path("./backgrounds/dynamic"));
+
+  EXPECT_EQ(dynamicData->mode, BackgroundSetMode::Center);
+
+  EXPECT_EQ(dynamicData->transition.has_value(), true);
+  assert(dynamicData->transition.has_value());
+  EXPECT_EQ(dynamicData->transition->duration, std::chrono::seconds(55));
+  EXPECT_FALSE(dynamicData->transition->inPlace);
+
+  EXPECT_EQ(dynamicData->order, BackgroundSetOrder::Linear);
+
+  ASSERT_THAT(dynamicData->imageNames,
+              ElementsAre("1.jpg", "2.jpg", "3.jpg", "4.jpg"));
+
+  ASSERT_THAT(dynamicData->times,
+              ElementsAre(sunriseTime - std::chrono::hours(1), sunriseTime,
+                          sunsetTime - std::chrono::hours(1), sunsetTime));
 }

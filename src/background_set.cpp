@@ -46,6 +46,7 @@ constexpr std::string_view TIMES = "times";
 constexpr std::string_view TRANSITION_LENGTH = "transition_length";
 constexpr std::string_view TYPE = "type";
 constexpr std::string_view NUM_TRANSITION_STEPS = "number_transition_steps";
+constexpr std::string_view IN_PLACE = "in_place";
 
 // ===== Helper ===============
 
@@ -112,6 +113,7 @@ struct ParsingInfo {
   std::optional<std::string> image = std::nullopt;
   std::optional<std::vector<std::string>> timeStrings = std::nullopt;
   std::optional<unsigned int> numberTransitionSteps = std::nullopt;
+  std::optional<bool> inPlace = std::nullopt;
 };
 
 void updateParsingInfoWithYamlNode(const std::string &key,
@@ -138,6 +140,8 @@ void updateParsingInfoWithYamlNode(const std::string &key,
   } else if (key == NUM_TRANSITION_STEPS) {
     insertIntoParsingInfo<unsigned int>(value,
                                         parsingInfo.numberTransitionSteps);
+  } else if (key == IN_PLACE) {
+    insertIntoParsingInfo<bool>(value, parsingInfo.inPlace);
   }
 }
 
@@ -147,13 +151,14 @@ tryCreateTransitionInfoFrom(const ParsingInfo &parsingInfo) {
       parsingInfo.numberTransitionSteps.has_value()) {
 
     if (parsingInfo.transitionLength.value() <= 0) {
-      logWarning("Transition Length was >= 0, so not creating transitions");
+      logWarning("Transition Length was <= 0, so not creating transitions");
       return std::nullopt;
     }
 
     return std::make_optional<TransitionInfo>(
         std::chrono::seconds(parsingInfo.transitionLength.value()),
-        parsingInfo.numberTransitionSteps.value(), false);
+        parsingInfo.numberTransitionSteps.value(),
+        parsingInfo.inPlace.value_or(false));
   }
 
   if (!parsingInfo.numberTransitionSteps.has_value() &&
@@ -162,7 +167,8 @@ tryCreateTransitionInfoFrom(const ParsingInfo &parsingInfo) {
         "No number of transition steps was provided so using default steps");
     return std::make_optional<TransitionInfo>(
         std::chrono::seconds(parsingInfo.transitionLength.value()),
-        BackgroundSetDefaults::transitionSteps, false);
+        BackgroundSetDefaults::transitionSteps,
+        parsingInfo.inPlace.value_or(false));
   }
   if (parsingInfo.numberTransitionSteps.has_value() &&
       !parsingInfo.transitionLength.has_value()) {
