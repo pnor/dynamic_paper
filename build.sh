@@ -39,6 +39,7 @@ function help_message {
 
 executable_name='dynamic_paper'
 test_name='dynamic_paper_test'
+benchmark_name='dynamic_paper_benchmarking'
 
 #
 # ===== Functions ===============
@@ -66,7 +67,7 @@ function bump_compile_commands_json {
 # $2: should be `debug` or `release` which determines which type of build to perform
 # $3: (optional) `1` if should run cmake
 function build {
-    main_or_test="$1"
+    target_name="$1"
     debug_or_release="$2"
     if [[ "$#" == 3 ]]; then
         run_cmake="$3"
@@ -74,7 +75,7 @@ function build {
         run_cmake=""
     fi
 
-    if [[ "$main_or_test" == "main" ]]; then
+    if [[ "$target_name" == "main" ]]; then
         echo -e "${CYAN}Building main project${NC}"
     else
         echo -e "${MAGENTA}Building project tests${NC}"
@@ -104,12 +105,15 @@ function build {
         exit 1
     fi
 
-    case "$main_or_test" in
+    case "$target_name" in
         "main")
             make dynamic_paper
             ;;
         "test")
             make dynamic_paper_test
+            ;;
+        "benchmark")
+            make dynamic_paper_benchmarking
             ;;
         "all")
             make all
@@ -132,6 +136,9 @@ function run {
     case "$1" in
         "test")
             ./"$test_name"
+            ;;
+        "benchmark")
+            ./"$benchmark_name"
             ;;
         "run")
             if (( "$#" > 1 )); then
@@ -195,6 +202,14 @@ case "$arg" in
     "test-release")
         build "test" "release" 1
         run "test"
+        ;;
+    "benchmark-debug")
+        build "benchmark" "debug" 1
+        run "benchmark"
+        ;;
+    "benchmark")
+        build "benchmark" "release" 1
+        run "benchmark"
         ;;
     "clean")
         if [[ -d Release ]]; then
