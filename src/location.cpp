@@ -56,7 +56,12 @@ cpr::Response getUrlWithRetry(const std::string_view urlString) {
 
 tl::expected<std::pair<double, double>, LocationError>
 getLatitudeAndLongitudeFromMozilla() {
-  const cpr::Response response = getUrlWithRetry<3>(MOZILLA_LOCATION_URL);
+  // TODO replace with something else because Mozilla geolocation is depecrated
+  // ):
+  //
+  // const cpr::Response response = getUrlWithRetry<3>(MOZILLA_LOCATION_URL);
+  cpr::Response response{};
+  response.status_code = 404;
 
   if (response.status_code != SUCESS_CODE) {
     return tl::unexpected(LocationError::RequestFailed);
