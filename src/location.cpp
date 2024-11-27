@@ -31,13 +31,32 @@ tryParseDouble(const boost::xpressive::smatch &match) {
   });
 }
 
+template <size_t NumberRetries>
+cpr::Response getUrlWithRetry(const std::string_view urlString) {
+  const cpr::Url url = cpr::Url{urlString};
+  cpr::Response response{};
+  size_t currentTry = 0;
+
+  while (currentTry < NumberRetries) {
+    response = cpr::Get(url);
+    if (response.status_code == SUCESS_CODE) {
+      break;
+    }
+    logWarning("Failed to get location with Mozilla: {} / {}", currentTry,
+               NumberRetries);
+    currentTry += 1;
+  }
+
+  return response;
+}
+
 } // namespace
 
 // ===== Header ==========
 
 tl::expected<std::pair<double, double>, LocationError>
 getLatitudeAndLongitudeFromMozilla() {
-  const cpr::Response response = cpr::Get(cpr::Url{MOZILLA_LOCATION_URL});
+  const cpr::Response response = getUrlWithRetry<3>(MOZILLA_LOCATION_URL);
 
   if (response.status_code != SUCESS_CODE) {
     return tl::unexpected(LocationError::RequestFailed);
