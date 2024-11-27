@@ -162,6 +162,9 @@ sunrise or sunset, like "-01:00 sunset".
 *number_transition_steps*: Number of images to create when interpolating between one image to the next.
 - Default is 5
 
+  *in_place*: Whether to transition using a single temp file instead of creating files in the cache directory.
+ - Default is false
+
 * Usage:
 #+begin_src bash
 # Show a background set
