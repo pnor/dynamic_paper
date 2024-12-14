@@ -107,7 +107,7 @@ use_config_file_location: true
 )"""";
 
 Config loadConfigFromString(const std::string_view configString) {
-  return loadConfigFromYAML(YAML::Load(std::string(configString)));
+  return loadConfigFromYAML(YAML::Load(std::string(configString)), true);
 }
 
 inline bool solarDayMatchesSolarDayForLocation(const SolarDay solarDay,

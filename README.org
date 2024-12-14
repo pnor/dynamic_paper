@@ -49,15 +49,19 @@ the time of the sunrise and sunset. You must provide this default value to have 
 - default is =-73.935242=
 
 *sunrise*: Time to use for sunrise. If set, will NOT check the user's location, and will use this
-value instead.
+value instead. This must be set along with "sunset".
 - default is None
 
-*sunset*: Time to use for sunset. If set, will NOT check the user's location, and will use this value instead.
+*sunset*: Time to use for sunset. If set, will NOT check the user's location, and will use this value
+ instead. This must be set along with "sunrise".
 - default is None
 
 *use_config_file_location*: If true, will NOT check the user's location, and instead use the =latitude=
  and =longitude= value's provided in this config file.
 - default is =false=
+
+  If =latitude=, =longitude=, =sunset=, and =sunrise= are all specified, will prefer to use the =sunrise= and
+  =sunset= values.
 
 * Background Set Config
 **  Static Background Set Config

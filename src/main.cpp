@@ -15,6 +15,8 @@
 
 using namespace dynamic_paper;
 
+// TODO avoid network call on non-show commands
+// TODO package as all in 1 exec, reduce dependencies?
 // TODO gpu composit image using opencv ? optional depends ??
 // TODO choose any 1 image selection, in any set
 // TODO rehaul general config for cmdline options, then file then defualts? (!
@@ -161,16 +163,16 @@ auto main(int argc, char *argv[]) -> int {
   }
 
   if (program.is_subcommand_used(showCommand)) {
-    const Config config = getConfigAndSetupLogging(program);
+    const Config config = getConfigAndSetupLogging(program, true);
     handleShowCommand(showCommand, config);
   } else if (program.is_subcommand_used(listCommand)) {
-    const Config config = getConfigAndSetupLogging(program);
+    const Config config = getConfigAndSetupLogging(program, false);
     handleListCommand(config);
   } else if (program.is_subcommand_used(randomCommand)) {
-    const Config config = getConfigAndSetupLogging(program);
+    const Config config = getConfigAndSetupLogging(program, true);
     handleRandomCommand(config);
   } else if (program.is_subcommand_used(cacheCommand)) {
-    const Config config = getConfigAndSetupLogging(program);
+    const Config config = getConfigAndSetupLogging(program, false);
     handleCacheCommand(config, cacheCommand, cacheInfoCommand);
   } else if (program.is_subcommand_used(helpCommand)) {
     showHelp(program);

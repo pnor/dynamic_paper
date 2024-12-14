@@ -44,7 +44,8 @@ getConfigFileName(const argparse::ArgumentParser &program);
  * Creates a sample config file if none exists and the config is set to the
  * default.
  * */
-Config getConfigAndSetupLogging(const argparse::ArgumentParser &program);
+Config getConfigAndSetupLogging(const argparse::ArgumentParser &program,
+                                bool findLocationOverHttp);
 
 // ===== Cache ===============
 
@@ -79,8 +80,7 @@ getNamesAndTypes(const std::vector<BackgroundSet> &backgroundSets);
  * `nullopt` if unable to find one, or unable to succesfully parse it
  */
 std::optional<BackgroundSet>
-getBackgroundSetWithNameFromFile(std::string_view name,
-                                 const Config &config);
+getBackgroundSetWithNameFromFile(std::string_view name, const Config &config);
 
 /**
  * Returns a random `BackgroundSet` from the config file.

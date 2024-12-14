@@ -147,7 +147,7 @@ tl::expected<std::filesystem::path, CompositeImageError>
 ImageCompositorInPlace::getCompositedImage(
     const std::filesystem::path &commonImageDirectory,
     const std::string &startImageName, const std::string &endImageName,
-    const std::filesystem::path &cacheDirectory,
+    const std::filesystem::path &cacheDirectory, // NOLINT
     const unsigned int percentage) {
   if (percentage == EMPTY_PERCENT) {
     return commonImageDirectory / startImageName;

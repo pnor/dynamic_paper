@@ -43,7 +43,7 @@ public:
 // ===== Loading config from files ====================
 
 /** Loads the general config from a yaml file representing the config */
-Config loadConfigFromYAML(const YAML::Node &config);
+Config loadConfigFromYAML(const YAML::Node &config, bool findLocationOverHttp);
 
 /** Laods just the logging related information from the general config file*/
 std::pair<LogLevel, std::filesystem::path>

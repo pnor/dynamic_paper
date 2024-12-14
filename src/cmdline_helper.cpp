@@ -119,8 +119,9 @@ YAML::Node loadConfigFileIntoYAML(const std::filesystem::path &file) {
   }
 }
 
-Config createConfigFromYAML(const YAML::Node &configYaml) {
-  return loadConfigFromYAML(configYaml);
+Config createConfigFromYAML(const YAML::Node &configYaml,
+                            const bool findLocationOverHttp) {
+  return loadConfigFromYAML(configYaml, findLocationOverHttp);
 }
 
 bool usesInPlaceTransitions(const DynamicBackgroundData &data) {
@@ -131,7 +132,8 @@ bool usesInPlaceTransitions(const DynamicBackgroundData &data) {
 
 // ===== Header ====================
 
-Config getConfigAndSetupLogging(const argparse::ArgumentParser &program) {
+Config getConfigAndSetupLogging(const argparse::ArgumentParser &program,
+                                const bool findLocationOverHttp) {
   const std::filesystem::path conf = program.get(CONFIG_FLAG_NAME);
   const bool logToStdout = program.get<bool>(LOG_TO_STDOUT_FLAG_NAME);
 
@@ -157,7 +159,7 @@ Config getConfigAndSetupLogging(const argparse::ArgumentParser &program) {
     setupLoggingFromYAML(configYaml);
   }
 
-  return createConfigFromYAML(configYaml);
+  return createConfigFromYAML(configYaml, findLocationOverHttp);
 }
 
 void showCacheInfo(const Config &config) {

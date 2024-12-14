@@ -102,11 +102,6 @@ std::filesystem::path data(const std::string_view name) {
   return std::filesystem::path(DATA_DIR) / name;
 }
 
-std::filesystem::path tempFileWithExtension(const std::string_view extension) {
-  return std::filesystem::temp_directory_path() /
-         std::format("{}.{}", IN_PLACE_FILE_NAME, extension);
-}
-
 struct DynamicSetConfig {
   std::filesystem::path dataDir;
   Config config;

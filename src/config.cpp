@@ -103,7 +103,8 @@ Config::Config(std::filesystem::path backgroundSetConfigFile,
       imageCacheDirectory(std::move(imageCacheDirectory)),
       solarDayProvider(std::move(solarDayProvider)) {}
 
-Config loadConfigFromYAML(const YAML::Node &config) {
+Config loadConfigFromYAML(const YAML::Node &config,
+                          const bool findLocationOverHttp) {
   auto backgroundSetConfigFile =
       generalConfigParseOrUseDefault<std::filesystem::path>(
           config, BACKGROUND_SET_CONFIG_FILE,
@@ -138,9 +139,10 @@ Config loadConfigFromYAML(const YAML::Node &config) {
           config, SUNSET_TIME_KEY, std::nullopt);
 
   const SolarDayProvider solarDayProvider =
-      createSolarDayProviderFromParsedFields(optLatitude, optLongitude,
-                                             optUseLocationInfoOverSearch,
-                                             optSunriseTime, optSunsetTime);
+      createSolarDayProviderFromParsedFields(
+          optLatitude, optLongitude,
+          findLocationOverHttp ? optUseLocationInfoOverSearch : false,
+          optSunriseTime, optSunsetTime);
 
   return {backgroundSetConfigFile, hookScript, imageCacheDir, solarDayProvider};
 };
