@@ -41,11 +41,11 @@ background image is passed as the first arguement of the script.
 - default is =~/.local/share/dynamic_paper/dynamic_paper.log=
 
 *latitude*: When unable to determine the user's location, will use this latitude value to determine
-  the time of the sunrise and sunset.
+  the time of the sunrise and sunset. You must provide this default value to have =dynamic_paper= infer your location.
 - default is =40.730610=
 
 *longitude*: When unable to determine the user's location, will use the longitude value to determine
-the time of the sunrise and sunset
+the time of the sunrise and sunset. You must provide this default value to have =dynamic_paper= infer your location.
 - default is =-73.935242=
 
 *sunrise*: Time to use for sunrise. If set, will NOT check the user's location, and will use this

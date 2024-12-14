@@ -30,12 +30,12 @@ void explainError(const LocationError &error) {
              "failed, so using fallback from config");
     break;
   }
-  case dynamic_paper::LocationError::UnableParseJsonResponse: {
+  case LocationError::UnableParseJsonResponse: {
     logError("Unable to parse json response from http request for "
              "location, so using fallback from config");
     break;
   }
-  case dynamic_paper::LocationError::UnableParseLatitudeOrLongitude: {
+  case LocationError::UnableParseLatitudeOrLongitude: {
     logError("Unable to parse latitude or longitude http request for "
              "location, so using fallback from config");
     break;
@@ -49,7 +49,7 @@ getLatitudeAndLongitude(const LocationInfo &locationInfo) {
     return locationInfo.latitudeAndLongitude;
   }
 
-  return getLatitudeAndLongitudeFromMozilla()
+  return getLatitudeAndLongitudeFromHttp()
       .map_error(explainError)
       .value_or(locationInfo.latitudeAndLongitude);
 }

@@ -23,6 +23,6 @@ enum class LocationError {
  * Returns pair of {latitude, longitude}
  */
 tl::expected<std::pair<double, double>, LocationError>
-getLatitudeAndLongitudeFromMozilla();
+getLatitudeAndLongitudeFromHttp();
 
 } // namespace dynamic_paper
