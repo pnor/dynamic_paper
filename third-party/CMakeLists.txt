@@ -23,6 +23,7 @@ add_library(argparse INTERFACE)
 set(argparse_SOURCE_DIR
     "${argparse_SOURCE_DIR}"
     PARENT_SCOPE)
+target_compile_options(argparse INTERFACE "-w")
 
 # CImg
 FetchContent_Declare(
@@ -40,6 +41,8 @@ add_library(CImg INTERFACE)
 set(cimg_SOURCE_DIR
     "${cimg_SOURCE_DIR}"
     PARENT_SCOPE)
+# target_compile_options(cimg PRIVATE "-w")
+# TODO replace CImg with ImageMagick
 
 # expected
 FetchContent_Declare(
@@ -57,11 +60,13 @@ add_library(expected INTERFACE)
 set(expected_SOURCE_DIR
     "${expected_SOURCE_DIR}"
     PARENT_SCOPE)
+target_compile_options(expected INTERFACE "-w")
 
 # yaml-cpp
 FetchContent_Declare(
   yaml-cpp URL https://github.com/jbeder/yaml-cpp/archive/refs/tags/0.8.0.zip)
 FetchContent_MakeAvailable(yaml-cpp)
+target_compile_options(yaml-cpp PRIVATE "-w")
 
 # spdlog
 FetchContent_Declare(
@@ -69,6 +74,7 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/gabime/spdlog.git
   GIT_TAG v1.12.0)
 FetchContent_MakeAvailable(spdlog)
+target_compile_options(spdlog PRIVATE "-w")
 
 # cpr
 FetchContent_Declare(
@@ -76,6 +82,7 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/libcpr/cpr.git
   GIT_TAG 1.10.5)
 FetchContent_MakeAvailable(cpr)
+target_compile_options(cpr PRIVATE "-w")
 
 # sunset
 FetchContent_Declare(
@@ -83,6 +90,7 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/buelowp/sunset.git
   GIT_TAG 1.1.7)
 FetchContent_MakeAvailable(sunset)
+target_compile_options(sunset PRIVATE "-w")
 
 # googletest
 FetchContent_Declare(

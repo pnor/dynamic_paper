@@ -127,6 +127,14 @@ if(LINUX)
     ${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.h)
 endif()
 
+# ===== Debug / Release ==================
+
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+  message(STATUS "Setting Link Time Optimization to true")
+  set_property(TARGET ${CURRENT_TARGET}
+    PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+endif()
+
 # ===== Clang Tidy ==========
 
 # find_program(CLANG_TIDY_EXE NAMES "clang-tidy") set(CLANG_TIDY_COMMAND

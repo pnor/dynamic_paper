@@ -49,6 +49,20 @@ if(LINUX)
 
 endif()
 
+# ===== Profiling ==========
+
+FetchContent_Declare(
+  tracy
+  GIT_REPOSITORY https://github.com/wolfpld/tracy.git
+  GIT_TAG v0.11.1
+  GIT_SHALLOW TRUE
+  GIT_PROCESS TRUE
+)
+
+FetchContent_MakeAvailable(tracy)
+
+option(TRACY_ENABLE "" ON)
+
 # ===== Add Sources ==========
 if(MACOSX)
   set(BACKGROUND_SETTER_CALLER_SRC_FILE ${MAIN_SRC_DIR}/background_setter_macos.cpp)
@@ -172,11 +186,29 @@ find_package(X11 REQUIRED) # TODO support wayland
 target_link_libraries(${CURRENT_TARGET} PRIVATE ${X11_LIBRARIES})
 target_link_libraries(${BENCHMARKING_TARGET} PRIVATE ${X11_LIBRARIES})
 
+# Tracy
+target_link_libraries(${BENCHMARKING_TARGET} PUBLIC TracyClient)
+
+#ImageMagick
+add_definitions( -DMAGICKCORE_QUANTUM_DEPTH=16 )
+add_definitions( -DMAGICKCORE_HDRI_ENABLE=0 )
+find_package(ImageMagick COMPONENTS Magick++)
+include_directories(${ImageMagick_INCLUDE_DIRS})
+target_link_libraries(${BENCHMARKING_TARGET} PRIVATE ${ImageMagick_LIBRARIES})
+
 # The main project
 target_include_directories(${CURRENT_TARGET}
   PRIVATE ${dynamic_paper_SOURCE_DIR})
 target_include_directories(${BENCHMARKING_TARGET}
   PRIVATE ${dynamic_paper_SOURCE_DIR})
+
+# ===== Debug / Release ==================
+
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+  message(STATUS "Setting Link Time Optimization to true")
+  set_property(TARGET ${CURRENT_TARGET}
+    PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+endif()
 
 # ===== Clang Tidy ==========
 
@@ -185,11 +217,12 @@ set(CLANG_TIDY_COMMAND "${CLANG_TIDY_EXE}")
 set_target_properties(${CURRENT_TARGET} PROPERTIES CXX_CLANG_TIDY
                                                    "${CLANG_TIDY_COMMAND}")
 
-find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
-set(CLANG_TIDY_COMMAND "${CLANG_TIDY_EXE}")
-set_target_properties(${BENCHMARKING_TARGET} PROPERTIES CXX_CLANG_TIDY
-                                                   "${CLANG_TIDY_COMMAND}")
+# find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
+# set(CLANG_TIDY_COMMAND "${CLANG_TIDY_EXE}")
+# set_target_properties(${BENCHMARKING_TARGET} PROPERTIES CXX_CLANG_TIDY
+#                                                    "${CLANG_TIDY_COMMAND}")
 
 set_source_files_properties(image_compositor.cpp PROPERTIES SKIP_LINTING ON)
 
 add_test(NAME runTests COMMAND dynamic_background_test)
+
