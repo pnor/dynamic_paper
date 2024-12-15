@@ -40,6 +40,18 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
     message(STATUS "Configuring for Release build")
 endif()
 
+# ====== Uninstall =============
+
+if(NOT TARGET uninstall)
+  configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+    IMMEDIATE @ONLY)
+
+  add_custom_target(uninstall
+    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+endif()
+
 # ==================
 
 add_subdirectory(third-party)

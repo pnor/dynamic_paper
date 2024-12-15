@@ -1,4 +1,8 @@
 cmake_minimum_required(VERSION 3.27)
+if(POLICY CMP0174)
+    cmake_policy(SET CMP0174 NEW)
+endif()
+cmake_policy(SET CMP0167 NEW)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(POLICY CMP0135)
@@ -99,7 +103,8 @@ add_executable(
   ${MAIN_SRC_DIR}/location.cpp
   ${MAIN_SRC_DIR}/solar_day_provider.cpp
   ${MAIN_SRC_DIR}/hook_script_executor.cpp
-  ${MAIN_SRC_DIR}/nolint/cimg_compositor.cpp
+  ${MAIN_SRC_DIR}/magick_compositor.cpp
+  #${MAIN_SRC_DIR}/nolint/cimg_compositor.cpp
   "${BACKGROUND_SETTER_CALLER_SRC_FILE}"
   "${BACKGROUND_SETTER_FILE}")
 
@@ -121,7 +126,7 @@ add_executable(
   ${MAIN_SRC_DIR}/location.cpp
   ${MAIN_SRC_DIR}/solar_day_provider.cpp
   ${MAIN_SRC_DIR}/hook_script_executor.cpp
-  ${MAIN_SRC_DIR}/nolint/cimg_compositor.cpp
+  ${MAIN_SRC_DIR}/magick_compositor.cpp
   "${BACKGROUND_SETTER_CALLER_SRC_FILE}"
   "${BACKGROUND_SETTER_FILE}")
 
@@ -146,9 +151,9 @@ target_link_libraries(${CURRENT_TARGET} PRIVATE argparse)
 target_link_libraries(${BENCHMARKING_TARGET} PRIVATE argparse)
 
 # CImg
-target_include_directories(CImg INTERFACE ${cimg_SOURCE_DIR}/)
-target_link_libraries(${CURRENT_TARGET} PRIVATE CImg)
-target_link_libraries(${BENCHMARKING_TARGET} PRIVATE CImg)
+# target_include_directories(CImg INTERFACE ${cimg_SOURCE_DIR}/)
+# target_link_libraries(${CURRENT_TARGET} PRIVATE CImg)
+# target_link_libraries(${BENCHMARKING_TARGET} PRIVATE CImg)
 
 # expected
 target_include_directories(expected INTERFACE ${expected_SOURCE_DIR}/include)
@@ -189,11 +194,12 @@ target_link_libraries(${BENCHMARKING_TARGET} PRIVATE ${X11_LIBRARIES})
 # Tracy
 target_link_libraries(${BENCHMARKING_TARGET} PUBLIC TracyClient)
 
-#ImageMagick
+# ImageMagick
 add_definitions( -DMAGICKCORE_QUANTUM_DEPTH=16 )
 add_definitions( -DMAGICKCORE_HDRI_ENABLE=0 )
 find_package(ImageMagick COMPONENTS Magick++)
 include_directories(${ImageMagick_INCLUDE_DIRS})
+target_link_libraries(${CURRENT_TARGET} PRIVATE ${ImageMagick_LIBRARIES})
 target_link_libraries(${BENCHMARKING_TARGET} PRIVATE ${ImageMagick_LIBRARIES})
 
 # The main project
@@ -212,15 +218,12 @@ endif()
 
 # ===== Clang Tidy ==========
 
-find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
-set(CLANG_TIDY_COMMAND "${CLANG_TIDY_EXE}")
-set_target_properties(${CURRENT_TARGET} PROPERTIES CXX_CLANG_TIDY
-                                                   "${CLANG_TIDY_COMMAND}")
-
-# find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
-# set(CLANG_TIDY_COMMAND "${CLANG_TIDY_EXE}")
-# set_target_properties(${BENCHMARKING_TARGET} PROPERTIES CXX_CLANG_TIDY
-#                                                    "${CLANG_TIDY_COMMAND}")
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
+  set(CLANG_TIDY_COMMAND "${CLANG_TIDY_EXE}")
+  set_target_properties(${CURRENT_TARGET} PROPERTIES CXX_CLANG_TIDY
+    "${CLANG_TIDY_COMMAND}")
+endif()
 
 set_source_files_properties(image_compositor.cpp PROPERTIES SKIP_LINTING ON)
 

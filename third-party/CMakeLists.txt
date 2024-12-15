@@ -1,4 +1,7 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.27)
+cmake_policy(SET CMP0167 NEW)
+cmake_policy(SET CMP0169 OLD)
+cmake_policy(SET CMP0174 NEW)
 
 include(FetchContent)
 
@@ -26,21 +29,21 @@ set(argparse_SOURCE_DIR
 target_compile_options(argparse INTERFACE "-w")
 
 # CImg
-FetchContent_Declare(
-  CImg
-  GIT_REPOSITORY https://github.com/GreycLab/CImg.git
-  GIT_TAG v.3.3.5
-  CONFIGURE_COMMAND "" BUILD_COMMAND "")
+# FetchContent_Declare(
+#   CImg
+#   GIT_REPOSITORY https://github.com/GreycLab/CImg.git
+#   GIT_TAG v.3.3.5
+#   CONFIGURE_COMMAND "" BUILD_COMMAND "")
+#
+# FetchContent_GetProperties(CImg)
+# if(NOT CImg_POPULATED)
+#   FetchContent_Populate(CImg)
+# endif()
 
-FetchContent_GetProperties(CImg)
-if(NOT CImg_POPULATED)
-  FetchContent_Populate(CImg)
-endif()
-
-add_library(CImg INTERFACE)
-set(cimg_SOURCE_DIR
-    "${cimg_SOURCE_DIR}"
-    PARENT_SCOPE)
+# add_library(CImg INTERFACE)
+# set(cimg_SOURCE_DIR
+#     "${cimg_SOURCE_DIR}"
+#     PARENT_SCOPE)
 # target_compile_options(cimg PRIVATE "-w")
 # TODO replace CImg with ImageMagick
 

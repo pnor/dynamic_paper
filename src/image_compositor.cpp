@@ -4,7 +4,7 @@
 
 #include "file_util.hpp"
 #include "logger.hpp"
-#include "nolint/cimg_compositor.hpp"
+#include "magick_compositor.hpp"
 
 namespace dynamic_paper {
 
@@ -65,8 +65,8 @@ createCompositeImage(const std::filesystem::path &startImagePath,
     logWarning("Creating a new composite image that already exists in cache!");
   }
 
-  compositeUsingCImg(startImagePath, endImagePath, destinationImagePath,
-                     percentage);
+  compositeUsingImageMagick(startImagePath, endImagePath, destinationImagePath,
+                            percentage);
 
   return destinationImagePath;
 }

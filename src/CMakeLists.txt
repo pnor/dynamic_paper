@@ -1,4 +1,8 @@
 cmake_minimum_required(VERSION 3.27)
+if(POLICY CMP0174)
+    cmake_policy(SET CMP0174 NEW)
+endif()
+cmake_policy(SET CMP0167 NEW)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # ===== OS check ==================
@@ -68,9 +72,15 @@ add_executable(
   location.cpp
   solar_day_provider.cpp
   hook_script_executor.cpp
-  nolint/cimg_compositor.cpp
+  magick_compositor.cpp
   "${BACKGROUND_SETTER_CALLER_SRC_FILE}"
   "${BACKGROUND_SETTER_FILE}")
+
+# ===== Release ===========
+
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+  install(TARGETS dynamic_paper)
+endif()
 
 # ===== Linking ===========
 
@@ -81,41 +91,60 @@ if(NOT Boost_FOUND)
 endif()
 include_directories(${Boost_INCLUDE_DIRS})
 target_link_libraries(${CURRENT_TARGET} PRIVATE ${Boost_LIBRARIES})
+# target_link_libraries(${CURRENT_TARGET} PRIVATE ${Boost_LIBRARIES} -static)
 
 # argparse
 target_include_directories(argparse INTERFACE ${argparse_SOURCE_DIR}/include)
 target_link_libraries(${CURRENT_TARGET} PRIVATE argparse)
+# target_link_libraries(${CURRENT_TARGET} PRIVATE argparse -static)
 
 # CImg
-target_include_directories(CImg INTERFACE ${cimg_SOURCE_DIR})
-target_link_libraries(${CURRENT_TARGET} PRIVATE CImg)
+# target_include_directories(CImg INTERFACE ${cimg_SOURCE_DIR})
+# target_link_libraries(${CURRENT_TARGET} PRIVATE CImg)
+# target_link_libraries(${CURRENT_TARGET} PRIVATE CImg -static)
 
 # expected
 target_include_directories(expected INTERFACE ${expected_SOURCE_DIR}/include)
 target_link_libraries(${CURRENT_TARGET} PRIVATE expected)
+# target_link_libraries(${CURRENT_TARGET} PRIVATE expected -static)
 
 # golang lib
 if (LINUX)
   target_link_libraries(
     ${CURRENT_TARGET}
     PRIVATE ${CMAKE_SOURCE_DIR}/src/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a)
+    # PRIVATE ${CMAKE_SOURCE_DIR}/src/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a -static)
 endif()
 
 # cpr
+# TODO replace with libcurl?
 target_link_libraries(${CURRENT_TARGET} PRIVATE cpr::cpr)
+# target_link_libraries(${CURRENT_TARGET} PRIVATE cpr::cpr -static)
 
 # yaml-cpp
 target_link_libraries(${CURRENT_TARGET} PRIVATE yaml-cpp)
+# target_link_libraries(${CURRENT_TARGET} PRIVATE yaml-cpp -static)
 
 # spdlog
 target_link_libraries(${CURRENT_TARGET} PRIVATE spdlog::spdlog_header_only)
+# target_link_libraries(${CURRENT_TARGET} PRIVATE spdlog::spdlog_header_only -static)
 
 # sunset
 target_link_libraries(${CURRENT_TARGET} PRIVATE sunset)
+# target_link_libraries(${CURRENT_TARGET} PRIVATE sunset -static)
 
 # X11
 find_package(X11 REQUIRED) # TODO support wayland
 target_link_libraries(${CURRENT_TARGET} PRIVATE ${X11_LIBRARIES})
+# target_link_libraries(${CURRENT_TARGET} PRIVATE ${X11_LIBRARIES} -static)
+
+# ImageMagick
+add_definitions( -DMAGICKCORE_QUANTUM_DEPTH=16 )
+add_definitions( -DMAGICKCORE_HDRI_ENABLE=0 )
+find_package(ImageMagick COMPONENTS Magick++)
+include_directories(${ImageMagick_INCLUDE_DIRS})
+target_link_libraries(${CURRENT_TARGET} PRIVATE ${ImageMagick_LIBRARIES})
+
 
 # ===== Clean Command ==========
 
@@ -137,7 +166,8 @@ endif()
 
 # ===== Clang Tidy ==========
 
-# find_program(CLANG_TIDY_EXE NAMES "clang-tidy") set(CLANG_TIDY_COMMAND
-# "${CLANG_TIDY_EXE}") set_target_properties(${CURRENT_TARGET} PROPERTIES
-# CXX_CLANG_TIDY
-# "${CLANG_TIDY_COMMAND}")
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
+  set(CLANG_TIDY_COMMAND "${CLANG_TIDY_EXE}")
+  set_target_properties(${CURRENT_TARGET} PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND}")
+endif()

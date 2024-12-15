@@ -25,6 +25,8 @@ function help_message {
         ./build.sh test          : builds and runs tests (in debug mode)
         ./build.sh t             : make and runs debug tests without rerunning cmake
         ./build.sh test-release  : builds and runs tests in release mode.
+        ./build.sh install       : Installs the relase version of dynamic_paper
+        ./build.sh uninstall     : UnInstalls the relase version of dynamic_paper
         ./build.sh clean         : Delete Releases
 
     flags:
@@ -152,6 +154,26 @@ function run {
     cd ../../
 }
 
+function install {
+    echo -e "Installing ${MAGENTA}dynamic_paper${NC}"
+    cd "Release"
+    echo -e ""
+    echo -e "Running ${CYAN}sudo make install${NC}"
+    echo -e ""
+    sudo make install
+    echo -e "${CYAN}Done${NC}"
+}
+
+function uninstall {
+    echo -e "Uninstalling ${MAGENTA}dynamic_paper${NC}"
+    cd "Release"
+    echo -e ""
+    echo -e "Running ${CYAN}sudo make uninstall${NC}"
+    echo -e ""
+    sudo make uninstall
+    echo -e "${CYAN}Done${NC}"
+}
+
 #
 # ===== Main Script ===============
 #
@@ -213,10 +235,20 @@ case "$arg" in
         ;;
     "clean")
         if [[ -d Release ]]; then
-            rm -r Release
+            rm -rf Release
         else
             echo -e "${RED}nothing to clean O:${NC}"
         fi
+        ;;
+    "install")
+        build "main" "release" 1
+        install
+        ;;
+    "uninstall")
+        if ! [[ -d Release/ ]]; then
+            build "main" "release" 1
+        fi
+        uninstall
         ;;
     *)
       echo -e "${RED}Bad arg when parsing cmd line args${NC}"
