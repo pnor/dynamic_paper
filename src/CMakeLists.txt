@@ -59,7 +59,6 @@ add_executable(
   # sources
   main.cpp
   background_set.cpp
-  # background_setter.cpp
   config.cpp
   dynamic_background_set.cpp
   image_compositor.cpp
@@ -73,6 +72,7 @@ add_executable(
   solar_day_provider.cpp
   hook_script_executor.cpp
   magick_compositor.cpp
+  networking.cpp
   "${BACKGROUND_SETTER_CALLER_SRC_FILE}"
   "${BACKGROUND_SETTER_FILE}")
 
@@ -98,11 +98,6 @@ target_include_directories(argparse INTERFACE ${argparse_SOURCE_DIR}/include)
 target_link_libraries(${CURRENT_TARGET} PRIVATE argparse)
 # target_link_libraries(${CURRENT_TARGET} PRIVATE argparse -static)
 
-# CImg
-# target_include_directories(CImg INTERFACE ${cimg_SOURCE_DIR})
-# target_link_libraries(${CURRENT_TARGET} PRIVATE CImg)
-# target_link_libraries(${CURRENT_TARGET} PRIVATE CImg -static)
-
 # expected
 target_include_directories(expected INTERFACE ${expected_SOURCE_DIR}/include)
 target_link_libraries(${CURRENT_TARGET} PRIVATE expected)
@@ -118,8 +113,10 @@ endif()
 
 # cpr
 # TODO replace with libcurl?
-target_link_libraries(${CURRENT_TARGET} PRIVATE cpr::cpr)
+#target_link_libraries(${CURRENT_TARGET} PRIVATE cpr::cpr)
 # target_link_libraries(${CURRENT_TARGET} PRIVATE cpr::cpr -static)
+find_package(CURL REQUIRED)
+target_link_libraries(${CURRENT_TARGET} PRIVATE CURL::libcurl)
 
 # yaml-cpp
 target_link_libraries(${CURRENT_TARGET} PRIVATE yaml-cpp)

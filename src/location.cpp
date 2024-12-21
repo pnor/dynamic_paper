@@ -4,10 +4,10 @@
 #include <string>
 
 #include <boost/xpressive/xpressive_static.hpp>
-#include <cpr/cpr.h>
 #include <tl/expected.hpp>
 
 #include "logger.hpp"
+#include "networking.hpp"
 
 namespace dynamic_paper {
 
@@ -16,10 +16,12 @@ namespace {
 constexpr std::string_view LOCATION_URL = "https://ipapi.co/latlong/";
 constexpr long SUCESS_CODE = 200;
 
+using NetworkResponse = tl::expected<std::string, NetworkError>;
+
 template <size_t NumberRetries>
-cpr::Response getUrlWithRetry(const std::string_view urlString) {
-  const cpr::Url url = cpr::Url{urlString};
-  cpr::Response response{};
+NetworkResponse getUrlWithRetry(const std::string_view urlString) {
+  NetworkResponse result = tl::make_unexpected(NetworkError::RetryError);
+
   size_t currentTry = 0;
 
   while (currentTry < NumberRetries) {
@@ -27,15 +29,15 @@ cpr::Response getUrlWithRetry(const std::string_view urlString) {
         100 * (static_cast<int>(std::pow(2, currentTry) - 1.0F));
     std::this_thread::sleep_for(std::chrono::milliseconds(sleepTime));
 
-    response = cpr::Get(url);
-    if (response.status_code == SUCESS_CODE) {
-      break;
+    result = getFromURL(urlString);
+    if (result.has_value()) {
+      return result;
     }
     logWarning("Failed to get location: {} / {}", currentTry, NumberRetries);
     currentTry += 1;
   }
 
-  return response;
+  return result;
 }
 
 tl::expected<std::pair<double, double>, LocationError>
@@ -84,13 +86,15 @@ parseLatitudeAndLongitude(const std::string_view text) {
 
 tl::expected<std::pair<double, double>, LocationError>
 getLatitudeAndLongitudeFromHttp() {
-  const cpr::Response response = getUrlWithRetry<3>(LOCATION_URL);
+  const NetworkResponse response = getUrlWithRetry<3>(LOCATION_URL);
 
-  if (response.status_code != SUCESS_CODE) {
+  if (!response.has_value()) {
+    logError("Failed to get location using a network request to {}",
+             LOCATION_URL);
     return tl::unexpected(LocationError::RequestFailed);
   }
 
-  const std::string &text = response.text;
+  const std::string &text = response.value();
 
   return parseLatitudeAndLongitude(text);
 }

@@ -104,6 +104,7 @@ add_executable(
   ${MAIN_SRC_DIR}/solar_day_provider.cpp
   ${MAIN_SRC_DIR}/hook_script_executor.cpp
   ${MAIN_SRC_DIR}/magick_compositor.cpp
+  ${MAIN_SRC_DIR}/networking.cpp
   #${MAIN_SRC_DIR}/nolint/cimg_compositor.cpp
   "${BACKGROUND_SETTER_CALLER_SRC_FILE}"
   "${BACKGROUND_SETTER_FILE}")
@@ -171,8 +172,11 @@ if(LINUX)
 endif()
 
 # cpr
-target_link_libraries(${CURRENT_TARGET} PRIVATE cpr::cpr)
-target_link_libraries(${BENCHMARKING_TARGET} PRIVATE cpr::cpr)
+# target_link_libraries(${CURRENT_TARGET} PRIVATE cpr::cpr)
+# target_link_libraries(${BENCHMARKING_TARGET} PRIVATE cpr::cpr)
+find_package(CURL REQUIRED)
+target_link_libraries(${CURRENT_TARGET} PRIVATE CURL::libcurl)
+target_link_libraries(${BENCHMARKING_TARGET} PRIVATE CURL::libcurl)
 
 # yaml-cpp
 target_link_libraries(${CURRENT_TARGET} PRIVATE yaml-cpp)
