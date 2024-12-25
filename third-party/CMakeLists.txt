@@ -28,25 +28,6 @@ set(argparse_SOURCE_DIR
     PARENT_SCOPE)
 target_compile_options(argparse INTERFACE "-w")
 
-# CImg
-# FetchContent_Declare(
-#   CImg
-#   GIT_REPOSITORY https://github.com/GreycLab/CImg.git
-#   GIT_TAG v.3.3.5
-#   CONFIGURE_COMMAND "" BUILD_COMMAND "")
-#
-# FetchContent_GetProperties(CImg)
-# if(NOT CImg_POPULATED)
-#   FetchContent_Populate(CImg)
-# endif()
-
-# add_library(CImg INTERFACE)
-# set(cimg_SOURCE_DIR
-#     "${cimg_SOURCE_DIR}"
-#     PARENT_SCOPE)
-# target_compile_options(cimg PRIVATE "-w")
-# TODO replace CImg with ImageMagick
-
 # expected
 FetchContent_Declare(
   expected
@@ -69,6 +50,7 @@ target_compile_options(expected INTERFACE "-w")
 FetchContent_Declare(
   yaml-cpp URL https://github.com/jbeder/yaml-cpp/archive/refs/tags/0.8.0.zip)
 FetchContent_MakeAvailable(yaml-cpp)
+set_target_properties(yaml-cpp PROPERTIES IMPORTED_LOCATION ${yaml-cpp_BINARY_DIR}/yaml-cpp.a)
 target_compile_options(yaml-cpp PRIVATE "-w")
 
 # spdlog
@@ -79,21 +61,17 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(spdlog)
 target_compile_options(spdlog PRIVATE "-w")
 
-# cpr
-FetchContent_Declare(
-  cpr
-  GIT_REPOSITORY https://github.com/libcpr/cpr.git
-  GIT_TAG 1.10.5)
-FetchContent_MakeAvailable(cpr)
-target_compile_options(cpr PRIVATE "-w")
-
 # sunset
 FetchContent_Declare(
   sunset
   GIT_REPOSITORY https://github.com/buelowp/sunset.git
-  GIT_TAG 1.1.7)
+  GIT_TAG 1.1.7
+)
+set(SUNSET_BUILD_SHARED FALSE)
 FetchContent_MakeAvailable(sunset)
+set_target_properties(sunset PROPERTIES IMPORTED_LOCATION ${sunset_BINARY_DIR}/libsunset.a)
 target_compile_options(sunset PRIVATE "-w")
+
 
 # googletest
 FetchContent_Declare(

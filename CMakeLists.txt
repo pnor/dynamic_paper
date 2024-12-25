@@ -15,7 +15,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-message(STATUS "--- Build Dynamic Paper")
+message(STATUS "Build Dynamic Paper")
 
 # ====== Compile Options for All ============
 add_compile_options(-Wall -Wextra -Werror=switch -Wno-error=sign-compare -Wfatal-errors)
@@ -58,4 +58,4 @@ add_subdirectory(third-party)
 add_subdirectory(src)
 add_subdirectory(test)
 
-message(STATUS "--- Dynamic Paper : Done!")
+message(STATUS "Dynamic Paper : Done!")

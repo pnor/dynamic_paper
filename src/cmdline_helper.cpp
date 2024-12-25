@@ -97,6 +97,7 @@ void setupLoggingFromYAML(const YAML::Node &config) {
   std::pair<LogLevel, std::filesystem::path> levelAndFileName =
       loadLoggingInfoFromYAML(config);
   setupLogging(std::move(levelAndFileName));
+  logInfo("======== Running dynamic_paper =====");
 }
 
 void setupLoggingFromYAMLForStdout(const YAML::Node &config) {

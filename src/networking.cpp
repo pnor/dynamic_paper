@@ -34,7 +34,7 @@ size_t writeChunk(void *ptr, size_t size, size_t nmemb,
 tl::expected<std::string, NetworkError>
 handleResponseCode(std::string &&responsePayload, CURLcode responseCode,
                    const std::string_view url) {
-  const std::string payload = std::move(responsePayload);
+  std::string payload = std::move(responsePayload);
 
   switch (responseCode) {
   case CURLE_OK: {

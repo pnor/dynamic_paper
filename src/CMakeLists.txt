@@ -79,7 +79,7 @@ add_executable(
 # ===== Release ===========
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
-  install(TARGETS dynamic_paper)
+  install(TARGETS ${CURRENT_TARGET})
 endif()
 
 # ===== Linking ===========
@@ -91,7 +91,6 @@ if(NOT Boost_FOUND)
 endif()
 include_directories(${Boost_INCLUDE_DIRS})
 target_link_libraries(${CURRENT_TARGET} PRIVATE ${Boost_LIBRARIES})
-# target_link_libraries(${CURRENT_TARGET} PRIVATE ${Boost_LIBRARIES} -static)
 
 # argparse
 target_include_directories(argparse INTERFACE ${argparse_SOURCE_DIR}/include)
@@ -111,24 +110,21 @@ if (LINUX)
     # PRIVATE ${CMAKE_SOURCE_DIR}/src/${GOLANG_DIR_NAME}/${GOLANG_OUTPUT_NAME}.a -static)
 endif()
 
-# cpr
-# TODO replace with libcurl?
-#target_link_libraries(${CURRENT_TARGET} PRIVATE cpr::cpr)
-# target_link_libraries(${CURRENT_TARGET} PRIVATE cpr::cpr -static)
+# libcurl
 find_package(CURL REQUIRED)
 target_link_libraries(${CURRENT_TARGET} PRIVATE CURL::libcurl)
 
 # yaml-cpp
+# target_link_libraries(${CURRENT_TARGET} PRIVATE yaml-cpp)
 target_link_libraries(${CURRENT_TARGET} PRIVATE yaml-cpp)
-# target_link_libraries(${CURRENT_TARGET} PRIVATE yaml-cpp -static)
 
 # spdlog
 target_link_libraries(${CURRENT_TARGET} PRIVATE spdlog::spdlog_header_only)
 # target_link_libraries(${CURRENT_TARGET} PRIVATE spdlog::spdlog_header_only -static)
 
 # sunset
+# target_link_libraries(${CURRENT_TARGET} PRIVATE sunset)
 target_link_libraries(${CURRENT_TARGET} PRIVATE sunset)
-# target_link_libraries(${CURRENT_TARGET} PRIVATE sunset -static)
 
 # X11
 find_package(X11 REQUIRED) # TODO support wayland

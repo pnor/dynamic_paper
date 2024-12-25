@@ -2,55 +2,20 @@
 #include <iostream>
 #include <utility>
 
-// #include <CImg.h>
 #include <Magick++.h>
 
 // #include "Tracy.hpp"
 #include "tracy/Tracy.hpp"
 
 #include "src/file_util.hpp"
-#include "src/nolint/cimg_compositor.hpp"
 
 using namespace dynamic_paper;
-
 namespace {
 
 const std::filesystem::path START_IMG =
     "./files/backgrounds/benchmarking/start.jpg";
 const std::filesystem::path END_IMG =
     "./files/backgrounds/benchmarking/end.jpg";
-
-// void compositeUsingCImg(const std::filesystem::path &startImagePath,
-//                         const std::filesystem::path &endImagePath,
-//                         const std::filesystem::path &destinationImagePath,
-//                         const unsigned int percentage) {
-//
-//   using namespace cimg_library;
-//   CImg<unsigned char> baseImage = CImg<>(startImagePath.c_str());
-//   CImg<unsigned char> compositeImage = CImg<>(endImagePath.c_str());
-//   baseImage.draw_image(compositeImage, static_cast<float>(percentage) /
-//   100.0F); baseImage.save(destinationImagePath.c_str());
-// }
-
-// void compositeUsingCImgTakeCImgs(
-//     const cimg_library::CImg<unsigned char> &startImage,
-//     const cimg_library::CImg<unsigned char> &endImage,
-//     const std::filesystem::path &destinationImagePath,
-//     const unsigned int percentage) {
-//   ZoneScoped;
-//
-//   using namespace cimg_library;
-//   FrameMarkStart("Comp - Copying Image");
-//   CImg<unsigned char> compositeImage = startImage;
-//   FrameMarkEnd("Comp - Copying Image");
-//   FrameMarkStart("Comp - Drawing Image");
-//   compositeImage.draw_image(endImage, static_cast<float>(percentage) /
-//   100.0f); FrameMarkEnd("Comp - Drawing Image"); FrameMarkStart("Comp -
-//   Saving Image");
-//   // compositeImage.save(destinationImagePath.c_str());
-//   compositeImage.save_jpeg(destinationImagePath.c_str());
-//   FrameMarkEnd("Comp - Saving Image");
-// }
 
 void compositeUsingImageMagick(
     const Magick::Image &startImage, const Magick::Image &endImage,
@@ -119,10 +84,6 @@ auto main(int argc, char *argv[]) -> int {
 
   FrameMarkStart("Startup");
 
-  //  using namespace cimg_library;
-  // const CImg<unsigned char> startImage = CImg<>(START_IMG.c_str());
-  // const CImg<unsigned char> endImage = CImg<>(END_IMG.c_str());
-
   Magick::Image startImage;
   Magick::Image endImage;
   startImage.read(START_IMG.c_str());
@@ -141,13 +102,8 @@ auto main(int argc, char *argv[]) -> int {
     const auto &percentage = percentageAndPath.first;
     const auto &path = percentageAndPath.second;
 
-    // compositeUsingCImgTakeCImgs(startImage, endImage, path, percentage);
     compositeUsingImageMagick(startImage, endImage, path, percentage);
   }
 
   FrameMarkEnd("Composite Loop");
 }
-
-// TODO directly use image magick
-// (cimg is literally calling it)
-// https://imagemagick.org/script/magick++.php
