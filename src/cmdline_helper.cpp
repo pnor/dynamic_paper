@@ -112,10 +112,24 @@ YAML::Node loadConfigFileIntoYAML(const std::filesystem::path &file) {
     exit(EXIT_FAILURE);
   }
 
+  // TODO catch more exceptions
   try {
     return YAML::LoadFile(file);
   } catch (const YAML::BadFile &e) {
     errorMsg("Could not parse config file `{}`", file.string());
+    logError("Could not parse config file {} due to {}", file.string(),
+             e.what());
+    exit(EXIT_FAILURE);
+  } catch (const YAML::ParserException &e) {
+    errorMsg("`{}` config file is malformed.", file.string());
+    logError("Could not parse config file {} due to {}", file.string(),
+             e.what());
+    exit(EXIT_FAILURE);
+  } catch (const std::exception &e) {
+    errorMsg("Unable to parse `{}` due to an unknown error: {}", file.string(),
+             e.what());
+    logError("Could not parse config file {} due to {}", file.string(),
+             e.what());
     exit(EXIT_FAILURE);
   }
 }

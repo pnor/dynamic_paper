@@ -7,6 +7,11 @@
 #include <tl/expected.hpp>
 #include <yaml-cpp/yaml.h>
 
+// Include this last
+// Defines C macros that mess with the other libraries
+// (yaml-cpp in particular by defining an "IsNaN" macro)
+#include <Magick++.h>
+
 #include "background_set.hpp"
 #include "cmdline_helper.hpp"
 #include "config.hpp"
@@ -110,7 +115,11 @@ void handleCacheCommand(const Config &config,
 }
 
 void showHelp(const argparse::ArgumentParser &program) {
-  std::cout << program.help().str();
+  try {
+    std::cout << program.help().str();
+  } catch (const std::exception &e) {
+    logError("Encountered exception when trying to show help: {}", e.what());
+  }
 }
 
 } // namespace
@@ -118,6 +127,8 @@ void showHelp(const argparse::ArgumentParser &program) {
 // ===== Main ===============
 
 auto main(int argc, char *argv[]) -> int {
+  Magick::InitializeMagick(*argv);
+
   argparse::ArgumentParser program("dynamic_paper");
   program.add_argument(CONFIG_FLAG_NAME)
       .default_value<std::string>(std::string(DEFAULT_CONFIG_FILE_NAME))
@@ -161,6 +172,8 @@ auto main(int argc, char *argv[]) -> int {
   } catch (const std::exception &generalException) {
     errorMsg("An unknown error occurred!\n{}", generalException.what());
   }
+
+  logInfo("== Parsed command for dynamic_paper ... =====");
 
   if (program.is_subcommand_used(showCommand)) {
     const Config config = getConfigAndSetupLogging(program, true);
