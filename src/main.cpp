@@ -20,8 +20,11 @@
 
 using namespace dynamic_paper;
 
-// TODO avoid network call on non-show commands
-// TODO package as all in 1 exec, reduce dependencies?
+// TODO replace yaml-cpp since it has some weirdness
+// - Magick++.h messes with it if included before
+// - deref with [] on a key that doesnt exist returns a valid "undefined" Node,
+//   but also throws so you can't really catch it and run an undefined Node
+//   branch
 // TODO gpu composit image using opencv ? optional depends ??
 // TODO choose any 1 image selection, in any set
 // TODO rehaul general config for cmdline options, then file then defualts? (!

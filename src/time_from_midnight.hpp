@@ -56,7 +56,7 @@ public:
   template <DayOrShorter T>
   constexpr TimeFromMidnight(T time) : seconds(std::chrono::seconds(time)) {}
   TimeFromMidnight(const TimeFromMidnight &) = default;
-  TimeFromMidnight(TimeFromMidnight &&) = default;
+  TimeFromMidnight(TimeFromMidnight &&) noexcept = default;
   ~TimeFromMidnight() = default;
 
 private:
