@@ -50,7 +50,9 @@ target_compile_options(expected INTERFACE "-w")
 FetchContent_Declare(
   yaml-cpp URL https://github.com/jbeder/yaml-cpp/archive/refs/tags/0.8.0.zip)
 FetchContent_MakeAvailable(yaml-cpp)
-set_target_properties(yaml-cpp PROPERTIES IMPORTED_LOCATION ${yaml-cpp_BINARY_DIR}/yaml-cpp.a)
+if(${DYNAMIC_PAPER_BUILD_LIBRARIES_STATIC})
+  set_target_properties(yaml-cpp PROPERTIES IMPORTED_LOCATION ${yaml-cpp_BINARY_DIR}/yaml-cpp.a)
+endif()
 target_compile_options(yaml-cpp PRIVATE "-w")
 
 # spdlog
@@ -67,7 +69,11 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/buelowp/sunset.git
   GIT_TAG 1.1.7
 )
-set(SUNSET_BUILD_SHARED FALSE)
+if(${DYNAMIC_PAPER_BUILD_LIBRARIES_STATIC})
+  set(SUNSET_BUILD_SHARED FALSE)
+else()
+  set(SUNSET_BUILD_SHARED TRUE)
+endif()
 FetchContent_MakeAvailable(sunset)
 set_target_properties(sunset PROPERTIES IMPORTED_LOCATION ${sunset_BINARY_DIR}/libsunset.a)
 target_compile_options(sunset PRIVATE "-w")

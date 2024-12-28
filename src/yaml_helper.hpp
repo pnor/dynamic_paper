@@ -212,14 +212,7 @@ template <typename T>
 T generalConfigParseOrUseDefault(const YAML::Node &config,
                                  const std::string_view key,
                                  const T defaultValue) {
-  YAML::Node node{};
-  try {
-    node = config[key];
-  } catch (const std::exception &e) {
-    logError("Ran into excpetion when getting key {} from YAML: {}", key,
-             e.what());
-    return defaultValue;
-  }
+  YAML::Node node = config[key];
 
   if constexpr (is_optional<T>) {
     if (!node.IsDefined()) {

@@ -112,7 +112,6 @@ YAML::Node loadConfigFileIntoYAML(const std::filesystem::path &file) {
     exit(EXIT_FAILURE);
   }
 
-  // TODO catch more exceptions
   try {
     return YAML::LoadFile(file);
   } catch (const YAML::BadFile &e) {

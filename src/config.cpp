@@ -141,7 +141,7 @@ Config loadConfigFromYAML(const YAML::Node &config,
   const SolarDayProvider solarDayProvider =
       createSolarDayProviderFromParsedFields(
           optLatitude, optLongitude,
-          findLocationOverHttp ? optUseLocationInfoOverSearch : false,
+          findLocationOverHttp ? optUseLocationInfoOverSearch : true,
           optSunriseTime, optSunsetTime);
 
   return {backgroundSetConfigFile, hookScript, imageCacheDir, solarDayProvider};

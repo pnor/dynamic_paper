@@ -17,6 +17,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 message(STATUS "Build Dynamic Paper")
 
+# ====== Build Options =====================
+option(DYNAMIC_PAPER_BUILD_LIBRARIES_STATIC
+    "Build library dependencies as static archives to include in the executable"
+    TRUE)
+
 # ====== Compile Options for All ============
 add_compile_options(-Wall -Wextra -Werror=switch -Wno-error=sign-compare -Wfatal-errors)
 
