@@ -176,8 +176,6 @@ auto main(int argc, char *argv[]) -> int {
     errorMsg("An unknown error occurred!\n{}", generalException.what());
   }
 
-  logInfo("== Parsed command for dynamic_paper ... =====");
-
   if (program.is_subcommand_used(showCommand)) {
     const Config config = getConfigAndSetupLogging(program, true);
     handleShowCommand(showCommand, config);

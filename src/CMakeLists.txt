@@ -79,7 +79,9 @@ add_executable(
 # ===== Release ===========
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
-  install(TARGETS ${CURRENT_TARGET})
+  # TODO only install the executable?
+  set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY true)
+  install(TARGETS ${CURRENT_TARGET} DESTINATION . OPTIONAL)
 endif()
 
 # ===== Linking ===========
