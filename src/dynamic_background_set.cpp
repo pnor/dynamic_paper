@@ -2,8 +2,6 @@
 
 #include <random>
 
-#include "image_compositor.hpp"
-#include "location_info.hpp"
 #include "math_util.hpp"
 #include "time_util.hpp"
 

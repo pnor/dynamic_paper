@@ -1,7 +1,6 @@
 #include "background_setter.hpp"
 
 #include <filesystem>
-#include <format>
 #include <string>
 
 #include <tl/expected.hpp>

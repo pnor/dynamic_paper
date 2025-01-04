@@ -6,11 +6,12 @@ cmake_policy(SET CMP0167 NEW)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # ===== OS check ==================
-if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    set(MACOSX TRUE)
-  else()
-    set(LINUX TRUE) # default to Linux
-endif()
+# if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+#     set(MACOSX TRUE)
+#   else()
+#     set(LINUX TRUE) # default to Linux
+# endif()
+
 
 # ===== Common Locations ==========
 
@@ -140,6 +141,10 @@ find_package(ImageMagick COMPONENTS Magick++)
 include_directories(${ImageMagick_INCLUDE_DIRS})
 target_link_libraries(${CURRENT_TARGET} PRIVATE ${ImageMagick_LIBRARIES})
 
+# fmt (MacOS)
+if(MACOSX)
+  target_link_libraries(${CURRENT_TARGET} PRIVATE fmt::fmt)
+endif()
 
 # ===== Clean Command ==========
 

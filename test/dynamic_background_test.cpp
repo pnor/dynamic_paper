@@ -6,7 +6,6 @@
 #include <chrono>
 #include <cstddef>
 #include <filesystem>
-#include <format>
 #include <optional>
 #include <string>
 #include <string_view>

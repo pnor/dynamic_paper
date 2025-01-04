@@ -21,6 +21,15 @@ message(STATUS "Build Dynamic Paper")
 option(DYNAMIC_PAPER_BUILD_LIBRARIES_STATIC
     "Build library dependencies as static archives to include in the executable"
     TRUE)
+option(BUILD_SHARED_LIBS "Build using shared libraries" FALSE)
+
+# ===== OS Specific ========================
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  set(MACOSX TRUE)
+  add_compile_definitions(use_fmt_lib true)
+else()
+  set(LINUX TRUE) # default to Linux
+endif()
 
 # ====== Compile Options for All ============
 add_compile_options(-Wall -Wextra -Werror=switch -Wno-error=sign-compare -Wfatal-errors)

@@ -62,6 +62,11 @@ FetchContent_Declare(
   GIT_TAG v1.15.0)
 FetchContent_MakeAvailable(spdlog)
 target_compile_options(spdlog PRIVATE "-w")
+if (MACOSX)
+  target_compile_definitions(spdlog_header_only INTERFACE SPDLOG_FMT_EXTERNAL)
+else()
+  target_compile_definitions(spdlog_header_only INTERFACE SPDLOG_USE_STD_FORMAT)
+endif()
 
 # sunset
 FetchContent_Declare(
@@ -78,6 +83,16 @@ FetchContent_MakeAvailable(sunset)
 set_target_properties(sunset PROPERTIES IMPORTED_LOCATION ${sunset_BINARY_DIR}/libsunset.a)
 target_compile_options(sunset PRIVATE "-w")
 
+# fmt
+# Only for MacOS because Apple Clang is out of date and doesn't have a constexpr format...
+if(MACOSX)
+FetchContent_Declare(
+  fmt
+  GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+  GIT_TAG 11.0.2)
+# TODO NOTE: using this version because at the time, spdlog didn't compile with the latest fmt
+FetchContent_MakeAvailable(fmt)
+endif()
 
 # googletest
 FetchContent_Declare(

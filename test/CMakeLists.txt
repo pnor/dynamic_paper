@@ -205,6 +205,11 @@ include_directories(${ImageMagick_INCLUDE_DIRS})
 target_link_libraries(${CURRENT_TARGET} PRIVATE ${ImageMagick_LIBRARIES})
 target_link_libraries(${BENCHMARKING_TARGET} PRIVATE ${ImageMagick_LIBRARIES})
 
+# fmt (MacOS)
+if(MACOSX)
+  target_link_libraries(${CURRENT_TARGET} PRIVATE fmt::fmt)
+endif()
+
 # The main project
 target_include_directories(${CURRENT_TARGET}
   PRIVATE ${dynamic_paper_SOURCE_DIR})

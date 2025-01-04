@@ -7,6 +7,7 @@
 
 #include "background_set.hpp"
 #include "config.hpp"
+#include "format.hpp"
 
 namespace dynamic_paper {
 
@@ -18,14 +19,14 @@ constexpr std::string_view LOG_TO_STDOUT_FLAG_NAME = "--stdout";
 // ===== Logging ===============
 
 template <typename... Ts>
-void errorMsg(const std::format_string<Ts...> msg, Ts &&...args) {
+void errorMsg(const FormatString<Ts...> msg, Ts &&...args) {
   constexpr std::string_view ANSI_COLOR_RED = "\x1b[31m";
   constexpr std::string_view ANSI_COLOR_RESET = "\x1b[0m";
 
   const std::string formattedMessage =
-      std::format(msg, std::forward<Ts>(args)...);
-  std::cout << std::format("{}{}{}", ANSI_COLOR_RED, formattedMessage,
-                           ANSI_COLOR_RESET)
+      dynamic_paper::format(msg, std::forward<Ts>(args)...);
+  std::cout << dynamic_paper::format("{}{}{}", ANSI_COLOR_RED, formattedMessage,
+                                     ANSI_COLOR_RESET)
             << '\n';
 }
 

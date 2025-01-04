@@ -2,13 +2,13 @@
 #include <cctype>
 #include <chrono>
 #include <ctime>
-#include <format>
 #include <string>
 
 #include <boost/xpressive/xpressive_static.hpp>
 #include <sunset.h>
 #include <tl/expected.hpp>
 
+#include "format.hpp"
 #include "location.hpp"
 #include "logger.hpp"
 #include "string_util.hpp"
@@ -146,7 +146,7 @@ TimeFromMidnight getCurrentTime() {
                                           std::chrono::system_clock::now()};
 
   const std::string timeString =
-      std::format("{}", zonedTime).substr(START_OF_LOCAL_TIME);
+      dynamic_paper::format("{}", zonedTime).substr(START_OF_LOCAL_TIME);
 
   logDebug("Current time unparsed is {}", timeString);
 

@@ -3,9 +3,10 @@
 /** Helper functions for logging */
 
 #include <filesystem>
-#include <format>
 
 #include <spdlog/spdlog.h>
+
+#include "format.hpp"
 
 namespace dynamic_paper {
 
@@ -30,44 +31,44 @@ void setupLoggingForStdout(LogLevel level);
 /** Prints a debug log message saying `msg`. Accepts `args` for use in a format
  * string. */
 template <typename... Ts>
-void logDebug(const std::format_string<Ts...> &msg, Ts &&...args) {
-  spdlog::debug(std::format(msg, std::forward<Ts>(args)...));
+void logDebug(const FormatString<Ts...> &msg, Ts &&...args) {
+  spdlog::debug(dynamic_paper::format<Ts...>(msg, std::forward<Ts>(args)...));
 }
 
 /** Prints an informational log message saying `msg`. Accepts `args` for use in
  * a format string. */
 template <typename... Ts>
-void logInfo(const std::format_string<Ts...> &msg, Ts &&...args) {
-  spdlog::info(std::format(msg, std::forward<Ts>(args)...));
+void logInfo(const FormatString<Ts...> &msg, Ts &&...args) {
+  spdlog::info(dynamic_paper::format<Ts...>(msg, std::forward<Ts>(args)...));
 }
 
 /** Prints a trace log message saying `msg`. Accepts `args` for use in a format
  * string. */
 template <typename... Ts>
-constexpr void logTrace(const std::format_string<Ts...> &msg, Ts &&...args) {
-  spdlog::trace(std::format(msg, std::forward<Ts>(args)...));
+constexpr void logTrace(const FormatString<Ts...> &msg, Ts &&...args) {
+  spdlog::trace(dynamic_paper::format<Ts...>(msg, std::forward<Ts>(args)...));
 }
 
 /** Prints a warning log message saying `msg`. Accepts `args` for use in a
  * format string.*/
 template <typename... Ts>
-constexpr void logWarning(const std::format_string<Ts...> &msg, Ts &&...args) {
-  spdlog::warn(std::format(msg, std::forward<Ts>(args)...));
+constexpr void logWarning(const FormatString<Ts...> &msg, Ts &&...args) {
+  spdlog::warn(dynamic_paper::format<Ts...>(msg, std::forward<Ts>(args)...));
 }
 
 /** Prints an error log message saying `msg`. Accepts `args` for use in a format
  * string. */
 template <typename... Ts>
-constexpr void logError(const std::format_string<Ts...> &msg, Ts &&...args) {
-  spdlog::error(std::format(msg, std::forward<Ts>(args)...));
+constexpr void logError(const FormatString<Ts...> &msg, Ts &&...args) {
+  spdlog::error(dynamic_paper::format<Ts...>(msg, std::forward<Ts>(args)...));
 }
 
 /** Prints a fatal error log message saying `msg`. Accepts `args` for use in a
  * format string. */
 template <typename... Ts>
-constexpr void logFatalError(const std::format_string<Ts...> &msg,
-                             Ts &&...args) {
-  spdlog::critical(std::format(msg, std::forward<Ts>(args)...));
+constexpr void logFatalError(const FormatString<Ts...> &msg, Ts &&...args) {
+  spdlog::critical(
+      dynamic_paper::format<Ts...>(msg, std::forward<Ts>(args)...));
 }
 
 /** Asserts `condition`, printing a message if it fails and throwing an
@@ -75,16 +76,17 @@ constexpr void logFatalError(const std::format_string<Ts...> &msg,
  * Accepts `args` for use in a format string.
  */
 template <typename... Ts>
-constexpr void logAssert(const bool condition,
-                         const std::format_string<Ts...> &msg, Ts &&...args) {
+constexpr void logAssert(const bool condition, const FormatString<Ts...> &msg,
+                         Ts &&...args) {
   if (condition) {
     return;
   }
 
-  spdlog::critical(std::format(msg, std::forward<Ts>(args)...));
+  spdlog::critical(dynamic_paper::format(msg, std::forward<Ts>(args)...));
 
-  throw std::logic_error("Assertion failed: " +
-                         std::format(msg, std::forward<Ts>(args)...));
+  throw std::logic_error(
+      "Assertion failed: " +
+      dynamic_paper::format<Ts...>(msg, std::forward<Ts>(args)...));
 }
 
 } // namespace dynamic_paper

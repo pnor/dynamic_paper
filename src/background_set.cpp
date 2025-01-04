@@ -4,7 +4,6 @@
 #include <cassert>
 #include <chrono>
 #include <filesystem>
-#include <format>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -12,7 +11,6 @@
 #include <type_traits>
 #include <utility>
 #include <variant>
-#include <vector>
 
 #include <tl/expected.hpp>
 #include <yaml-cpp/node/node.h>
@@ -23,10 +21,8 @@
 #include "file_util.hpp"
 #include "logger.hpp"
 #include "static_background_set.hpp"
-#include "time_util.hpp"
 #include "transition_info.hpp"
 #include "type_helper.hpp"
-#include "variant_visitor_templ.hpp"
 #include "yaml_helper.hpp"
 
 // TODO make this easier to add and remove keys; should be able to just list it

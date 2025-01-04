@@ -1,8 +1,7 @@
 #include "image_compositor.hpp"
 
-#include <format>
-
 #include "file_util.hpp"
+#include "format.hpp"
 #include "logger.hpp"
 #include "magick_compositor.hpp"
 
@@ -102,7 +101,7 @@ pathForCompositeImage(const std::filesystem::path &commonImageDirectory,
   const std::string startStem = std::filesystem::path(startImageName).stem();
   const std::string endStem = std::filesystem::path(endImageName).stem();
 
-  const std::string compositeName = std::format(
+  const std::string compositeName = dynamic_paper::format(
       "{}-{}-{}-{}{}", dirName, startStem, endStem, percentage, extension);
 
   return cacheDirectory / compositeName;
@@ -159,7 +158,7 @@ ImageCompositorInPlace::getCompositedImage(
   const std::string compositeExtension =
       getExtension(startImageName, endImageName);
   const std::string compositeFileName =
-      std::format("{}{}", IN_PLACE_FILE_NAME, compositeExtension);
+      dynamic_paper::format("{}{}", IN_PLACE_FILE_NAME, compositeExtension);
 
   const std::filesystem::path compositeImagePath =
       std::filesystem::temp_directory_path() / compositeFileName;
