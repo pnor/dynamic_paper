@@ -2,16 +2,11 @@ cmake_minimum_required(VERSION 3.27)
 if(POLICY CMP0174)
     cmake_policy(SET CMP0174 NEW)
 endif()
-cmake_policy(SET CMP0167 NEW)
+if(POLICY CMP0167)
+  cmake_policy(SET CMP0167 NEW)
+endif()
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-# ===== OS check ==================
-# if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-#     set(MACOSX TRUE)
-#   else()
-#     set(LINUX TRUE) # default to Linux
-# endif()
-
 
 # ===== Common Locations ==========
 

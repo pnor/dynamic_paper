@@ -1,7 +1,13 @@
 cmake_minimum_required(VERSION 3.27)
-cmake_policy(SET CMP0167 NEW)
-cmake_policy(SET CMP0169 OLD)
-cmake_policy(SET CMP0174 NEW)
+if(POLICY CMP0167)
+  cmake_policy(SET CMP0167 NEW)
+endif()
+if(POLICY CMP0169)
+  cmake_policy(SET CMP0169 OLD)
+endif()
+if(POLICY CMP0174)
+  cmake_policy(SET CMP0174 NEW)
+endif()
 
 include(FetchContent)
 
