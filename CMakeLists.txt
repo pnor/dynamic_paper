@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.27)
-cmake_policy(SET CMP0174 NEW)
-cmake_policy(SET CMP0167 NEW)
+if(POLICY CMP0174)
+  cmake_policy(SET CMP0174 NEW)
+endif()
+if(POLICY CMP0167)
+  cmake_policy(SET CMP0167 NEW)
+endif()
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -19,8 +23,8 @@ message(STATUS "Build Dynamic Paper")
 
 # ====== Build Options =====================
 option(DYNAMIC_PAPER_BUILD_LIBRARIES_STATIC
-    "Build library dependencies as static archives to include in the executable"
-    TRUE)
+  "Build library dependencies as static archives to include in the executable"
+  TRUE)
 option(BUILD_SHARED_LIBS "Build using shared libraries" FALSE)
 
 # ===== OS Specific ========================
@@ -36,22 +40,22 @@ add_compile_options(-Wall -Wextra -Werror=switch -Wno-error=sign-compare -Wfatal
 
 # Debug Compile Options
 set(CMAKE_CXX_FLAGS_DEBUG
-    "${CMAKE_CXX_FLAGS_DEBUG} -ggdb -O0"
+  "${CMAKE_CXX_FLAGS_DEBUG} -ggdb -O0"
 )
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    message(STATUS "Configuring for Debug build")
-    add_link_options(-fsanitize=address)
+  message(STATUS "Configuring for Debug build")
+  add_link_options(-fsanitize=address)
 endif()
 
 
 # ====== Release Compile Options ============
 set(CMAKE_CXX_FLAGS_RELEASE
-    "${CMAKE_CXX_FLAGS_RELEASE} -O3"
+  "${CMAKE_CXX_FLAGS_RELEASE} -O3"
 )
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    message(STATUS "Configuring for Release build")
+  message(STATUS "Configuring for Release build")
 endif()
 
 # ====== Uninstall =============
