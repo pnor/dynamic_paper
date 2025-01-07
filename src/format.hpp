@@ -52,8 +52,8 @@ struct fmt::formatter<dynamic_paper::TimeFromMidnight>
   auto format(const dynamic_paper::TimeFromMidnight &time,
               fmt::format_context &ctx) const {
     return fmt::formatter<std::string>::format(
-        fmt::format("{} from Midnight ({})", chrono::seconds(time),
-                    std::format("{:%T}", chrono::seconds(time))),
+        fmt::format("{} from Midnight ({})", std::chrono::seconds(time),
+                    std::format("{:%T}", std::chrono::seconds(time))),
         ctx);
   }
 };
