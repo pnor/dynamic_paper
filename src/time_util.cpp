@@ -2,6 +2,7 @@
 #include <cctype>
 #include <chrono>
 #include <ctime>
+#include <format>
 #include <string>
 
 #include <boost/xpressive/xpressive_static.hpp>
@@ -142,11 +143,12 @@ TimeFromMidnight getCurrentTime() {
   constexpr size_t HOURS_MINUTES_SIZE = 8;
   constexpr size_t START_OF_LOCAL_TIME = 11;
 
-  const std::chrono::time_point<std::chrono::system_clock> now =
-      std::chrono::system_clock::now();
+  const std::chrono::zoned_time zonedTime{std::chrono::current_zone(),
+                                          std::chrono::system_clock::now()};
 
+  // TODO figure out way to format without std::format to respect that flag
   const std::string timeString =
-      dynamic_paper::format("{}", now).substr(START_OF_LOCAL_TIME);
+      std::format("{}", zonedTime).substr(START_OF_LOCAL_TIME);
 
   logDebug("Current time unparsed is {}", timeString);
 
