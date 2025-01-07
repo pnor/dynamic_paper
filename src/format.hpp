@@ -47,9 +47,9 @@ constexpr std::string format(const FormatString<Ts...> &msg, Ts &&...args) {
 
 // fmt::format
 template <>
-struct fmt::formatter<dydynamic_paper::TimeFromMidnight>
+struct fmt::formatter<dynamic_paper::TimeFromMidnight>
     : formatter<std::string> {
-  auto format(const dydynamic_paper::TimeFromMidnight &time,
+  auto format(const dynamic_paper::TimeFromMidnight &time,
               fmt::format_context &ctx) const {
     return fmt::formatter<std::string>::format(
         fmt::format("{} from Midnight ({})", chrono::seconds(time),
