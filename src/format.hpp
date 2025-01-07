@@ -46,9 +46,11 @@ constexpr std::string format(const FormatString<Ts...> &msg, Ts &&...args) {
 #ifdef use_fmt_lib
 
 // fmt::format
-template <> struct fmt::formatter<complex> {
-  template <typename FormatContext>
-  auto format(complex const &number, FormatContext &ctx) const {
+template <>
+struct fmt::formatter<dydynamic_paper::TimeFromMidnight>
+    : formatter<std::string> {
+  auto format(const dydynamic_paper::TimeFromMidnight &time,
+              fmt::format_context &ctx) const {
     return fmt::formatter<std::string>::format(
         fmt::format("{} from Midnight ({})", chrono::seconds(time),
                     std::format("{:%T}", chrono::seconds(time))),

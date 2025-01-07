@@ -50,7 +50,9 @@ becomeAndRunHookScript(const std::filesystem::path &hookScriptPath,
         hookScriptPath.string(), imagePath.string(), strerror(errno));
     exit(EXIT_FAILURE);
   }
-  std::unreachable();
+
+  // unreachable
+  __builtin_unreachable();
 }
 
 } // namespace

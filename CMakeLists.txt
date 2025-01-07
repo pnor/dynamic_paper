@@ -30,7 +30,7 @@ option(BUILD_SHARED_LIBS "Build using shared libraries" FALSE)
 # ===== OS Specific ========================
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   set(MACOSX TRUE)
-  add_compile_definitions(use_fmt_lib true)
+  add_compile_definitions(use_fmt_lib)
 else()
   set(LINUX TRUE) # default to Linux
 endif()
