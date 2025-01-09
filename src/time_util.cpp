@@ -138,29 +138,6 @@ sunOffsetStringToTimeOffset(const SolarDay &solarDay,
 
 // ===== header ====================
 
-TimeFromMidnight getCurrentTime() {
-  // HH:MM:SS
-  constexpr size_t HOURS_MINUTES_SIZE = 8;
-  constexpr size_t START_OF_LOCAL_TIME = 11;
-
-  const std::chrono::zoned_time zonedTime{std::chrono::current_zone(),
-                                          std::chrono::system_clock::now()};
-
-  // TODO figure out way to format without std::format to respect that flag
-  const std::string timeString =
-      std::format("{}", zonedTime).substr(START_OF_LOCAL_TIME);
-
-  logDebug("Current time unparsed is {}", timeString);
-
-  std::optional<TimeFromMidnight> optTime = convertTimeStringToTimeFromMidnight(
-      timeString.substr(0, HOURS_MINUTES_SIZE));
-
-  logAssert(optTime.has_value(), "Unable to parse valid time from return "
-                                 "result of current time as string");
-
-  return optTime.value();
-}
-
 SolarDay getSolarDayUsingLocation(const LocationInfo &locationInfo) {
   const std::pair<double, double> latitudeAndLongitude =
       getLatitudeAndLongitude(locationInfo);

@@ -4,7 +4,7 @@
 #include <string>
 #include <utility>
 
-#ifdef use_fmt_lib
+#ifdef dynamic_paper_use_fmt_lib
 #include <fmt/core.h>
 #else
 #include <format>
@@ -24,7 +24,7 @@
 
 namespace dynamic_paper {
 
-#ifdef use_fmt_lib
+#ifdef dynamic_paper_use_fmt_lib
 template <typename... Ts> using FormatString = fmt::format_string<Ts...>;
 #else
 template <typename... Ts> using FormatString = std::format_string<Ts...>;
@@ -32,7 +32,7 @@ template <typename... Ts> using FormatString = std::format_string<Ts...>;
 
 template <typename... Ts>
 constexpr std::string format(const FormatString<Ts...> &msg, Ts &&...args) {
-#ifdef use_fmt_lib
+#ifdef dynamic_paper_use_fmt_lib
   return fmt::format<Ts...>(msg, std::forward<Ts>(args)...);
 #else
   return std::format<Ts...>(msg, std::forward<Ts>(args)...);
@@ -43,7 +43,7 @@ constexpr std::string format(const FormatString<Ts...> &msg, Ts &&...args) {
 
 // ===== Formatter for custom types =================
 
-#ifdef use_fmt_lib
+#ifdef dynamic_paper_use_fmt_lib
 
 // fmt::format
 template <>

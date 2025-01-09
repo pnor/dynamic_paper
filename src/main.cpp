@@ -33,7 +33,10 @@ using namespace dynamic_paper;
 
 namespace {
 
+constexpr std::string_view ANSI_BOLD = "\x1b[0m";
 constexpr std::string_view ANSI_COLOR_CYAN = "\x1b[36m";
+constexpr std::string_view ANSI_COLOR_RED = "\x1b[31m";
+constexpr std::string_view ANSI_COLOR_MAGENTA = "\x1b[35m";
 constexpr std::string_view ANSI_COLOR_RESET = "\x1b[0m";
 
 // ===== Command Line Arguements ===============
@@ -105,6 +108,23 @@ void handleListCommand(const Config &config) {
   }
 }
 
+void handleInfoCommand(argparse::ArgumentParser &showCommand,
+                       const Config &config) {
+  const std::string &name = showCommand.get("name");
+
+  std::optional<BackgroundSet> optBackgroundSet =
+      getBackgroundSetWithNameFromFile(name, config);
+
+  if (!optBackgroundSet.has_value()) {
+    std::cout << ANSI_COLOR_RED << "Background set with name " << name
+              << " doesn't exist!\n"
+              << ANSI_COLOR_RESET;
+    return;
+  }
+
+  printBackgroundSetInfo(optBackgroundSet.value(), config);
+}
+
 void handleCacheCommand(const Config &config,
                         const argparse::ArgumentParser &cache,
                         const argparse::ArgumentParser &info) {
@@ -150,6 +170,10 @@ auto main(int argc, char *argv[]) -> int {
   argparse::ArgumentParser listCommand("list");
   listCommand.add_description("List all wallpaper set options");
 
+  argparse::ArgumentParser infoCommand("info");
+  infoCommand.add_description("Show info for wallpaper set with name");
+  infoCommand.add_argument("name").help("Name of wallpaper set to describe");
+
   argparse::ArgumentParser helpCommand("help");
   listCommand.add_description("Show help");
 
@@ -163,6 +187,7 @@ auto main(int argc, char *argv[]) -> int {
   program.add_subparser(showCommand);
   program.add_subparser(randomCommand);
   program.add_subparser(listCommand);
+  program.add_subparser(infoCommand);
   program.add_subparser(helpCommand);
   program.add_subparser(cacheCommand);
 
@@ -181,6 +206,9 @@ auto main(int argc, char *argv[]) -> int {
   } else if (program.is_subcommand_used(listCommand)) {
     const Config config = getConfigAndSetupLogging(program, false);
     handleListCommand(config);
+  } else if (program.is_subcommand_used(infoCommand)) {
+    const Config config = getConfigAndSetupLogging(program, true);
+    handleInfoCommand(infoCommand, config);
   } else if (program.is_subcommand_used(randomCommand)) {
     const Config config = getConfigAndSetupLogging(program, true);
     handleRandomCommand(config);

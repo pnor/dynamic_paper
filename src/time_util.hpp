@@ -13,11 +13,6 @@
 namespace dynamic_paper {
 
 /**
- * Returns the current time using the system clock, as seconds from midnight
- */
-TimeFromMidnight getCurrentTime();
-
-/**
  * Returns the time of sunrise and sunset by querying another program specified
  * by `LocationInfo`.
  */

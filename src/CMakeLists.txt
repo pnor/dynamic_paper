@@ -61,6 +61,7 @@ add_executable(
   logger.cpp
   static_background_set.cpp
   time_util.cpp
+  time_util_current_time.cpp
   time_from_midnight.cpp
   cmdline_helper.cpp
   file_util.cpp

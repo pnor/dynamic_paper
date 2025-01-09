@@ -30,9 +30,10 @@ option(BUILD_SHARED_LIBS "Build using shared libraries" FALSE)
 # ===== OS Specific ========================
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   set(MACOSX TRUE)
-  add_compile_definitions(use_fmt_lib)
+  add_compile_definitions(dynamic_paper_use_fmt_lib)
 else()
   set(LINUX TRUE) # default to Linux
+  add_compile_definitions(dynamic_paper_use_std_chrono_zoned_time)
 endif()
 
 # ====== Compile Options for All ============

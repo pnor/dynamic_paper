@@ -101,6 +101,7 @@ add_executable(
   ${MAIN_SRC_DIR}/logger.cpp
   ${MAIN_SRC_DIR}/static_background_set.cpp
   ${MAIN_SRC_DIR}/time_util.cpp
+  ${MAIN_SRC_DIR}/time_util_current_time.cpp
   ${MAIN_SRC_DIR}/cmdline_helper.cpp
   ${MAIN_SRC_DIR}/file_util.cpp
   ${MAIN_SRC_DIR}/location.cpp

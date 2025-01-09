@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cstdio>
+#include <iostream>
 #include <optional>
 #include <random>
 #include <string>
@@ -23,12 +24,19 @@
 #include "defaults.hpp"
 #include "dynamic_background_set.hpp"
 #include "time_from_midnight.hpp"
+#include "time_util_current_time.hpp"
 
 namespace dynamic_paper {
 
 // ===== Helper ===================
 
 namespace {
+
+constexpr std::string_view ANSI_BOLD = "\x1b[0m";
+constexpr std::string_view ANSI_COLOR_CYAN = "\x1b[36m";
+constexpr std::string_view ANSI_COLOR_RED = "\x1b[31m";
+constexpr std::string_view ANSI_COLOR_MAGENTA = "\x1b[35m";
+constexpr std::string_view ANSI_COLOR_RESET = "\x1b[0m";
 
 /**
  *  Parses yaml info in `backgroundSetFile` into a pair that maps the name of
@@ -325,6 +333,39 @@ void showBackgroundSet(BackgroundSet &backgroundSet, const Config &config) {
       flushLogger();
       std::this_thread::sleep_for(sleepTime);
     }
+  }
+}
+
+void printBackgroundSetInfo(BackgroundSet &backgroundSet,
+                            const Config &config) {
+  std::optional<StaticBackgroundData> staticData =
+      backgroundSet.getStaticBackgroundData();
+
+  if (staticData.has_value()) {
+    const StaticBackgroundData &data = staticData.value();
+
+    std::cout << ANSI_BOLD << ANSI_COLOR_CYAN << backgroundSet.getName()
+              << ANSI_COLOR_RESET << "\n\n";
+    std::cout << ANSI_COLOR_MAGENTA << "Mode: " << ANSI_COLOR_RESET
+              << backgroundSetModeString(data.mode) << "\n";
+    std::cout << ANSI_COLOR_MAGENTA << "Image Directory: " << ANSI_COLOR_RESET
+              << data.imageDirectory << "\n";
+    if (data.imageNames.size() == 1) {
+      std::cout << ANSI_COLOR_MAGENTA << "Image: " << ANSI_COLOR_RESET
+                << data.imageNames.at(0) << "\n";
+    } else {
+      std::cout << ANSI_COLOR_MAGENTA << "Images:\n";
+      for (const std::string_view name : data.imageNames) {
+        std::cout << " - " << name << "\n";
+      }
+    }
+    std::cout << "\n";
+  }
+
+  const std::optional<DynamicBackgroundData> dynamicData =
+      backgroundSet.getDynamicBackgroundData();
+  if (dynamicData.has_value()) {
+    const DynamicBackgroundData &data = dynamicData.value();
   }
 }
 

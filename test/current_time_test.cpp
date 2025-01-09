@@ -8,6 +8,7 @@
 #include <gtest/gtest.h>
 
 #include "src/time_util.hpp"
+#include "src/time_util_current_time.hpp"
 
 TEST(CurrentTime, CurrentTime) {
   const std::chrono::seconds before = dynamic_paper::getCurrentTime();
