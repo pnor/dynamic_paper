@@ -122,7 +122,7 @@ void handleInfoCommand(argparse::ArgumentParser &showCommand,
     return;
   }
 
-  printBackgroundSetInfo(optBackgroundSet.value(), config);
+  printBackgroundSetInfo(optBackgroundSet.value());
 }
 
 void handleCacheCommand(const Config &config,

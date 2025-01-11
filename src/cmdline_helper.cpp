@@ -150,6 +150,77 @@ bool usesInPlaceTransitions(const DynamicBackgroundData &data) {
   return data.transition.has_value() && data.transition->inPlace;
 }
 
+void printStaticBackgroundInfo(const StaticBackgroundData &data,
+                               const BackgroundSet &backgroundSet) {
+  std::cout << ANSI_BOLD << ANSI_COLOR_CYAN << "\n"
+            << " ❤ " << backgroundSet.getName() << ANSI_COLOR_RESET << "\n\n";
+
+  std::cout << ANSI_COLOR_MAGENTA << "Mode: " << ANSI_COLOR_RESET
+            << backgroundSetModeString(data.mode) << "\n";
+  std::cout << ANSI_COLOR_MAGENTA << "Image Directory: " << ANSI_COLOR_RESET
+            << data.imageDirectory << "\n";
+  if (data.imageNames.size() == 1) {
+    std::cout << ANSI_COLOR_MAGENTA << "Image: " << ANSI_COLOR_RESET
+              << data.imageNames.at(0) << "\n";
+  } else {
+    std::cout << ANSI_COLOR_MAGENTA << "Images:\n" << ANSI_COLOR_RESET;
+    for (const std::string_view name : data.imageNames) {
+      std::cout << " - " << name << "\n";
+    }
+  }
+  std::cout << "\n";
+}
+
+void printDynamicBackgroundInfo(const DynamicBackgroundData &data,
+                                const BackgroundSet &backgroundSet) {
+  std::cout << ANSI_BOLD << ANSI_COLOR_MAGENTA << "\n"
+            << " ⭐ " << backgroundSet.getName() << ANSI_COLOR_RESET << "\n\n";
+
+  std::cout << ANSI_COLOR_CYAN << "Mode: " << ANSI_COLOR_RESET
+            << backgroundSetModeString(data.mode) << "\n";
+  std::cout << ANSI_COLOR_CYAN << "Image Directory: " << ANSI_COLOR_RESET
+            << data.imageDirectory << "\n";
+  switch (data.order) {
+  case BackgroundSetOrder::Linear: {
+    std::cout << ANSI_COLOR_CYAN << "Display Order: " << ANSI_COLOR_RESET
+              << "Linear" << "\n";
+    break;
+  }
+  case BackgroundSetOrder::Random: {
+    std::cout << ANSI_COLOR_CYAN << "Display Order: " << ANSI_COLOR_RESET
+              << "Random" << "\n";
+    break;
+  }
+  }
+
+  switch (data.order) {
+  case BackgroundSetOrder::Linear: {
+    std::cout << ANSI_COLOR_CYAN << "Images:" << ANSI_COLOR_RESET << "\n";
+
+    for (int i = 0; i < std::min(data.imageNames.size(), data.times.size());
+         i++) {
+      std::cout << " - " << data.imageNames.at(i) << " -> "
+                << ANSI_COLOR_MAGENTA << data.times.at(i) << ANSI_COLOR_RESET
+                << "\n";
+    }
+    break;
+  }
+  case BackgroundSetOrder::Random: {
+    std::cout << ANSI_COLOR_CYAN << "Images: " << ANSI_COLOR_RESET << "\n";
+    for (const std::string_view name : data.imageNames) {
+      std::cout << " - " << name << "\n";
+    }
+
+    std::cout << ANSI_COLOR_CYAN << "Times: " << ANSI_COLOR_RESET << "\n";
+    for (const TimeFromMidnight &time : data.times) {
+      std::cout << " - " << time << "\n";
+    }
+    break;
+  }
+  }
+  std::cout << "\n";
+}
+
 } // namespace
 
 // ===== Header ====================
@@ -336,36 +407,18 @@ void showBackgroundSet(BackgroundSet &backgroundSet, const Config &config) {
   }
 }
 
-void printBackgroundSetInfo(BackgroundSet &backgroundSet,
-                            const Config &config) {
+void printBackgroundSetInfo(const BackgroundSet &backgroundSet) {
   std::optional<StaticBackgroundData> staticData =
       backgroundSet.getStaticBackgroundData();
 
   if (staticData.has_value()) {
-    const StaticBackgroundData &data = staticData.value();
-
-    std::cout << ANSI_BOLD << ANSI_COLOR_CYAN << backgroundSet.getName()
-              << ANSI_COLOR_RESET << "\n\n";
-    std::cout << ANSI_COLOR_MAGENTA << "Mode: " << ANSI_COLOR_RESET
-              << backgroundSetModeString(data.mode) << "\n";
-    std::cout << ANSI_COLOR_MAGENTA << "Image Directory: " << ANSI_COLOR_RESET
-              << data.imageDirectory << "\n";
-    if (data.imageNames.size() == 1) {
-      std::cout << ANSI_COLOR_MAGENTA << "Image: " << ANSI_COLOR_RESET
-                << data.imageNames.at(0) << "\n";
-    } else {
-      std::cout << ANSI_COLOR_MAGENTA << "Images:\n";
-      for (const std::string_view name : data.imageNames) {
-        std::cout << " - " << name << "\n";
-      }
-    }
-    std::cout << "\n";
+    printStaticBackgroundInfo(staticData.value(), backgroundSet);
   }
 
   const std::optional<DynamicBackgroundData> dynamicData =
       backgroundSet.getDynamicBackgroundData();
   if (dynamicData.has_value()) {
-    const DynamicBackgroundData &data = dynamicData.value();
+    printDynamicBackgroundInfo(dynamicData.value(), backgroundSet);
   }
 }
 

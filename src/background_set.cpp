@@ -309,8 +309,9 @@ BackgroundSetType BackgroundSet::getType() const {
                     this->type);
 }
 
-std::optional<StaticBackgroundData> BackgroundSet::getStaticBackgroundData() {
-  auto *staticDataPtr = std::get_if<StaticBackgroundData>(&this->type);
+std::optional<StaticBackgroundData>
+BackgroundSet::getStaticBackgroundData() const {
+  const auto *staticDataPtr = std::get_if<StaticBackgroundData>(&this->type);
 
   if (staticDataPtr == nullptr) {
     return std::nullopt;
@@ -318,8 +319,9 @@ std::optional<StaticBackgroundData> BackgroundSet::getStaticBackgroundData() {
   return *staticDataPtr;
 }
 
-std::optional<DynamicBackgroundData> BackgroundSet::getDynamicBackgroundData() {
-  auto *dynamicDataPtr = std::get_if<DynamicBackgroundData>(&this->type);
+std::optional<DynamicBackgroundData>
+BackgroundSet::getDynamicBackgroundData() const {
+  const auto *dynamicDataPtr = std::get_if<DynamicBackgroundData>(&this->type);
 
   if (dynamicDataPtr == nullptr) {
     return std::nullopt;

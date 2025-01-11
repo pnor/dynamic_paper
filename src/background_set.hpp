@@ -25,9 +25,11 @@ public:
   [[nodiscard]] std::string_view getName() const;
   [[nodiscard]] BackgroundSetType getType() const;
 
-  [[nodiscard]] std::optional<StaticBackgroundData> getStaticBackgroundData();
+  [[nodiscard]] std::optional<StaticBackgroundData>
+  getStaticBackgroundData() const;
 
-  [[nodiscard]] std::optional<DynamicBackgroundData> getDynamicBackgroundData();
+  [[nodiscard]] std::optional<DynamicBackgroundData>
+  getDynamicBackgroundData() const;
 
   BackgroundSet(std::string name, StaticBackgroundData data);
   BackgroundSet(std::string name, DynamicBackgroundData data);

@@ -94,6 +94,6 @@ std::optional<BackgroundSet> getRandomBackgroundSet(const Config &config);
 void showBackgroundSet(BackgroundSet &backgroundSet, const Config &config);
 
 /** Prints info about `backgroundSet` to stdout. */
-void printBackgroundSetInfo(BackgroundSet &backgroundSet, const Config &config);
+void printBackgroundSetInfo(const BackgroundSet &backgroundSet);
 
 } // namespace dynamic_paper
