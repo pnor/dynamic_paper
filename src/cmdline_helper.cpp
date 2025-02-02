@@ -391,7 +391,6 @@ getRandomImageAndModeFromAllBackgroundSets(const Config &config) {
                ((node[IMAGES].IsDefined() && node[IMAGES].IsSequence()) ||
                 (node[IMAGE].IsDefined()));
       };
-  const auto isDefined = [](const auto &node) { return node.IsDefined(); };
 
   for (const auto &key : yamlMap | std::ranges::views::filter(validNode)) {
     const YAML::Node &node = key.second;
@@ -477,7 +476,6 @@ void showBackgroundSet(BackgroundSet &backgroundSet, const Config &config) {
 void printBackgroundSetInfo(const BackgroundSet &backgroundSet) {
   std::optional<StaticBackgroundData> staticData =
       backgroundSet.getStaticBackgroundData();
-
   if (staticData.has_value()) {
     printStaticBackgroundInfo(staticData.value(), backgroundSet);
   }
