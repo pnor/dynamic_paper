@@ -10,6 +10,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include "background_set_enums.hpp"
+#include "constants.hpp"
 #include "logger.hpp"
 #include "string_util.hpp"
 #include "time_from_midnight.hpp"
@@ -17,29 +18,6 @@
 #include "type_helper.hpp"
 
 namespace dynamic_paper {
-
-// ===== Constants ===============
-constexpr std::string_view DYNAMIC_STRING = "dynamic";
-constexpr std::string_view STATIC_STRING = "static";
-
-constexpr std::string_view LINEAR_STRING = "linear";
-constexpr std::string_view RANDOM_STRING = "random";
-
-constexpr std::string_view CENTER_STRING = "center";
-constexpr std::string_view FILL_STRING = "fill";
-
-constexpr std::string_view SUNWAIT_STRING = "sunwait";
-
-constexpr std::string_view SCRIPT_STRING = "script";
-constexpr std::string_view WALLUTILS_STRING = "wallutils";
-
-constexpr std::string_view INFO_LOGGING_STRING = "info";
-constexpr std::string_view WARNING_LOGGING_STRING = "warning";
-constexpr std::string_view ERROR_LOGGING_STRING = "error";
-constexpr std::string_view DEBUG_LOGGING_STRING = "debug";
-constexpr std::string_view CRITICAL_LOGGING_STRING = "critical";
-constexpr std::string_view TRACE_LOGGING_STRING = "trace";
-constexpr std::string_view OFF_LOGGING_STRING = "off";
 
 // ===== Converting yaml strings to types ===============
 

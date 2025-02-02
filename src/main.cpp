@@ -39,6 +39,45 @@ constexpr std::string_view ANSI_COLOR_RED = "\x1b[31m";
 constexpr std::string_view ANSI_COLOR_MAGENTA = "\x1b[35m";
 constexpr std::string_view ANSI_COLOR_RESET = "\x1b[0m";
 
+void showRandomBackgroundSet(const Config &config) {
+  std::optional<BackgroundSet> optBackgroundSet =
+      getRandomBackgroundSet(config);
+
+  if (!optBackgroundSet.has_value()) {
+    std::cout << "Unable to parse any background set from the config file at : "
+              << config.backgroundSetConfigFile.string() << '\n';
+    return;
+  }
+
+  logDebug("Showing background set: {}", optBackgroundSet->getName());
+
+  showBackgroundSet(optBackgroundSet.value(), config);
+}
+
+void showRandomImageFromAllBackgroundSets(const Config &config) {
+  const std::optional<std::pair<std::filesystem::path, BackgroundSetMode>>
+      imageAndModeOpt = getRandomImageAndModeFromAllBackgroundSets(config);
+
+  if (!imageAndModeOpt) {
+    std::cout << "Unable to parse any images from the config file at : "
+              << config.backgroundSetConfigFile.string() << "\n";
+    return;
+  }
+
+  const auto &[image, mode] = imageAndModeOpt.value();
+
+  logDebug("Showing image: {} with mode {}", image.string(),
+           backgroundSetModeString(mode));
+
+  setBackgroundToImage(image, mode);
+  std::cout << "Set background to " << ANSI_COLOR_CYAN << image.string()
+            << ANSI_COLOR_RESET << "\n";
+
+  if (config.hookScript) {
+    runHookScript(config.hookScript.value(), image);
+  }
+}
+
 // ===== Command Line Arguements ===============
 
 void handleShowCommand(argparse::ArgumentParser &showCommand,
@@ -56,19 +95,13 @@ void handleShowCommand(argparse::ArgumentParser &showCommand,
   showBackgroundSet(optBackgroundSet.value(), config);
 }
 
-void handleRandomCommand(const Config &config) {
-  std::optional<BackgroundSet> optBackgroundSet =
-      getRandomBackgroundSet(config);
-
-  if (!optBackgroundSet.has_value()) {
-    std::cout << "Unable to parse any background set from the config file at : "
-              << config.backgroundSetConfigFile.string() << '\n';
-    return;
+void handleRandomCommand(argparse::ArgumentParser &randomCommand,
+                         const Config &config) {
+  if (randomCommand["--image"] == true) {
+    showRandomImageFromAllBackgroundSets(config);
+  } else {
+    showRandomBackgroundSet(config);
   }
-
-  logDebug("Showing background set: {}", optBackgroundSet->getName());
-
-  showBackgroundSet(optBackgroundSet.value(), config);
 }
 
 void handleListCommand(const Config &config) {
@@ -166,6 +199,10 @@ auto main(int argc, char *argv[]) -> int {
 
   argparse::ArgumentParser randomCommand("random");
   randomCommand.add_description("Show a random wallpaper set");
+  randomCommand.add_argument("--image")
+      .help("Choose one wallpaper to show out of all available sets instead of "
+            "choosing one background set at random")
+      .flag();
 
   argparse::ArgumentParser listCommand("list");
   listCommand.add_description("List all wallpaper set options");
@@ -175,7 +212,7 @@ auto main(int argc, char *argv[]) -> int {
   infoCommand.add_argument("name").help("Name of wallpaper set to describe");
 
   argparse::ArgumentParser helpCommand("help");
-  listCommand.add_description("Show help");
+  helpCommand.add_description("Show help");
 
   argparse::ArgumentParser cacheCommand("cache");
   cacheCommand.add_description("Manage cache for interpolated images");
@@ -211,7 +248,7 @@ auto main(int argc, char *argv[]) -> int {
     handleInfoCommand(infoCommand, config);
   } else if (program.is_subcommand_used(randomCommand)) {
     const Config config = getConfigAndSetupLogging(program, true);
-    handleRandomCommand(config);
+    handleRandomCommand(randomCommand, config);
   } else if (program.is_subcommand_used(cacheCommand)) {
     const Config config = getConfigAndSetupLogging(program, false);
     handleCacheCommand(config, cacheCommand, cacheInfoCommand);

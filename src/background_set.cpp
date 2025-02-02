@@ -16,6 +16,7 @@
 #include <yaml-cpp/node/node.h>
 
 #include "background_set_enums.hpp"
+#include "constants.hpp"
 #include "defaults.hpp"
 #include "dynamic_background_set.hpp"
 #include "file_util.hpp"
@@ -31,18 +32,6 @@
 namespace dynamic_paper {
 
 namespace {
-
-// YAML Dict Key
-constexpr std::string_view IMAGE_DIRECTORY = "image_directory";
-constexpr std::string_view IMAGES = "images";
-constexpr std::string_view IMAGE = "image";
-constexpr std::string_view MODE = "mode";
-constexpr std::string_view ORDER = "order";
-constexpr std::string_view TIMES = "times";
-constexpr std::string_view TRANSITION_LENGTH = "transition_length";
-constexpr std::string_view TYPE = "type";
-constexpr std::string_view NUM_TRANSITION_STEPS = "number_transition_steps";
-constexpr std::string_view IN_PLACE = "in_place";
 
 // ===== Helper ===============
 

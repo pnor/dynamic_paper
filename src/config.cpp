@@ -7,6 +7,7 @@
 
 #include <yaml-cpp/node/node.h>
 
+#include "constants.hpp"
 #include "defaults.hpp"
 #include "file_util.hpp"
 #include "location_info.hpp"
@@ -19,18 +20,6 @@
 namespace dynamic_paper {
 
 namespace {
-
-constexpr std::string_view BACKGROUND_SET_CONFIG_FILE = "background_config";
-constexpr std::string_view HOOK_SCRIPT_KEY = "hook_script";
-constexpr std::string_view IMAGE_CACHE_DIR_KEY = "cache_dir";
-constexpr std::string_view LOGGING_KEY = "logging_level";
-constexpr std::string_view LOG_FILE_KEY = "log_file";
-constexpr std::string_view LATITUDE_KEY = "latitude";
-constexpr std::string_view LONGITUDE_KEY = "longitude";
-constexpr std::string_view SUNRISE_TIME_KEY = "sunrise";
-constexpr std::string_view SUNSET_TIME_KEY = "sunset";
-constexpr std::string_view USE_CONFIG_FILE_LOCATION_KEY =
-    "use_config_file_location";
 
 LocationInfo createLocationInfoFromParsedFields(
     const std::optional<double> optLatitude,

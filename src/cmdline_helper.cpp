@@ -6,6 +6,7 @@
 #include <iostream>
 #include <optional>
 #include <random>
+#include <ranges>
 #include <string>
 #include <string_view>
 #include <thread>
@@ -21,10 +22,12 @@
 #include "background_set_enums.hpp"
 #include "background_setter.hpp"
 #include "config.hpp"
+#include "constants.hpp"
 #include "defaults.hpp"
 #include "dynamic_background_set.hpp"
 #include "time_from_midnight.hpp"
 #include "time_util_current_time.hpp"
+#include "yaml_helper.hpp"
 
 namespace dynamic_paper {
 
@@ -369,6 +372,72 @@ std::optional<BackgroundSet> getRandomBackgroundSet(const Config &config) {
   }
 
   return std::nullopt;
+}
+
+//  std::optional<std::tuple<std::filesystem::path, BackgroundSetMode >>
+std::optional<std::pair<std::filesystem::path, BackgroundSetMode>>
+getRandomImageAndModeFromAllBackgroundSets(const Config &config) {
+  const std::unordered_map<std::string, YAML::Node> yamlMap =
+      nameAndYAMLInfoFromFile(config.backgroundSetConfigFile);
+
+  std::vector<std::pair<std::filesystem::path, BackgroundSetMode>>
+      wallpaperOptions;
+
+  const auto validNode =
+      [](const std::pair<std::string, YAML::Node> &nameAndNode) {
+        const YAML::Node &node = nameAndNode.second;
+        return node.IsDefined() && node[MODE].IsDefined() &&
+               node[IMAGE_DIRECTORY].IsDefined() &&
+               ((node[IMAGES].IsDefined() && node[IMAGES].IsSequence()) ||
+                (node[IMAGE].IsDefined()));
+      };
+  const auto isDefined = [](const auto &node) { return node.IsDefined(); };
+
+  for (const auto &key : yamlMap | std::ranges::views::filter(validNode)) {
+    const YAML::Node &node = key.second;
+
+    const BackgroundSetMode mode =
+        yamlStringTo<BackgroundSetMode>(node[MODE].as<std::string>()).value();
+
+    const std::filesystem::path imageDirectory =
+        expandPath(yamlStringTo<std::filesystem::path>(
+                       node[IMAGE_DIRECTORY].as<std::string>())
+                       .value());
+
+    if (node[IMAGES].IsDefined()) {
+      for (const auto &nodeImage : node[IMAGES]) {
+        const auto imagePath =
+            yamlStringTo<std::filesystem::path>(nodeImage.as<std::string>());
+        if (!imagePath) {
+          continue;
+        }
+        wallpaperOptions.emplace_back(imageDirectory / imagePath.value(), mode);
+      }
+    } else if (node[IMAGE].IsDefined()) {
+      const auto imagePath =
+          yamlStringTo<std::filesystem::path>(node[IMAGE].as<std::string>());
+      if (!imagePath) {
+        continue;
+      }
+      wallpaperOptions.emplace_back(imageDirectory / imagePath.value(), mode);
+    } else {
+      continue;
+    }
+  }
+
+  if (wallpaperOptions.empty()) {
+    return std::nullopt;
+  }
+
+  std::random_device randomDevice;
+  std::mt19937 generator(randomDevice());
+  std::uniform_int_distribution<> distribution(
+      0, static_cast<int>(wallpaperOptions.size() - 1));
+  const std::size_t index = distribution(generator);
+
+  std::cout << "? " << wallpaperOptions.size() << "\n";
+
+  return wallpaperOptions.at(index);
 }
 
 void showBackgroundSet(BackgroundSet &backgroundSet, const Config &config) {

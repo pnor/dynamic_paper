@@ -90,6 +90,16 @@ getBackgroundSetWithNameFromFile(std::string_view name, const Config &config);
  */
 std::optional<BackgroundSet> getRandomBackgroundSet(const Config &config);
 
+/**
+ * Returns one random image path and mode selected from all available background
+ * sets.
+ *
+ * If unable to find any images, will return nullopt.
+ * The mode is based on the background set the image was pulled from.
+ */
+std::optional<std::pair<std::filesystem::path, BackgroundSetMode>>
+getRandomImageAndModeFromAllBackgroundSets(const Config &config);
+
 /** Shows `backgroundSet` using user's `config`. */
 void showBackgroundSet(BackgroundSet &backgroundSet, const Config &config);
 

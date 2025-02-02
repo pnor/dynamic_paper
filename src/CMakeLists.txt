@@ -128,7 +128,8 @@ target_link_libraries(${CURRENT_TARGET} PRIVATE sunset)
 # X11
 find_package(X11 REQUIRED) # TODO support wayland
 target_link_libraries(${CURRENT_TARGET} PRIVATE ${X11_LIBRARIES})
-# target_link_libraries(${CURRENT_TARGET} PRIVATE ${X11_LIBRARIES} -static)
+#
+#target_link_libraries(${CURRENT_TARGET} PRIVATE ${X11_LIBRARIES} -static)
 
 # ImageMagick
 add_definitions( -DMAGICKCORE_QUANTUM_DEPTH=16 )
