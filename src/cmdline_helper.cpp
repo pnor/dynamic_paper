@@ -435,8 +435,6 @@ getRandomImageAndModeFromAllBackgroundSets(const Config &config) {
       0, static_cast<int>(wallpaperOptions.size() - 1));
   const std::size_t index = distribution(generator);
 
-  std::cout << "? " << wallpaperOptions.size() << "\n";
-
   return wallpaperOptions.at(index);
 }
 
