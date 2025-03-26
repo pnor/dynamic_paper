@@ -438,6 +438,8 @@ getRandomImageAndModeFromAllBackgroundSets(const Config &config) {
 }
 
 void showBackgroundSet(BackgroundSet &backgroundSet, const Config &config) {
+  std::cout << "Showing: " << backgroundSet.getName() << '\n';
+
   std::optional<StaticBackgroundData> staticData =
       backgroundSet.getStaticBackgroundData();
   if (staticData.has_value()) {
