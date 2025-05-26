@@ -117,7 +117,7 @@ void handleListCommand(argparse::ArgumentParser &listCommand, const Config &conf
   const std::vector<std::pair<std::string_view, BackgroundSetType>>
       namesAndTypes = getNamesAndTypes(backgroundSets);
 
-  if (listCommand["--no-format"] == true && isBeingPiped()) {
+  if (listCommand["--no-format"] == true || isBeingPiped()) {
     for (const auto &nameType : namesAndTypes) {
       std::cout << nameType.first << "\n";
     }
