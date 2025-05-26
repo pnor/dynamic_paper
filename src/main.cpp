@@ -104,7 +104,7 @@ void handleRandomCommand(argparse::ArgumentParser &randomCommand,
   }
 }
 
-void handleListCommand(const Config &config) {
+void handleListCommand(argparse::ArgumentParser &listCommand, const Config &config) {
   if (!std::filesystem::exists(config.backgroundSetConfigFile)) {
     errorMsg("No config file exists for background sets at path: {}",
              config.backgroundSetConfigFile.string());
@@ -117,7 +117,7 @@ void handleListCommand(const Config &config) {
   const std::vector<std::pair<std::string_view, BackgroundSetType>>
       namesAndTypes = getNamesAndTypes(backgroundSets);
 
-  if (isBeingPiped()) {
+  if (listCommand["--no-format"] == true && isBeingPiped()) {
     for (const auto &nameType : namesAndTypes) {
       std::cout << nameType.first << "\n";
     }
@@ -206,6 +206,9 @@ auto main(int argc, char *argv[]) -> int {
 
   argparse::ArgumentParser listCommand("list");
   listCommand.add_description("List all wallpaper set options");
+  listCommand.add_argument("--no-format")
+    .help("Print available backgrounds without formatting")
+    .flag();
 
   argparse::ArgumentParser infoCommand("info");
   infoCommand.add_description("Show info for wallpaper set with name");
@@ -242,7 +245,7 @@ auto main(int argc, char *argv[]) -> int {
     handleShowCommand(showCommand, config);
   } else if (program.is_subcommand_used(listCommand)) {
     const Config config = getConfigAndSetupLogging(program, false);
-    handleListCommand(config);
+    handleListCommand(listCommand, config);
   } else if (program.is_subcommand_used(infoCommand)) {
     const Config config = getConfigAndSetupLogging(program, true);
     handleInfoCommand(infoCommand, config);

@@ -4,6 +4,8 @@
  * How the general config determines when the Solar Day is
  */
 
+#include <variant>
+
 #include "location_info.hpp"
 #include "solar_day.hpp"
 

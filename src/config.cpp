@@ -30,7 +30,7 @@ LocationInfo createLocationInfoFromParsedFields(
   }
 
   return {.latitudeAndLongitude =
-              std::make_pair(optLatitude.value(), optLongitude.value()),
+              std::pair<double, double>(optLatitude.value(), optLongitude.value()),
           .useLatitudeAndLongitudeOverLocationSearch =
               optUseLatitudeAndLongitudeOverLocationSearch.value_or(false)};
 }

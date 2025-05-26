@@ -6,6 +6,8 @@
 #include "file_util.hpp"
 #include "time_util.hpp"
 
+#include <utility>
+
 namespace dynamic_paper {
 
 /**
@@ -14,7 +16,7 @@ namespace dynamic_paper {
 struct ConfigDefaults {
   static constexpr LogLevel logLevel = LogLevel::INFO;
   static constexpr LocationInfo locationInfo = {
-      .latitudeAndLongitude = std::make_pair(40.730610, -73.935242),
+      .latitudeAndLongitude = std::pair<double, double>(40.730610, -73.935242),
       .useLatitudeAndLongitudeOverLocationSearch = false};
   static constexpr SolarDay solarDay = {
       .sunrise = convertTimeStringToTimeFromMidnightUnchecked("09:00"),
