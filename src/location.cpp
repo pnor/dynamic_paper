@@ -13,13 +13,12 @@ namespace dynamic_paper {
 
 namespace {
 
-constexpr std::string_view LOCATION_URL = "https://ipapi.co/latlong/";
 constexpr long SUCESS_CODE = 200;
 
 using NetworkResponse = tl::expected<std::string, NetworkError>;
 
 template <size_t NumberRetries>
-NetworkResponse getUrlWithRetry(const std::string_view urlString) {
+NetworkResponse getUrlWithRetry(const std::string& urlString) {
   NetworkResponse result = tl::make_unexpected(NetworkError::RetryError);
 
   size_t currentTry = 0;
@@ -86,6 +85,7 @@ parseLatitudeAndLongitude(const std::string_view text) {
 
 tl::expected<std::pair<double, double>, LocationError>
 getLatitudeAndLongitudeFromHttp() {
+  const std::string LOCATION_URL = "https://ipapi.co/latlong/";
   const NetworkResponse response = getUrlWithRetry<3>(LOCATION_URL);
 
   if (!response.has_value()) {

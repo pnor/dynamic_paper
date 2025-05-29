@@ -10,6 +10,7 @@
 #include <tl/expected.hpp>
 #include <yaml-cpp/yaml.h>
 
+#include "background_set_method_enums.hpp"
 #include "logger.hpp"
 #include "solar_day_provider.hpp"
 
@@ -28,6 +29,8 @@ public:
   /** Location of the directory cached images created to transition between
    * backgrounds is kept*/
   std::filesystem::path imageCacheDirectory;
+  /** How to set the background image*/
+  BackgroundSetMethod method;
 
   /**
    * Used to get the solar day of the user
@@ -35,9 +38,8 @@ public:
   SolarDayProvider solarDayProvider;
 
   Config(std::filesystem::path backgroundSetConfigFile,
-         std::optional<std::filesystem::path> hookScript,
-         std::filesystem::path imageCacheDirectory,
-         SolarDayProvider solarDayProvider);
+         std::optional<std::filesystem::path> hookScript, std::filesystem::path imageCacheDirectory,
+         BackgroundSetMethod method, SolarDayProvider solarDayProvider);
 };
 
 // ===== Loading config from files ====================
@@ -46,7 +48,6 @@ public:
 Config loadConfigFromYAML(const YAML::Node &config, bool findLocationOverHttp);
 
 /** Laods just the logging related information from the general config file*/
-std::pair<LogLevel, std::filesystem::path>
-loadLoggingInfoFromYAML(const YAML::Node &config);
+std::pair<LogLevel, std::filesystem::path> loadLoggingInfoFromYAML(const YAML::Node &config);
 
 } // namespace dynamic_paper

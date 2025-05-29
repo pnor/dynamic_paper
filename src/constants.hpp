@@ -12,8 +12,10 @@ constexpr std::string_view LATITUDE_KEY = "latitude";
 constexpr std::string_view LONGITUDE_KEY = "longitude";
 constexpr std::string_view SUNRISE_TIME_KEY = "sunrise";
 constexpr std::string_view SUNSET_TIME_KEY = "sunset";
-constexpr std::string_view USE_CONFIG_FILE_LOCATION_KEY =
-    "use_config_file_location";
+constexpr std::string_view USE_CONFIG_FILE_LOCATION_KEY = "use_config_file_location";
+constexpr std::string_view METHOD_KEY = "method";
+constexpr std::string_view SCRIPT_STRING = "script";
+constexpr std::string_view WALLUTILS_STRING = "wallutils";
 
 // Background Set Config
 constexpr std::string_view DYNAMIC_STRING = "dynamic";
@@ -26,9 +28,6 @@ constexpr std::string_view CENTER_STRING = "center";
 constexpr std::string_view FILL_STRING = "fill";
 
 constexpr std::string_view SUNWAIT_STRING = "sunwait";
-
-constexpr std::string_view SCRIPT_STRING = "script";
-constexpr std::string_view WALLUTILS_STRING = "wallutils";
 
 constexpr std::string_view INFO_LOGGING_STRING = "info";
 constexpr std::string_view WARNING_LOGGING_STRING = "warning";

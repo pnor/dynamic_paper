@@ -197,6 +197,48 @@ std::string getEventImageName(const Event &event) {
                     event);
 }
 
+/**
+ * Returns the times and names in `dynamicData` sorted by time.
+ * Preserves the pair relation between the names and times.
+ * Example: if a time was at index 1 in times and a name was at index 1 in
+ * names, they would appear in the same pair in the sorted output.
+ **/
+std::vector<std::pair<TimeFromMidnight, std::string>>
+timesAndNamesSortedByTime(const DynamicBackgroundData *dynamicData) {
+  std::vector<std::pair<TimeFromMidnight, std::string>> timesNames;
+  const std::vector<TimeFromMidnight> &times = dynamicData->times;
+  const std::vector<std::string> &imageNames = dynamicData->imageNames;
+
+  for (size_t i = 0; i < std::min(times.size(), imageNames.size()); i++) {
+    timesNames.emplace_back(times[i], imageNames[i]);
+  }
+
+  std::ranges::sort(timesNames, {},
+                    &std::pair<TimeFromMidnight, std::string>::first);
+
+  return timesNames;
+}
+
+/**
+ * Returns the times and names in `dynamicData` sorted by time, but with the
+ * image name chosen randomly.
+ */
+std::vector<std::pair<TimeFromMidnight, std::string>>
+timesAndRandomNamesSortedByTime(const DynamicBackgroundData *dynamicData) {
+  std::vector<std::pair<TimeFromMidnight, std::string>> timesAndNames;
+
+  std::vector<std::string> names = dynamicData->imageNames;
+  shuffleVector(names);
+
+  timesAndNames.reserve(dynamicData->times.size());
+  for (size_t i = 0; i < dynamicData->times.size(); i++) {
+    timesAndNames.emplace_back(dynamicData->times[i], names[i % names.size()]);
+  }
+
+  return timesAndNames;
+}
+
+
 } // namespace
 
 // ===== Header: detail ===============
@@ -243,46 +285,6 @@ bool eventListIsSortedByTime(const EventList &eventList) {
     }
   }
   return true;
-}
-
-/**
- * Returns the times and names in `dynamicData` sorted by time.
- * Preserves the pair relation between the names and times.
- * Example: if a time was at index 1 in times and a name was at index 1 in
- * names, they would appear in the same pair in the sorted output.
- **/
-std::vector<std::pair<TimeFromMidnight, std::string>>
-timesAndNamesSortedByTime(const DynamicBackgroundData *dynamicData) {
-  std::vector<std::pair<TimeFromMidnight, std::string>> timesNames;
-  const std::vector<TimeFromMidnight> &times = dynamicData->times;
-  const std::vector<std::string> &imageNames = dynamicData->imageNames;
-
-  for (size_t i = 0; i < std::min(times.size(), imageNames.size()); i++) {
-    timesNames.emplace_back(times[i], imageNames[i]);
-  }
-
-  std::ranges::sort(timesNames, {},
-                    &std::pair<TimeFromMidnight, std::string>::first);
-
-  return timesNames;
-}
-
-/**
- * Returns the times and names in `dynamicData` sorted by time, but with the
- * image name chosen randomly.
- */
-std::vector<std::pair<TimeFromMidnight, std::string>>
-timesAndRandomNamesSortedByTime(const DynamicBackgroundData *dynamicData) {
-  std::vector<std::pair<TimeFromMidnight, std::string>> timesAndNames;
-
-  std::vector<std::string> names = dynamicData->imageNames;
-  shuffleVector(names);
-
-  for (size_t i = 0; i < dynamicData->times.size(); i++) {
-    timesAndNames.emplace_back(dynamicData->times[i], names[i % names.size()]);
-  }
-
-  return timesAndNames;
 }
 
 EventList getEventList(const DynamicBackgroundData *dynamicData) {

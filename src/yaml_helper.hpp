@@ -10,6 +10,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include "background_set_enums.hpp"
+#include "background_set_method_enums.hpp"
 #include "constants.hpp"
 #include "logger.hpp"
 #include "string_util.hpp"
@@ -27,8 +28,7 @@ namespace dynamic_paper {
  * Note: since it is returning optional<T>, specializations for this should NOT
  * specialize for optional types (like T = optional<int> for example)
  */
-template <typename T>
-constexpr std::optional<T> yamlStringTo(const std::string &text);
+template <typename T> constexpr std::optional<T> yamlStringTo(const std::string &text);
 
 // - trivial conversion from string
 template <typename T>
@@ -38,8 +38,7 @@ constexpr std::optional<T> yamlStringTo(const std::string &text) {
 }
 
 // - boolean
-template <>
-constexpr std::optional<bool> yamlStringTo(const std::string &text) {
+template <> constexpr std::optional<bool> yamlStringTo(const std::string &text) {
   if (text == "true") {
     return true;
   }
@@ -52,9 +51,7 @@ constexpr std::optional<bool> yamlStringTo(const std::string &text) {
 }
 
 // - TimeFromMidnight
-template <>
-constexpr std::optional<TimeFromMidnight>
-yamlStringTo(const std::string &text) {
+template <> constexpr std::optional<TimeFromMidnight> yamlStringTo(const std::string &text) {
   return convertTimeStringToTimeFromMidnight(text);
 }
 
@@ -64,8 +61,7 @@ template <typename T>
            (std::is_unsigned_v<T> && std::is_integral_v<T>))
 constexpr std::optional<T> yamlStringTo(const std::string &text) {
   T val =
-      std::clamp(std::stoul(text),
-                 static_cast<long unsigned int>(std::numeric_limits<T>::min()),
+      std::clamp(std::stoul(text), static_cast<long unsigned int>(std::numeric_limits<T>::min()),
                  static_cast<long unsigned int>(std::numeric_limits<T>::max()));
   return static_cast<T>(val);
 }
@@ -74,8 +70,7 @@ constexpr std::optional<T> yamlStringTo(const std::string &text) {
 template <typename T>
   requires(!is_optional<T> && (std::is_signed_v<T> && std::is_integral_v<T>))
 constexpr std::optional<T> yamlStringTo(const std::string &text) {
-  T val = std::clamp(std::stol(text),
-                     static_cast<long int>(std::numeric_limits<T>::min()),
+  T val = std::clamp(std::stol(text), static_cast<long int>(std::numeric_limits<T>::min()),
                      static_cast<long int>(std::numeric_limits<T>::max()));
   return static_cast<T>(val);
 }
@@ -92,10 +87,8 @@ constexpr std::optional<T> yamlStringTo(const std::string &text) {
 }
 
 // - default : Fail assert since it means its unimplemented for the type
-template <typename T>
-constexpr std::optional<T> yamlStringTo(const std::string & /*text*/) {
-  static_assert(!is_optional<T>,
-                "Cannot use yamlStringTo to create an optional type");
+template <typename T> constexpr std::optional<T> yamlStringTo(const std::string & /*text*/) {
+  static_assert(!is_optional<T>, "Cannot use yamlStringTo to create an optional type");
 
   static_assert(false, "No implementation of `yamlStringTo` for type!");
   return std::nullopt;
@@ -104,9 +97,7 @@ constexpr std::optional<T> yamlStringTo(const std::string & /*text*/) {
 // --- Specialization Matching string to enums
 
 // - BackgroundSetMode
-template <>
-constexpr std::optional<BackgroundSetMode>
-yamlStringTo(const std::string &text) {
+template <> constexpr std::optional<BackgroundSetMode> yamlStringTo(const std::string &text) {
   const std::string configString = normalize(text);
 
   if (configString == CENTER_STRING) {
@@ -118,10 +109,20 @@ yamlStringTo(const std::string &text) {
   return std::nullopt;
 }
 
+template <> constexpr std::optional<BackgroundSetMethod> yamlStringTo(const std::string &text) {
+  const std::string configString = normalize(text);
+
+  if (configString == WALLUTILS_STRING) {
+    return std::make_optional(BackgroundSetMethod::WallUtils);
+  }
+  if (configString == SCRIPT_STRING) {
+    return std::make_optional(BackgroundSetMethod::Script);
+  }
+  return std::nullopt;
+}
+
 // - BackgroundSetOrder
-template <>
-constexpr std::optional<BackgroundSetOrder>
-yamlStringTo(const std::string &text) {
+template <> constexpr std::optional<BackgroundSetOrder> yamlStringTo(const std::string &text) {
   const std::string configString = normalize(text);
 
   if (configString == LINEAR_STRING) {
@@ -134,9 +135,7 @@ yamlStringTo(const std::string &text) {
 }
 
 // - BackgroundSetType
-template <>
-constexpr std::optional<BackgroundSetType>
-yamlStringTo(const std::string &text) {
+template <> constexpr std::optional<BackgroundSetType> yamlStringTo(const std::string &text) {
   const std::string configString = normalize(text);
 
   if (configString == DYNAMIC_STRING) {
@@ -149,8 +148,7 @@ yamlStringTo(const std::string &text) {
 }
 
 // - LogLevel
-template <>
-constexpr std::optional<LogLevel> yamlStringTo(const std::string &text) {
+template <> constexpr std::optional<LogLevel> yamlStringTo(const std::string &text) {
   const std::string configString = normalize(text);
 
   if (configString == INFO_LOGGING_STRING) {
@@ -187,8 +185,7 @@ constexpr std::optional<LogLevel> yamlStringTo(const std::string &text) {
 // ===== Parsing yaml ===============
 
 template <typename T>
-T generalConfigParseOrUseDefault(const YAML::Node &config,
-                                 const std::string_view key,
+T generalConfigParseOrUseDefault(const YAML::Node &config, const std::string_view key,
                                  const T defaultValue) {
   YAML::Node node = config[key];
 
@@ -197,14 +194,12 @@ T generalConfigParseOrUseDefault(const YAML::Node &config,
       return std::nullopt;
     }
 
-    T nodeConverted =
-        yamlStringTo<typename T::value_type>(node.as<std::string>());
+    T nodeConverted = yamlStringTo<typename T::value_type>(node.as<std::string>());
     T val = nodeConverted.has_value() ? nodeConverted.value() : defaultValue;
     return val;
   } else {
-    T val = node.IsDefined()
-                ? yamlStringTo<T>(node.as<std::string>()).value_or(defaultValue)
-                : defaultValue;
+    T val = node.IsDefined() ? yamlStringTo<T>(node.as<std::string>()).value_or(defaultValue)
+                             : defaultValue;
     return val;
   }
 }

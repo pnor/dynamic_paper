@@ -200,8 +200,7 @@ void printDynamicBackgroundInfo(const DynamicBackgroundData &data,
   case BackgroundSetOrder::Linear: {
     std::cout << ANSI_COLOR_CYAN << "Images:" << ANSI_COLOR_RESET << "\n";
 
-    for (int i = 0; i < std::min(data.imageNames.size(), data.times.size());
-         i++) {
+    for (int i = 0; std::cmp_less(i, std::min(data.imageNames.size(), data.times.size())); i++) {
       std::cout << " - " << data.imageNames.at(i) << " -> "
                 << ANSI_COLOR_MAGENTA << data.times.at(i) << ANSI_COLOR_RESET
                 << "\n";

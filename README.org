@@ -10,7 +10,6 @@ show a single image, or =dynamic=, which will change at different times of the d
 You can list all the different types of background sets in a yaml config file (by default, =~/.local/share/dynamic_paper/background_sets.yaml=).
 
 * The General Config
-This is where configs go that affect how the entire program works.
 #+begin_src yaml
 background_config: ~/.local/share/dynamic_paper/dynamic_paper.yaml
 hook_script: ~/script_on_background.sh

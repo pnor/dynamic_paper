@@ -108,7 +108,7 @@ handleResponseCode(std::string &&responsePayload, CURLcode responseCode,
 
 // ===== Header ==============
 
-tl::expected<std::string, NetworkError> getFromURL(const std::string_view url) {
+tl::expected<std::string, NetworkError> getFromURL(const std::string& url) {
   std::string responsePayload{};
 
   CURL *curl = nullptr;
@@ -118,7 +118,7 @@ tl::expected<std::string, NetworkError> getFromURL(const std::string_view url) {
 
   if (curl != nullptr) {
     // NOLINTBEGIN(cppcoreguidelines-pro-type-vararg)
-    curl_easy_setopt(curl, CURLOPT_URL, url.data());
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeChunk<CURL_BUFFER_SIZE>);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &responsePayload);
     // NOLINTEND(cppcoreguidelines-pro-type-vararg)

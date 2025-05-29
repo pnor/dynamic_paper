@@ -59,7 +59,10 @@ int timeZoneOffset() {
   const time_t timeNow = time(nullptr);
   struct tm timeStruct = {};
 
-  localtime_r(&timeNow, &timeStruct);
+  const tm* resultPtr = localtime_r(&timeNow, &timeStruct);
+  if (resultPtr == nullptr) {
+    logError("Encountered error in determing time zone offset");
+  }
 
   constexpr long HOUR = 60L * 60L;
   return static_cast<int>(timeStruct.tm_gmtoff / HOUR);
