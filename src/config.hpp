@@ -10,7 +10,7 @@
 #include <tl/expected.hpp>
 #include <yaml-cpp/yaml.h>
 
-#include "background_set_method_enums.hpp"
+#include "background_set_method.hpp"
 #include "logger.hpp"
 #include "solar_day_provider.hpp"
 

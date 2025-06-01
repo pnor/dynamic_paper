@@ -14,7 +14,6 @@ constexpr std::string_view SUNRISE_TIME_KEY = "sunrise";
 constexpr std::string_view SUNSET_TIME_KEY = "sunset";
 constexpr std::string_view USE_CONFIG_FILE_LOCATION_KEY = "use_config_file_location";
 constexpr std::string_view METHOD_KEY = "method";
-constexpr std::string_view SCRIPT_STRING = "script";
 constexpr std::string_view WALLUTILS_STRING = "wallutils";
 
 // Background Set Config

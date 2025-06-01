@@ -11,7 +11,7 @@
 namespace dynamic_paper {
 
 /** To determine which log messages should be shown */
-enum class LogLevel { INFO, WARNING, ERROR, DEBUG, CRITICAL, TRACE, OFF };
+enum class LogLevel: std::uint8_t { INFO, WARNING, ERROR, DEBUG, CRITICAL, TRACE, OFF };
 
 /**
  * Flush the logger on all levels

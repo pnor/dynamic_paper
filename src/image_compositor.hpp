@@ -4,12 +4,13 @@
 
 #include <filesystem>
 #include <string>
+#include <cstdint>
 
 #include <tl/expected.hpp>
 
 namespace dynamic_paper {
 
-enum class CompositeImageError { UnableToCreatePath, FileDoesntExist };
+enum class CompositeImageError: std::uint8_t { UnableToCreatePath, FileDoesntExist };
 
 static constexpr std::string_view IN_PLACE_FILE_NAME =
     "dynamic_paper_interpolation_file";

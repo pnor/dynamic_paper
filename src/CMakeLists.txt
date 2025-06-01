@@ -67,7 +67,7 @@ add_executable(
   file_util.cpp
   location.cpp
   solar_day_provider.cpp
-  hook_script_executor.cpp
+  script_executor.cpp
   magick_compositor.cpp
   networking.cpp
   "${BACKGROUND_SETTER_CALLER_SRC_FILE}"

@@ -10,7 +10,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include "background_set_enums.hpp"
-#include "background_set_method_enums.hpp"
+#include "background_set_method.hpp"
 #include "constants.hpp"
 #include "logger.hpp"
 #include "string_util.hpp"
@@ -113,10 +113,11 @@ template <> constexpr std::optional<BackgroundSetMethod> yamlStringTo(const std:
   const std::string configString = normalize(text);
 
   if (configString == WALLUTILS_STRING) {
-    return std::make_optional(BackgroundSetMethod::WallUtils);
+    return std::make_optional(BackgroundSetMethod(MethodWallUtils{}));
   }
-  if (configString == SCRIPT_STRING) {
-    return std::make_optional(BackgroundSetMethod::Script);
+
+  if (std::filesystem::exists(configString)) {
+    return std::make_optional(BackgroundSetMethod(std::filesystem::path(configString)));
   }
   return std::nullopt;
 }

@@ -76,6 +76,7 @@ public:
 
   Config config = {
       std::filesystem::path(), std::nullopt, std::filesystem::path(CACHE_DIR),
+      BackgroundSetMethod(MethodWallUtils{}),
       LocationInfo{.latitudeAndLongitude = {0, 0},
                    .useLatitudeAndLongitudeOverLocationSearch = false}};
   std::filesystem::path testDataDir = DATA_DIR;

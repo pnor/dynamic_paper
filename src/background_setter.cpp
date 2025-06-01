@@ -41,4 +41,13 @@ void setBackgroundToImage(const std::filesystem::path &imagePath,
   callSetBackground(imageName, backgroundSetModeString(mode));
 }
 
+void setBackgroundToImageUsingScript(const std::filesystem::path &scriptPath,
+                                     const std::filesystem::path &imagePath,
+                                     BackgroundSetMode mode) {
+  logTrace("Setting background to image ({})", imagePath.string());
+
+  // TODO run script
+
+}
+
 } // namespace dynamic_paper

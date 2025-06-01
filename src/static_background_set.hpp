@@ -8,7 +8,7 @@
 #include "background_set_enums.hpp"
 #include "background_setter.hpp"
 #include "config.hpp"
-#include "hook_script_executor.hpp"
+#include "script_executor.hpp"
 
 namespace dynamic_paper {
 
@@ -51,11 +51,10 @@ void StaticBackgroundData::show(const Config &config,
       imageNames.at(detail::randomNumber(imageNames.size()));
   const std::filesystem::path imagePath = imageDirectory / imageName;
 
-  // TODO forwward?
   backgroundSetFunction(imagePath, mode);
 
   if (config.hookScript.has_value()) {
-    tl::expected<void, HookError> hookResult =
+    tl::expected<void, ScriptError> hookResult =
         runHookScript(config.hookScript.value(), imagePath);
 
     if (!hookResult.has_value()) {

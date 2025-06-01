@@ -3,7 +3,7 @@
 /** Default values used throughout */
 
 #include "background_set_enums.hpp"
-#include "background_set_method_enums.hpp"
+#include "background_set_method.hpp"
 #include "file_util.hpp"
 #include "time_util.hpp"
 
@@ -19,7 +19,7 @@ struct ConfigDefaults {
   static constexpr LocationInfo locationInfo = {
       .latitudeAndLongitude = std::pair<double, double>(40.730610, -73.935242),
       .useLatitudeAndLongitudeOverLocationSearch = false};
-  static constexpr BackgroundSetMethod method = BackgroundSetMethod::WallUtils;
+  static constexpr BackgroundSetMethod method = BackgroundSetMethod(MethodWallUtils{});
   static constexpr SolarDay solarDay = {
       .sunrise = convertTimeStringToTimeFromMidnightUnchecked("09:00"),
       .sunset = convertTimeStringToTimeFromMidnightUnchecked("21:00")};

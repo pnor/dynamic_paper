@@ -1,4 +1,4 @@
-#pragma once
+#pragma onco
 
 /**
  * Use mozilla location services to estimate the location of the user.
@@ -6,12 +6,13 @@
  */
 
 #include <utility>
+#include <cstdint>
 
 #include <tl/expected.hpp>
 
 namespace dynamic_paper {
 
-enum class LocationError {
+enum class LocationError: std::uint8_t {
   RequestFailed,
   UnableParseJsonResponse,
   UnableParseLatitudeOrLongitude,

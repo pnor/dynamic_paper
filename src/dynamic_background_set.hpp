@@ -13,7 +13,7 @@
 #include "background_set_enums.hpp"
 #include "background_setter_definition.hpp"
 #include "config.hpp"
-#include "hook_script_executor.hpp"
+#include "script_executor.hpp"
 #include "time_from_midnight.hpp"
 #include "transition_info.hpp"
 #include "variant_visitor_templ.hpp"
@@ -127,7 +127,7 @@ void doEvent(const Event &event, const DynamicBackgroundData *backgroundData,
                      event.imagePath.string());
 
             if (config.hookScript.has_value()) {
-              tl::expected<void, HookError> hookResult =
+              tl::expected<void, ScriptError> hookResult =
                   runHookScript(config.hookScript.value(), event.imagePath);
 
               if (!hookResult.has_value()) {

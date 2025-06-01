@@ -106,7 +106,7 @@ add_executable(
   ${MAIN_SRC_DIR}/file_util.cpp
   ${MAIN_SRC_DIR}/location.cpp
   ${MAIN_SRC_DIR}/solar_day_provider.cpp
-  ${MAIN_SRC_DIR}/hook_script_executor.cpp
+  ${MAIN_SRC_DIR}/script_executor.cpp
   ${MAIN_SRC_DIR}/magick_compositor.cpp
   ${MAIN_SRC_DIR}/networking.cpp
   #${MAIN_SRC_DIR}/nolint/cimg_compositor.cpp
@@ -130,7 +130,7 @@ add_executable(
   ${MAIN_SRC_DIR}/file_util.cpp
   ${MAIN_SRC_DIR}/location.cpp
   ${MAIN_SRC_DIR}/solar_day_provider.cpp
-  ${MAIN_SRC_DIR}/hook_script_executor.cpp
+  ${MAIN_SRC_DIR}/script_executor.cpp
   ${MAIN_SRC_DIR}/magick_compositor.cpp
   ${MAIN_SRC_DIR}/networking.cpp
   "${BACKGROUND_SETTER_CALLER_SRC_FILE}"

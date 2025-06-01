@@ -39,7 +39,7 @@ private:
   std::variant<StaticBackgroundData, DynamicBackgroundData> type;
 };
 
-enum class BackgroundSetParseErrors {
+enum class BackgroundSetParseErrors: std::uint8_t {
   NoName,
   NoType,
   MissingSunpollInfo,

@@ -82,7 +82,7 @@ Config::Config(std::filesystem::path backgroundSetConfigFile,
                SolarDayProvider solarDayProvider)
     : backgroundSetConfigFile(std::move(backgroundSetConfigFile)),
       hookScript(std::move(hookScript)), imageCacheDirectory(std::move(imageCacheDirectory)),
-      method(method), solarDayProvider(std::move(solarDayProvider)) {}
+      method(std::move(method)), solarDayProvider(std::move(solarDayProvider)) {}
 
 Config loadConfigFromYAML(const YAML::Node &config, const bool findLocationOverHttp) {
   auto backgroundSetConfigFile = generalConfigParseOrUseDefault<std::filesystem::path>(
