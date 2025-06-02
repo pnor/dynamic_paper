@@ -1,5 +1,3 @@
-#include "background_setter.hpp"
-
 #include <filesystem>
 #include <string>
 
@@ -8,6 +6,8 @@
 #include "background_set_enums.hpp"
 #include "golang/go-background.h"
 #include "logger.hpp"
+#include "script_executor.hpp"
+#include "background_setter.hpp"
 
 namespace dynamic_paper {
 
@@ -46,8 +46,13 @@ void setBackgroundToImageUsingScript(const std::filesystem::path &scriptPath,
                                      BackgroundSetMode mode) {
   logTrace("Setting background to image ({})", imagePath.string());
 
-  // TODO run script
+  const tl::expected<void, ScriptError> scriptResult =
+      runBackgroundSetScript(scriptPath, imagePath, mode);
 
+  if (!scriptResult.has_value()) {
+    logError("Error relating to forking occured when running background "
+             "setting script");
+  }
 }
 
 } // namespace dynamic_paper

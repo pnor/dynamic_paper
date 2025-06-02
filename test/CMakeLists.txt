@@ -94,6 +94,7 @@ add_executable(
   helper.cpp
   # sources
   ${MAIN_SRC_DIR}/background_set.cpp
+  ${MAIN_SRC_DIR}/background_setter.cpp
   ${MAIN_SRC_DIR}/time_from_midnight.cpp
   ${MAIN_SRC_DIR}/config.cpp
   ${MAIN_SRC_DIR}/dynamic_background_set.cpp
@@ -119,6 +120,7 @@ add_executable(
   ${MAIN_SRC_DIR}/benchmarking/benchmarking.cpp
   # sources
   ${MAIN_SRC_DIR}/background_set.cpp
+  ${MAIN_SRC_DIR}/background_setter.cpp
   ${MAIN_SRC_DIR}/time_from_midnight.cpp
   ${MAIN_SRC_DIR}/config.cpp
   ${MAIN_SRC_DIR}/dynamic_background_set.cpp

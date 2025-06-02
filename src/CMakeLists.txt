@@ -55,21 +55,22 @@ add_executable(
   # sources
   main.cpp
   background_set.cpp
+  background_setter.cpp
+  cmdline_helper.cpp
   config.cpp
   dynamic_background_set.cpp
-  image_compositor.cpp
-  logger.cpp
-  static_background_set.cpp
-  time_util.cpp
-  time_util_current_time.cpp
-  time_from_midnight.cpp
-  cmdline_helper.cpp
   file_util.cpp
+  image_compositor.cpp
   location.cpp
-  solar_day_provider.cpp
-  script_executor.cpp
+  logger.cpp
   magick_compositor.cpp
   networking.cpp
+  script_executor.cpp
+  solar_day_provider.cpp
+  static_background_set.cpp
+  time_from_midnight.cpp
+  time_util.cpp
+  time_util_current_time.cpp
   "${BACKGROUND_SETTER_CALLER_SRC_FILE}"
   "${BACKGROUND_SETTER_FILE}")
 
