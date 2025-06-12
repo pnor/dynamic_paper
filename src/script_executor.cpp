@@ -1,5 +1,7 @@
 #include "script_executor.hpp"
 
+#include <iostream>
+
 #include <sstream>
 #include <sys/wait.h>
 #include <thread>
@@ -40,32 +42,34 @@ void monitorScript(const pid_t pid) {
 }
 
 inline void checkScriptStatus(const pid_t pid) {
-  std::thread scriptCheckerThread(monitorScript, pid);
-  scriptCheckerThread.detach();
+  // std::thread scriptCheckerThread(monitorScript, pid);
+  // scriptCheckerThread.detach();
 }
 
 template <HasCStr... Args>
 [[noreturn]] void becomeAndRunScript(const std::filesystem::path &scriptPath,
                                      Args &&...args) {
-  // NOLINTNEXTLINE: Need to call execl to execute the script
-  if (execl(scriptPath.c_str(), std::forward<Args>(args).c_str()..., nullptr) ==
-      -1) {
+  const std::array<char *const, sizeof...(Args) + 2> argv{
+      // NOLINTNEXTLINE
+      const_cast<char *const>(scriptPath.c_str()),
+      // NOLINTNEXTLINE
+      const_cast<char *const>(std::forward<Args>(args).c_str())..., nullptr};
+
+  if (execv(scriptPath.c_str(), argv.begin()) == -1) {
     logError("Error when trying to run script: {}.\nError from errno: {}",
              scriptPath.string(), strerror(errno));
     exit(EXIT_FAILURE);
   }
 
-  // unreachable
   __builtin_unreachable();
 }
 
 template <HasCStr... Args>
 [[nodiscard]] tl::expected<void, ScriptError>
-runScript(const std::filesystem::path &scriptPath, const Args &...args) {
+runScript(const std::filesystem::path &scriptPath, Args &&...args) {
   std::ostringstream scriptCommand;
   scriptCommand << scriptPath.c_str() << " ";
   ((scriptCommand << " " << args), ...);
-
   logTrace("Starting to run script: {}", scriptCommand.str());
 
   const pid_t pid = fork();
@@ -79,7 +83,7 @@ runScript(const std::filesystem::path &scriptPath, const Args &...args) {
     return {};
   }
 
-  becomeAndRunScript(scriptPath, args...);
+  becomeAndRunScript(scriptPath, std::forward<Args>(args)...);
 }
 
 } // namespace
@@ -88,13 +92,15 @@ runScript(const std::filesystem::path &scriptPath, const Args &...args) {
 runHookScript(const std::filesystem::path &scriptPath,
               const std::filesystem::path &imagePath) {
   runScript(scriptPath, imagePath);
+  return {};
 }
 
 [[nodiscard]] tl::expected<void, ScriptError>
 runBackgroundSetScript(const std::filesystem::path &scriptPath,
                        const std::filesystem::path &imagePath,
                        BackgroundSetMode mode) {
-  runScript(scriptPath, imagePath, backgroundSetModeString(mode));
+  runScript(scriptPath, imagePath.string(), backgroundSetModeString(mode));
+  return {};
 }
 
 } // namespace dynamic_paper

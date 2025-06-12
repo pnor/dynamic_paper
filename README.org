@@ -21,6 +21,7 @@ longitude: -73.935242
 sunrise: 08:00
 sunset: 20:00
 use_config_file_location: true
+method: wallutils
 #+end_src
 
 *background_config*: path to file that stores background sets.
@@ -58,6 +59,10 @@ value instead. This must be set along with "sunset".
 *use_config_file_location*: If true, will NOT check the user's location, and instead use the =latitude=
  and =longitude= value's provided in this config file.
 - default is =false=
+
+*method*: Either "wallutils" or a string path pointing to a script to use to set the background. Will
+ invoke the script with "script_name image_path mode" (mode is center, fill, etc.)
+- default is "wallutils"
 
   If =latitude=, =longitude=, =sunset=, and =sunrise= are all specified, will prefer to use the =sunrise= and
   =sunset= values.

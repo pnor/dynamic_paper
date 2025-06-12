@@ -214,11 +214,12 @@ void printDynamicBackgroundInfo(const DynamicBackgroundData &data,
 }
 
 bool shouldUseScriptToSetBackground(const Config &config) {
-  return std::visit(overloaded{
-                        [](const MethodWallUtils /* method */) { return false; },
-                        [](const std::filesystem::path & /* path */) { return true; },
-                    },
-                    config.method);
+  return std::visit(
+      overloaded{
+          [](const MethodWallUtils /* method */) { return false; },
+          [](const std::filesystem::path & /* path */) { return true; },
+      },
+      config.method);
 }
 
 auto backgroundSetterScriptFunc(const Config &config) {
@@ -226,7 +227,7 @@ auto backgroundSetterScriptFunc(const Config &config) {
       std::get_if<std::filesystem::path>(&config.method);
   if (script == nullptr) {
     throw std::logic_error("Tried to get a background setter function when the "
-                           "config metohd is not a script");
+                           "config method is not a script");
   }
 
   return [script](const std::filesystem::path &imagePath,
@@ -441,10 +442,10 @@ void showBackgroundSet(BackgroundSet &backgroundSet, const Config &config) {
 
   if (staticData.has_value()) {
     if (shouldUseScriptToSetBackground(config)) {
-      staticData->show(config, setBackgroundToImage);
-    } else {
       const auto backgroundSetterFunc = backgroundSetterScriptFunc(config);
       staticData->show(config, backgroundSetterFunc);
+    } else {
+      staticData->show(config, setBackgroundToImage);
     }
   }
 
