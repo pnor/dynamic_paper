@@ -149,7 +149,7 @@ bool usesInPlaceTransitions(const DynamicBackgroundData &data) {
 void printStaticBackgroundInfo(const StaticBackgroundData &data,
                                const BackgroundSet &backgroundSet) {
   std::cout << ANSI_BOLD << ANSI_COLOR_CYAN << "\n"
-            << " ❤ " << backgroundSet.getName() << ANSI_COLOR_RESET << "\n\n";
+            << " ♥ " << backgroundSet.getName() << ANSI_COLOR_RESET << "\n\n";
 
   std::cout << ANSI_COLOR_MAGENTA << "Mode: " << ANSI_COLOR_RESET
             << backgroundSetModeString(data.mode) << "\n";
