@@ -213,15 +213,6 @@ void printDynamicBackgroundInfo(const DynamicBackgroundData &data,
   std::cout << "\n";
 }
 
-bool shouldUseScriptToSetBackground(const Config &config) {
-  return std::visit(
-      overloaded{
-          [](const MethodWallUtils /* method */) { return false; },
-          [](const std::filesystem::path & /* path */) { return true; },
-      },
-      config.method);
-}
-
 auto backgroundSetterScriptFunc(const Config &config) {
   const std::filesystem::path *script =
       std::get_if<std::filesystem::path>(&config.method);
@@ -239,6 +230,20 @@ auto backgroundSetterScriptFunc(const Config &config) {
 } // namespace
 
 // ===== Header ====================
+
+void useScriptToSetBackground(const Config &config, const std::filesystem::path& image, const BackgroundSetMode mode) {
+  const auto backgroundSetterFunc = backgroundSetterScriptFunc(config);
+  backgroundSetterFunc(image, mode);
+}
+
+bool shouldUseScriptToSetBackground(const Config &config) {
+  return std::visit(
+      overloaded{
+          [](const MethodWallUtils /* method */) { return false; },
+          [](const std::filesystem::path & /* path */) { return true; },
+      },
+      config.method);
+}
 
 Config getConfigAndSetupLogging(const argparse::ArgumentParser &program,
                                 const bool findLocationOverHttp) {

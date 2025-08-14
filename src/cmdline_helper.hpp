@@ -39,6 +39,18 @@ std::filesystem::path
 getConfigFileName(const argparse::ArgumentParser &program);
 
 /**
+ * Returns `true` if the config says to use a user provided script to set the background
+ */
+bool shouldUseScriptToSetBackground(const Config &config);
+
+/**
+ * Sets the background using a user-provided script
+ */
+void useScriptToSetBackground(const Config &config,
+                              const std::filesystem::path &image,
+                              BackgroundSetMode mode);
+
+/**
  * Parses all the options from the Config file.
  * Exits if there is an error parsing a file or creating files.
  *

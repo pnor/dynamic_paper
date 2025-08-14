@@ -69,7 +69,12 @@ void showRandomImageFromAllBackgroundSets(const Config &config) {
   logDebug("Showing image: {} with mode {}", image.string(),
            backgroundSetModeString(mode));
 
-  setBackgroundToImage(image, mode);
+  if (shouldUseScriptToSetBackground(config)) {
+    useScriptToSetBackground(config, image, mode);
+  } else {
+    setBackgroundToImage(image, mode);
+  }
+
   std::cout << "Set background to " << ANSI_COLOR_CYAN << image.string()
             << ANSI_COLOR_RESET << "\n";
 
