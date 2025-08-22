@@ -26,9 +26,12 @@ struct StaticBackgroundData {
                        std::vector<std::string> imageNames);
 
   /** Shows a background that is provided in this struct based on one of the
-   * `imageNames`*/
+   * `imageNames`.
+   * If `optMode` is nullopt, will use the class' `mode`.
+   */
   template <CanSetBackgroundTrait T>
-  void show(const Config &config, T &&backgroundSetFunction) const;
+  void show(const Config &config, T &&backgroundSetFunction,
+            std::optional<BackgroundSetMode> optMode) const;
 };
 
 // ===== Definition ===============
@@ -42,7 +45,8 @@ size_t randomNumber(size_t max);
 
 template <CanSetBackgroundTrait T>
 void StaticBackgroundData::show(const Config &config,
-                                T &&backgroundSetFunction) const {
+                                T &&backgroundSetFunction,
+                                const std::optional<BackgroundSetMode> optMode) const {
   logTrace("Showing static background");
   logAssert(!imageNames.empty(),
             "Static background cannot show with no images");
@@ -51,7 +55,7 @@ void StaticBackgroundData::show(const Config &config,
       imageNames.at(detail::randomNumber(imageNames.size()));
   const std::filesystem::path imagePath = imageDirectory / imageName;
 
-  backgroundSetFunction(imagePath, mode);
+  backgroundSetFunction(imagePath, optMode.value_or(mode));
 
   if (config.hookScript.has_value()) {
     tl::expected<void, ScriptError> hookResult =

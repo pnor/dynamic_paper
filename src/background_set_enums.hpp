@@ -5,7 +5,9 @@
 #include <string>
 #include <cstdint>
 
+#include "constants.hpp"
 #include "logger.hpp"
+#include "string_util.hpp"
 
 namespace dynamic_paper {
 
@@ -31,7 +33,27 @@ constexpr std::string backgroundSetModeString(const BackgroundSetMode mode) {
   return "";
 }
 
-enum class BackgroundSetOrder: std::uint8_t { Linear, Random };
-enum class BackgroundSetType: std::uint8_t { Dynamic, Static };
+constexpr std::optional<BackgroundSetMode>
+stringToBackgroundSetMode(const std::string_view modeString) {
+  const std::string modeStringNormalized = normalize(std::string(modeString));
+
+  if (modeStringNormalized == CENTER_STRING) {
+    return BackgroundSetMode::Center;
+  }
+  if (modeStringNormalized == FILL_STRING) {
+    return BackgroundSetMode::Fill;
+  }
+  if (modeStringNormalized == TILE_STRING) {
+    return BackgroundSetMode::Tile;
+  }
+  if (modeStringNormalized == SCALE_STRING) {
+    return BackgroundSetMode::Scale;
+  }
+
+  return std::nullopt;
+}
+
+enum class BackgroundSetOrder : std::uint8_t { Linear, Random };
+enum class BackgroundSetType : std::uint8_t { Dynamic, Static };
 
 } // namespace dynamic_paper

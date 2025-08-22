@@ -440,7 +440,9 @@ getRandomImageAndModeFromAllBackgroundSets(const Config &config) {
   return wallpaperOptions.at(index);
 }
 
-void showBackgroundSet(BackgroundSet &backgroundSet, const Config &config) {
+void showBackgroundSet(BackgroundSet &backgroundSet,
+                       const Config &config,
+                       const std::optional<BackgroundSetMode> mode) {
   std::cout << "Showing: " << backgroundSet.getName() << '\n';
 
   std::optional<StaticBackgroundData> staticData = backgroundSet.getStaticBackgroundData();
@@ -448,9 +450,9 @@ void showBackgroundSet(BackgroundSet &backgroundSet, const Config &config) {
   if (staticData.has_value()) {
     if (shouldUseScriptToSetBackground(config)) {
       const auto backgroundSetterFunc = backgroundSetterScriptFunc(config);
-      staticData->show(config, backgroundSetterFunc);
+      staticData->show(config, backgroundSetterFunc, mode);
     } else {
-      staticData->show(config, setBackgroundToImage);
+      staticData->show(config, setBackgroundToImage, mode);
     }
   }
 
@@ -468,25 +470,25 @@ void showBackgroundSet(BackgroundSet &backgroundSet, const Config &config) {
           sleepTime =
               dynamicData->updateBackground<decltype(backgroundSetterFunc),
                                      FilesystemHandler, ImageCompositorInPlace>(
-                      currentTime, config, std::move(backgroundSetterFunc)) +
+                      currentTime, config, std::move(backgroundSetterFunc), mode) +
               std::chrono::seconds(1);
         } else {
           sleepTime =
               dynamicData
                   ->updateBackground<decltype(&setBackgroundToImage),
                                      FilesystemHandler, ImageCompositorInPlace>(
-                      currentTime, config, &setBackgroundToImage) +
+                      currentTime, config, &setBackgroundToImage, mode) +
               std::chrono::seconds(1);
         }
       } else {
         if (shouldUseScriptToSetBackground(config)) {
           const auto backgroundSetterFunc = backgroundSetterScriptFunc(config);
           sleepTime = dynamicData->updateBackground(currentTime, config,
-                                                    backgroundSetterFunc) +
+                                                    backgroundSetterFunc, mode) +
                       std::chrono::seconds(1);
         } else {
           sleepTime = dynamicData->updateBackground(currentTime, config,
-                                                    &setBackgroundToImage) +
+                                                    &setBackgroundToImage, mode) +
                       std::chrono::seconds(1);
         }
       }

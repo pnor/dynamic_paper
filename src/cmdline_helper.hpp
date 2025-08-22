@@ -112,8 +112,11 @@ std::optional<BackgroundSet> getRandomBackgroundSet(const Config &config);
 std::optional<std::pair<std::filesystem::path, BackgroundSetMode>>
 getRandomImageAndModeFromAllBackgroundSets(const Config &config);
 
-/** Shows `backgroundSet` using user's `config`. */
-void showBackgroundSet(BackgroundSet &backgroundSet, const Config &config);
+/**
+ * Shows `backgroundSet` using user's `config`.
+ * Will display image with `mode` if provided or the mode specified by config by default.
+ */
+void showBackgroundSet(BackgroundSet &backgroundSet, const Config &config, std::optional<BackgroundSetMode> mode = std::nullopt);
 
 /** Prints info about `backgroundSet` to stdout. */
 void printBackgroundSetInfo(const BackgroundSet &backgroundSet);

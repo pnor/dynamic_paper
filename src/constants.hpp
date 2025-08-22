@@ -25,6 +25,8 @@ constexpr std::string_view RANDOM_STRING = "random";
 
 constexpr std::string_view CENTER_STRING = "center";
 constexpr std::string_view FILL_STRING = "fill";
+constexpr std::string_view TILE_STRING = "tile";
+constexpr std::string_view SCALE_STRING = "scale";
 
 constexpr std::string_view SUNWAIT_STRING = "sunwait";
 

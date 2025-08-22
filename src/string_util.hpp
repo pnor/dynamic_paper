@@ -47,7 +47,7 @@ constexpr std::string trim_copy(std::string text) {
  * */
 constexpr std::string normalize(const std::string &text) {
   std::string sCopy = trim_copy(text);
-  std::transform(sCopy.begin(), sCopy.end(), sCopy.begin(),
+  std::ranges::transform(sCopy.begin(), sCopy.end(), sCopy.begin(),
                  [](const char letter) { return tolower(letter); });
   return sCopy;
 }

@@ -12,6 +12,7 @@
 #include <Magick++.h>
 
 #include "background_set.hpp"
+#include "background_set_enums.hpp"
 #include "cmdline_helper.hpp"
 #include "config.hpp"
 #include "defaults.hpp"
@@ -39,7 +40,9 @@ constexpr std::string_view ANSI_COLOR_RED = "\x1b[31m";
 constexpr std::string_view ANSI_COLOR_MAGENTA = "\x1b[35m";
 constexpr std::string_view ANSI_COLOR_RESET = "\x1b[0m";
 
-void showRandomBackgroundSet(const Config &config) {
+void showRandomBackgroundSet(
+    const Config &config,
+    const std::optional<BackgroundSetMode> optMode = std::nullopt) {
   std::optional<BackgroundSet> optBackgroundSet =
       getRandomBackgroundSet(config);
 
@@ -51,10 +54,11 @@ void showRandomBackgroundSet(const Config &config) {
 
   logDebug("Showing background set: {}", optBackgroundSet->getName());
 
-  showBackgroundSet(optBackgroundSet.value(), config);
+  showBackgroundSet(optBackgroundSet.value(), config, optMode);
 }
 
-void showRandomImageFromAllBackgroundSets(const Config &config) {
+void showRandomImageFromAllBackgroundSets(
+    const Config &config, const std::optional<BackgroundSetMode> optMode) {
   const std::optional<std::pair<std::filesystem::path, BackgroundSetMode>>
       imageAndModeOpt = getRandomImageAndModeFromAllBackgroundSets(config);
 
@@ -70,9 +74,9 @@ void showRandomImageFromAllBackgroundSets(const Config &config) {
            backgroundSetModeString(mode));
 
   if (shouldUseScriptToSetBackground(config)) {
-    useScriptToSetBackground(config, image, mode);
+    useScriptToSetBackground(config, image, optMode.value_or(mode));
   } else {
-    setBackgroundToImage(image, mode);
+    setBackgroundToImage(image, optMode.value_or(mode));
   }
 
   std::cout << "Set background to " << ANSI_COLOR_CYAN << image.string()
@@ -88,28 +92,47 @@ void showRandomImageFromAllBackgroundSets(const Config &config) {
 void handleShowCommand(argparse::ArgumentParser &showCommand,
                        const Config &config) {
   const std::string &name = showCommand.get("name");
+  const std::string modeString = showCommand.present("--mode").value_or("");
+  const std::optional<BackgroundSetMode> mode =
+      stringToBackgroundSetMode(modeString);
 
-  std::optional<BackgroundSet> optBackgroundSet =
-      getBackgroundSetWithNameFromFile(name, config);
+  if (std::filesystem::is_regular_file(name)) {
+    logDebug("Showing image path {}", name);
 
-  if (!optBackgroundSet.has_value()) {
-    std::cout << "Unable to show background set with name " << name << '\n';
-    return;
+    if (shouldUseScriptToSetBackground(config)) {
+      useScriptToSetBackground(config, name,
+                               mode.value_or(BackgroundSetMode::Scale));
+    } else {
+      setBackgroundToImage(name, mode.value_or(BackgroundSetMode::Scale));
+    }
+  } else {
+    std::optional<BackgroundSet> optBackgroundSet =
+        getBackgroundSetWithNameFromFile(name, config);
+
+    if (!optBackgroundSet.has_value()) {
+      std::cout << "Unable to show background set with name " << name << '\n';
+      return;
+    }
+
+    showBackgroundSet(optBackgroundSet.value(), config, mode);
   }
-
-  showBackgroundSet(optBackgroundSet.value(), config);
 }
 
 void handleRandomCommand(argparse::ArgumentParser &randomCommand,
                          const Config &config) {
+  const std::string modeString = randomCommand.present("--mode").value_or("");
+  const std::optional<BackgroundSetMode> optMode =
+      stringToBackgroundSetMode(modeString);
+
   if (randomCommand["--image"] == true) {
-    showRandomImageFromAllBackgroundSets(config);
+    showRandomImageFromAllBackgroundSets(config, optMode);
   } else {
-    showRandomBackgroundSet(config);
+    showRandomBackgroundSet(config, optMode);
   }
 }
 
-void handleListCommand(argparse::ArgumentParser &listCommand, const Config &config) {
+void handleListCommand(argparse::ArgumentParser &listCommand,
+                       const Config &config) {
   if (!std::filesystem::exists(config.backgroundSetConfigFile)) {
     errorMsg("No config file exists for background sets at path: {}",
              config.backgroundSetConfigFile.string());
@@ -199,8 +222,12 @@ auto main(int argc, char *argv[]) -> int {
       .help("Whether to log to stdout instead of a logfile");
 
   argparse::ArgumentParser showCommand("show");
-  showCommand.add_description("Show wallpaper set with name");
-  showCommand.add_argument("name").help("Name of wallpaper set to show");
+  showCommand.add_description("Show image or wallpaper set with name");
+  showCommand.add_argument("name").help(
+      "Image path or name of wallpaper set to show");
+  showCommand.add_argument("--mode", "-m")
+      .help("Center, Fill, Tile, or Scale (Background Set config specified or "
+            "Scale by default)");
 
   argparse::ArgumentParser randomCommand("random");
   randomCommand.add_description("Show a random wallpaper set");
@@ -208,12 +235,15 @@ auto main(int argc, char *argv[]) -> int {
       .help("Choose one wallpaper to show out of all available sets instead of "
             "choosing one background set at random")
       .flag();
+  randomCommand.add_argument("--mode", "-m")
+      .help("Center, Fill, Tile, or Scale (Background Set config specified or "
+            "Scale by default)");
 
   argparse::ArgumentParser listCommand("list");
   listCommand.add_description("List all wallpaper set options");
   listCommand.add_argument("--no-format")
-    .help("Print available backgrounds without formatting")
-    .flag();
+      .help("Print available backgrounds without formatting")
+      .flag();
 
   argparse::ArgumentParser infoCommand("info");
   infoCommand.add_description("Show info for wallpaper set with name");

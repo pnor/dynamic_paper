@@ -238,7 +238,6 @@ timesAndRandomNamesSortedByTime(const DynamicBackgroundData *dynamicData) {
   return timesAndNames;
 }
 
-
 } // namespace
 
 // ===== Header: detail ===============
@@ -291,16 +290,16 @@ EventList getEventList(const DynamicBackgroundData *dynamicData) {
   EventList eventList;
 
   switch (dynamicData->order) {
-    case BackgroundSetOrder::Linear: {
-      eventList = createEventListFromTimesAndNames(
+  case BackgroundSetOrder::Linear: {
+    eventList = createEventListFromTimesAndNames(
         dynamicData, timesAndNamesSortedByTime(dynamicData));
-      break;
-    }
-    case BackgroundSetOrder::Random: {
-      eventList = createEventListFromTimesAndNames(
+    break;
+  }
+  case BackgroundSetOrder::Random: {
+    eventList = createEventListFromTimesAndNames(
         dynamicData, timesAndRandomNamesSortedByTime(dynamicData));
-      break;
-    }
+    break;
+  }
   }
 
   return eventList;

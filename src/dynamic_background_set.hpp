@@ -46,13 +46,16 @@ struct DynamicBackgroundData {
                         std::vector<TimeFromMidnight> times);
 
   /** Updates the background shown for the current time, and returns the amount
-   * of seconds until the next event will be shown. */
+   * of seconds until the next event will be shown.
+   * Will use mode specified by the config if `optMode` is `nullopt`.
+   */
   template <CanSetBackgroundTrait T,
             ChangesFilesystem Files = FilesystemHandler,
             GetsCompositeImages CompositeImages = ImageCompositor>
   [[nodiscard]] std::chrono::seconds
   updateBackground(TimeFromMidnight currentTime, const Config &config,
-                   T &&backgroundSetFunction) const;
+                   T &&backgroundSetFunction,
+                   std::optional<BackgroundSetMode> optMode) const;
 };
 
 // ===== Header Helper ===============
@@ -115,43 +118,47 @@ void logPrintEventList(const EventList &eventList);
 template <CanSetBackgroundTrait T, ChangesFilesystem Files,
           GetsCompositeImages CompositeImages>
 void doEvent(const Event &event, const DynamicBackgroundData *backgroundData,
-             const Config &config, T &&backgroundSetFunction) {
+             const Config &config, T &&backgroundSetFunction,
+             const std::optional<BackgroundSetMode> optMode) {
   std::visit(
-    overloaded{
-    [&config, backgroundData, &backgroundSetFunction](const SetBackgroundEvent &event) {
-      std::forward<T>(backgroundSetFunction)(event.imagePath, backgroundData->mode);
+      overloaded{
+          [&config, backgroundData, &backgroundSetFunction,
+           optMode](const SetBackgroundEvent &event) {
+            std::forward<T>(backgroundSetFunction)(
+                event.imagePath, optMode.value_or(backgroundData->mode));
 
-      logTrace("Did Set background event, set to {}",
-               event.imagePath.string());
+            logTrace("Did Set background event, set to {}",
+                     event.imagePath.string());
 
-      if (config.hookScript.has_value()) {
-        tl::expected<void, ScriptError> hookResult =
-          runHookScript(config.hookScript.value(), event.imagePath);
+            if (config.hookScript.has_value()) {
+              tl::expected<void, ScriptError> hookResult =
+                  runHookScript(config.hookScript.value(), event.imagePath);
 
-        if (!hookResult.has_value()) {
-          logError("Error occured relating to forking when running "
-                   "hook script");
-        }
-      }
-    },
-    [&config, backgroundData,
-     &backgroundSetFunction](const LerpBackgroundEvent &event) {
-      // std::decay_t<T> func = std::forward<T>(backgroundSetFunction);
+              if (!hookResult.has_value()) {
+                logError("Error occured relating to forking when running "
+                         "hook script");
+              }
+            }
+          },
+          [&config, backgroundData, &backgroundSetFunction,
+           optMode](const LerpBackgroundEvent &event) {
+            // std::decay_t<T> func = std::forward<T>(backgroundSetFunction);
 
-      logTrace("About to start lerping background");
+            logTrace("About to start lerping background");
 
-      tl::expected<void, BackgroundError> result =
-        lerpBackgroundBetweenImages<std::decay_t<T>, Files,
-                                    CompositeImages>(
-                                      event.commonImageDirectory, event.startImageName,
-                                      event.endImageName, config.imageCacheDirectory,
-                                      event.transition, backgroundData->mode, std::move(std::forward<T>(backgroundSetFunction)));
+            tl::expected<void, BackgroundError> result =
+                lerpBackgroundBetweenImages<std::decay_t<T>, Files,
+                                            CompositeImages>(
+                    event.commonImageDirectory, event.startImageName,
+                    event.endImageName, config.imageCacheDirectory,
+                    event.transition, optMode.value_or(backgroundData->mode),
+                    std::move(std::forward<T>(backgroundSetFunction)));
 
-      if (!result.has_value()) {
-        describeError(result.error());
-      }
-    }},
-    event);
+            if (!result.has_value()) {
+              describeError(result.error());
+            }
+          }},
+      event);
 }
 
 // --- Main Loop Logic ---
@@ -161,7 +168,8 @@ template <CanSetBackgroundTrait T, ChangesFilesystem Files,
 std::chrono::seconds updateBackgroundAndReturnTimeTillNext(
     const TimeFromMidnight currentTime,
     const DynamicBackgroundData *backgroundData, const Config &config,
-    const unsigned int seed, T &&backgroundSetFunction) {
+    const unsigned int seed, T &&backgroundSetFunction,
+    const std::optional<BackgroundSetMode> optMode) {
 
   // Reset the random seed on each iteration of the loop to ensure the order
   // of `random` dynamic backgrounds is consistent between each reconstruction
@@ -184,7 +192,7 @@ std::chrono::seconds updateBackgroundAndReturnTimeTillNext(
 
   detail::doEvent<T, Files, CompositeImages>(
       currentEvent, backgroundData, config,
-      std::forward<T>(backgroundSetFunction));
+      std::forward<T>(backgroundSetFunction), optMode);
 
   const std::chrono::seconds currentEventDuration =
       getEventDuration(currentEvent);
@@ -200,10 +208,11 @@ std::chrono::seconds updateBackgroundAndReturnTimeTillNext(
 
 template <CanSetBackgroundTrait T, ChangesFilesystem Files,
           GetsCompositeImages CompositeImages>
-[[nodiscard]] std::chrono::seconds
-DynamicBackgroundData::updateBackground(const TimeFromMidnight currentTime,
-                                        const Config &config,
-                                        T &&backgroundSetFunction) const {
+[[nodiscard]] std::chrono::seconds DynamicBackgroundData::updateBackground(
+    const TimeFromMidnight currentTime, const Config &config,
+    T &&backgroundSetFunction,
+    const std::optional<BackgroundSetMode> optMode) const {
+
   logTrace("Show dynamic background");
 
   const unsigned int seed = detail::chooseRandomSeed();
@@ -211,7 +220,8 @@ DynamicBackgroundData::updateBackground(const TimeFromMidnight currentTime,
 
   return detail::updateBackgroundAndReturnTimeTillNext<T, Files,
                                                        CompositeImages>(
-      currentTime, this, config, seed, std::forward<T>(backgroundSetFunction));
+      currentTime, this, config, seed, std::forward<T>(backgroundSetFunction),
+      optMode);
 }
 
 } // namespace dynamic_paper

@@ -98,15 +98,7 @@ template <typename T> constexpr std::optional<T> yamlStringTo(const std::string 
 
 // - BackgroundSetMode
 template <> constexpr std::optional<BackgroundSetMode> yamlStringTo(const std::string &text) {
-  const std::string configString = normalize(text);
-
-  if (configString == CENTER_STRING) {
-    return std::make_optional(BackgroundSetMode::Center);
-  }
-  if (configString == FILL_STRING) {
-    return std::make_optional(BackgroundSetMode::Fill);
-  }
-  return std::nullopt;
+  return stringToBackgroundSetMode(text);
 }
 
 template <> constexpr std::optional<BackgroundSetMethod> yamlStringTo(const std::string &text) {
