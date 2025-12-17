@@ -54,7 +54,8 @@ nameAndYAMLInfoFromFile(const std::filesystem::path &backgroundSetFile) {
   try {
     yaml = YAML::LoadFile(backgroundSetFile);
   } catch (const YAML::ParserException &e) {
-    logFatalError("Unable to parse background set file {}", backgroundSetFile.string());
+    logFatalError("Unable to parse background set file {}",
+                  backgroundSetFile.string());
     exit(1);
   }
 
@@ -64,7 +65,8 @@ nameAndYAMLInfoFromFile(const std::filesystem::path &backgroundSetFile) {
 /**
  * Prints a relevant error message for `error` caused from parsing `name`
  */
-void printParsingError(const std::string &name, const BackgroundSetParseErrors error) {
+void printParsingError(const std::string &name,
+                       const BackgroundSetParseErrors error) {
   switch (error) {
   case BackgroundSetParseErrors::MissingSunpollInfo: {
     logError("Unable to parse background {} due to not being able "
@@ -83,7 +85,8 @@ void printParsingError(const std::string &name, const BackgroundSetParseErrors e
     break;
   }
   case BackgroundSetParseErrors::NoImages: {
-    logError("Unable to parse background {} due to no images being provided", name);
+    logError("Unable to parse background {} due to no images being provided",
+             name);
     break;
   }
   case BackgroundSetParseErrors::NoImageDirectory: {
@@ -104,7 +107,8 @@ void printParsingError(const std::string &name, const BackgroundSetParseErrors e
 }
 
 void setupLoggingFromYAML(const YAML::Node &config) {
-  std::pair<LogLevel, std::filesystem::path> levelAndFileName = loadLoggingInfoFromYAML(config);
+  std::pair<LogLevel, std::filesystem::path> levelAndFileName =
+      loadLoggingInfoFromYAML(config);
   setupLogging(std::move(levelAndFileName));
   logInfo("======== Running dynamic_paper =====");
 }
@@ -125,20 +129,25 @@ YAML::Node loadConfigFileIntoYAML(const std::filesystem::path &file) {
     return YAML::LoadFile(file);
   } catch (const YAML::BadFile &e) {
     errorMsg("Could not parse config file `{}`", file.string());
-    logError("Could not parse config file {} due to {}", file.string(), e.what());
+    logError("Could not parse config file {} due to {}", file.string(),
+             e.what());
     exit(EXIT_FAILURE);
   } catch (const YAML::ParserException &e) {
     errorMsg("`{}` config file is malformed.", file.string());
-    logError("Could not parse config file {} due to {}", file.string(), e.what());
+    logError("Could not parse config file {} due to {}", file.string(),
+             e.what());
     exit(EXIT_FAILURE);
   } catch (const std::exception &e) {
-    errorMsg("Unable to parse `{}` due to an unknown error: {}", file.string(), e.what());
-    logError("Could not parse config file {} due to {}", file.string(), e.what());
+    errorMsg("Unable to parse `{}` due to an unknown error: {}", file.string(),
+             e.what());
+    logError("Could not parse config file {} due to {}", file.string(),
+             e.what());
     exit(EXIT_FAILURE);
   }
 }
 
-Config createConfigFromYAML(const YAML::Node &configYaml, const bool findLocationOverHttp) {
+Config createConfigFromYAML(const YAML::Node &configYaml,
+                            const bool findLocationOverHttp) {
   return loadConfigFromYAML(configYaml, findLocationOverHttp);
 }
 
@@ -153,15 +162,26 @@ void printStaticBackgroundInfo(const StaticBackgroundData &data,
 
   std::cout << ANSI_COLOR_MAGENTA << "Mode: " << ANSI_COLOR_RESET
             << backgroundSetModeString(data.mode) << "\n";
-  std::cout << ANSI_COLOR_MAGENTA << "Image Directory: " << ANSI_COLOR_RESET << data.imageDirectory
-            << "\n";
+  std::cout << ANSI_COLOR_MAGENTA << "Image Directory: " << ANSI_COLOR_RESET
+            << data.imageDirectory << "\n";
   if (data.imageNames.size() == 1) {
-    std::cout << ANSI_COLOR_MAGENTA << "Image: " << ANSI_COLOR_RESET << data.imageNames.at(0)
+    const bool imageExists =
+        std::filesystem::exists(data.imageDirectory / data.imageNames.at(0));
+    const std::string_view imgEscapeStart = imageExists ? "" : ANSI_COLOR_RED;
+    const std::string_view imgEscapeEnd = imageExists ? "" : ANSI_COLOR_RESET;
+
+    std::cout << ANSI_COLOR_MAGENTA << "Image: " << ANSI_COLOR_RESET
+              << imgEscapeStart << data.imageNames.at(0) << imgEscapeEnd
               << "\n";
   } else {
     std::cout << ANSI_COLOR_MAGENTA << "Images:\n" << ANSI_COLOR_RESET;
     for (const std::string_view name : data.imageNames) {
-      std::cout << " - " << name << "\n";
+      const bool imageExists =
+          std::filesystem::exists(data.imageDirectory / name);
+      const std::string_view imgEscapeStart = imageExists ? "" : ANSI_COLOR_RED;
+      const std::string_view imgEscapeEnd = imageExists ? "" : ANSI_COLOR_RESET;
+
+      std::cout << " - " << imgEscapeStart << name << imgEscapeEnd << "\n";
     }
   }
   std::cout << "\n";
@@ -172,17 +192,19 @@ void printDynamicBackgroundInfo(const DynamicBackgroundData &data,
   std::cout << ANSI_BOLD << ANSI_COLOR_MAGENTA << "\n"
             << " ⭐ " << backgroundSet.getName() << ANSI_COLOR_RESET << "\n\n";
 
-  std::cout << ANSI_COLOR_CYAN << "Mode: " << ANSI_COLOR_RESET << backgroundSetModeString(data.mode)
-            << "\n";
-  std::cout << ANSI_COLOR_CYAN << "Image Directory: " << ANSI_COLOR_RESET << data.imageDirectory
-            << "\n";
+  std::cout << ANSI_COLOR_CYAN << "Mode: " << ANSI_COLOR_RESET
+            << backgroundSetModeString(data.mode) << "\n";
+  std::cout << ANSI_COLOR_CYAN << "Image Directory: " << ANSI_COLOR_RESET
+            << data.imageDirectory << "\n";
   switch (data.order) {
   case BackgroundSetOrder::Linear: {
-    std::cout << ANSI_COLOR_CYAN << "Display Order: " << ANSI_COLOR_RESET << "Linear" << "\n";
+    std::cout << ANSI_COLOR_CYAN << "Display Order: " << ANSI_COLOR_RESET
+              << "Linear" << "\n";
     break;
   }
   case BackgroundSetOrder::Random: {
-    std::cout << ANSI_COLOR_CYAN << "Display Order: " << ANSI_COLOR_RESET << "Random" << "\n";
+    std::cout << ANSI_COLOR_CYAN << "Display Order: " << ANSI_COLOR_RESET
+              << "Random" << "\n";
     break;
   }
   }
@@ -191,8 +213,16 @@ void printDynamicBackgroundInfo(const DynamicBackgroundData &data,
   case BackgroundSetOrder::Linear: {
     std::cout << ANSI_COLOR_CYAN << "Images:" << ANSI_COLOR_RESET << "\n";
 
-    for (int i = 0; std::cmp_less(i, std::min(data.imageNames.size(), data.times.size())); i++) {
-      std::cout << " - " << data.imageNames.at(i) << " -> " << ANSI_COLOR_MAGENTA
+    for (int i = 0;
+         std::cmp_less(i, std::min(data.imageNames.size(), data.times.size()));
+         i++) {
+      const bool imageExists =
+          std::filesystem::exists(data.imageDirectory / data.imageNames.at(i));
+      const std::string_view imgEscapeStart = imageExists ? "" : ANSI_COLOR_RED;
+      const std::string_view imgEscapeEnd = imageExists ? "" : ANSI_COLOR_RESET;
+
+      std::cout << " - " << imgEscapeStart << data.imageNames.at(i)
+                << imgEscapeEnd << " -> " << ANSI_COLOR_MAGENTA
                 << data.times.at(i) << ANSI_COLOR_RESET << "\n";
     }
     break;
@@ -200,7 +230,12 @@ void printDynamicBackgroundInfo(const DynamicBackgroundData &data,
   case BackgroundSetOrder::Random: {
     std::cout << ANSI_COLOR_CYAN << "Images: " << ANSI_COLOR_RESET << "\n";
     for (const std::string_view name : data.imageNames) {
-      std::cout << " - " << name << "\n";
+      const bool imageExists =
+          std::filesystem::exists(data.imageDirectory / name);
+      const std::string_view imgEscapeStart = imageExists ? "" : ANSI_COLOR_RED;
+      const std::string_view imgEscapeEnd = imageExists ? "" : ANSI_COLOR_RESET;
+
+      std::cout << " - " << imgEscapeStart << name << imgEscapeEnd << "\n";
     }
 
     std::cout << ANSI_COLOR_CYAN << "Times: " << ANSI_COLOR_RESET << "\n";
@@ -231,7 +266,9 @@ auto backgroundSetterScriptFunc(const Config &config) {
 
 // ===== Header ====================
 
-void useScriptToSetBackground(const Config &config, const std::filesystem::path& image, const BackgroundSetMode mode) {
+void useScriptToSetBackground(const Config &config,
+                              const std::filesystem::path &image,
+                              const BackgroundSetMode mode) {
   const auto backgroundSetterFunc = backgroundSetterScriptFunc(config);
   backgroundSetterFunc(image, mode);
 }
@@ -254,11 +291,12 @@ Config getConfigAndSetupLogging(const argparse::ArgumentParser &program,
   auto configFilePath = std::filesystem::path(expandPath(conf));
 
   if (configFilePath == expandPath(DEFAULT_CONFIG_FILE_NAME)) {
-    const bool fileCreationResult =
-        FilesystemHandler::createFileIfDoesntExist(configFilePath, DEFAULT_CONFIG_FILE_CONTENTS);
+    const bool fileCreationResult = FilesystemHandler::createFileIfDoesntExist(
+        configFilePath, DEFAULT_CONFIG_FILE_CONTENTS);
 
     if (!fileCreationResult) {
-      errorMsg("Error creating default config file: {}", configFilePath.string());
+      errorMsg("Error creating default config file: {}",
+               configFilePath.string());
       exit(EXIT_FAILURE);
     }
   }
@@ -317,22 +355,26 @@ std::vector<std::pair<std::string_view, BackgroundSetType>>
 getNamesAndTypes(const std::vector<BackgroundSet> &backgroundSets) {
   std::vector<std::pair<std::string_view, BackgroundSetType>> namesAndTypes;
   namesAndTypes.reserve(backgroundSets.size());
-  std::ranges::transform(
-      backgroundSets, std::back_inserter(namesAndTypes),
-      [](const BackgroundSet &set) { return std::make_pair(set.getName(), set.getType()); });
-  std::ranges::sort(namesAndTypes, {}, &std::pair<std::string_view, BackgroundSetType>::first);
+  std::ranges::transform(backgroundSets, std::back_inserter(namesAndTypes),
+                         [](const BackgroundSet &set) {
+                           return std::make_pair(set.getName(), set.getType());
+                         });
+  std::ranges::sort(namesAndTypes, {},
+                    &std::pair<std::string_view, BackgroundSetType>::first);
   return namesAndTypes;
 }
 
-std::optional<BackgroundSet> getBackgroundSetWithNameFromFile(const std::string_view name,
-                                                              const Config &config) {
+std::optional<BackgroundSet>
+getBackgroundSetWithNameFromFile(const std::string_view name,
+                                 const Config &config) {
   const std::unordered_map<std::string, YAML::Node> yamlMap =
       nameAndYAMLInfoFromFile(config.backgroundSetConfigFile);
 
   for (const auto &keyValue : yamlMap) {
     if (keyValue.first == name) {
       tl::expected<BackgroundSet, BackgroundSetParseErrors> expBackgroundSet =
-          parseFromYAML(keyValue.first, keyValue.second, config.solarDayProvider.getSolarDay());
+          parseFromYAML(keyValue.first, keyValue.second,
+                        config.solarDayProvider.getSolarDay());
 
       if (expBackgroundSet.has_value()) {
         return expBackgroundSet.value();
@@ -392,13 +434,17 @@ getRandomImageAndModeFromAllBackgroundSets(const Config &config) {
   const std::unordered_map<std::string, YAML::Node> yamlMap =
       nameAndYAMLInfoFromFile(config.backgroundSetConfigFile);
 
-  std::vector<std::pair<std::filesystem::path, BackgroundSetMode>> wallpaperOptions;
+  std::vector<std::pair<std::filesystem::path, BackgroundSetMode>>
+      wallpaperOptions;
 
-  const auto validNode = [](const std::pair<std::string, YAML::Node> &nameAndNode) {
-    const YAML::Node &node = nameAndNode.second;
-    return node.IsDefined() && node[MODE].IsDefined() && node[IMAGE_DIRECTORY].IsDefined() &&
-           ((node[IMAGES].IsDefined() && node[IMAGES].IsSequence()) || (node[IMAGE].IsDefined()));
-  };
+  const auto validNode =
+      [](const std::pair<std::string, YAML::Node> &nameAndNode) {
+        const YAML::Node &node = nameAndNode.second;
+        return node.IsDefined() && node[MODE].IsDefined() &&
+               node[IMAGE_DIRECTORY].IsDefined() &&
+               ((node[IMAGES].IsDefined() && node[IMAGES].IsSequence()) ||
+                (node[IMAGE].IsDefined()));
+      };
 
   for (const auto &key : yamlMap | std::ranges::views::filter(validNode)) {
     const YAML::Node &node = key.second;
@@ -406,19 +452,23 @@ getRandomImageAndModeFromAllBackgroundSets(const Config &config) {
     const BackgroundSetMode mode =
         yamlStringTo<BackgroundSetMode>(node[MODE].as<std::string>()).value();
 
-    const std::filesystem::path imageDirectory = expandPath(
-        yamlStringTo<std::filesystem::path>(node[IMAGE_DIRECTORY].as<std::string>()).value());
+    const std::filesystem::path imageDirectory =
+        expandPath(yamlStringTo<std::filesystem::path>(
+                       node[IMAGE_DIRECTORY].as<std::string>())
+                       .value());
 
     if (node[IMAGES].IsDefined()) {
       for (const auto &nodeImage : node[IMAGES]) {
-        const auto imagePath = yamlStringTo<std::filesystem::path>(nodeImage.as<std::string>());
+        const auto imagePath =
+            yamlStringTo<std::filesystem::path>(nodeImage.as<std::string>());
         if (!imagePath) {
           continue;
         }
         wallpaperOptions.emplace_back(imageDirectory / imagePath.value(), mode);
       }
     } else if (node[IMAGE].IsDefined()) {
-      const auto imagePath = yamlStringTo<std::filesystem::path>(node[IMAGE].as<std::string>());
+      const auto imagePath =
+          yamlStringTo<std::filesystem::path>(node[IMAGE].as<std::string>());
       if (!imagePath) {
         continue;
       }
@@ -434,18 +484,19 @@ getRandomImageAndModeFromAllBackgroundSets(const Config &config) {
 
   std::random_device randomDevice;
   std::mt19937 generator(randomDevice());
-  std::uniform_int_distribution<> distribution(0, static_cast<int>(wallpaperOptions.size() - 1));
+  std::uniform_int_distribution<> distribution(
+      0, static_cast<int>(wallpaperOptions.size() - 1));
   const std::size_t index = distribution(generator);
 
   return wallpaperOptions.at(index);
 }
 
-void showBackgroundSet(BackgroundSet &backgroundSet,
-                       const Config &config,
+void showBackgroundSet(BackgroundSet &backgroundSet, const Config &config,
                        const std::optional<BackgroundSetMode> mode) {
   std::cout << "Showing: " << backgroundSet.getName() << '\n';
 
-  std::optional<StaticBackgroundData> staticData = backgroundSet.getStaticBackgroundData();
+  std::optional<StaticBackgroundData> staticData =
+      backgroundSet.getStaticBackgroundData();
 
   if (staticData.has_value()) {
     if (shouldUseScriptToSetBackground(config)) {
@@ -456,7 +507,8 @@ void showBackgroundSet(BackgroundSet &backgroundSet,
     }
   }
 
-  std::optional<DynamicBackgroundData> dynamicData = backgroundSet.getDynamicBackgroundData();
+  std::optional<DynamicBackgroundData> dynamicData =
+      backgroundSet.getDynamicBackgroundData();
   if (dynamicData.has_value()) {
     while (true) {
       const TimeFromMidnight currentTime = getCurrentTime();
@@ -468,9 +520,11 @@ void showBackgroundSet(BackgroundSet &backgroundSet,
         if (shouldUseScriptToSetBackground(config)) {
           const auto backgroundSetterFunc = backgroundSetterScriptFunc(config);
           sleepTime =
-              dynamicData->updateBackground<decltype(backgroundSetterFunc),
+              dynamicData
+                  ->updateBackground<decltype(backgroundSetterFunc),
                                      FilesystemHandler, ImageCompositorInPlace>(
-                      currentTime, config, std::move(backgroundSetterFunc), mode) +
+                      currentTime, config, std::move(backgroundSetterFunc),
+                      mode) +
               std::chrono::seconds(1);
         } else {
           sleepTime =
@@ -483,12 +537,12 @@ void showBackgroundSet(BackgroundSet &backgroundSet,
       } else {
         if (shouldUseScriptToSetBackground(config)) {
           const auto backgroundSetterFunc = backgroundSetterScriptFunc(config);
-          sleepTime = dynamicData->updateBackground(currentTime, config,
-                                                    backgroundSetterFunc, mode) +
+          sleepTime = dynamicData->updateBackground(
+                          currentTime, config, backgroundSetterFunc, mode) +
                       std::chrono::seconds(1);
         } else {
-          sleepTime = dynamicData->updateBackground(currentTime, config,
-                                                    &setBackgroundToImage, mode) +
+          sleepTime = dynamicData->updateBackground(
+                          currentTime, config, &setBackgroundToImage, mode) +
                       std::chrono::seconds(1);
         }
       }
@@ -501,12 +555,14 @@ void showBackgroundSet(BackgroundSet &backgroundSet,
 }
 
 void printBackgroundSetInfo(const BackgroundSet &backgroundSet) {
-  std::optional<StaticBackgroundData> staticData = backgroundSet.getStaticBackgroundData();
+  std::optional<StaticBackgroundData> staticData =
+      backgroundSet.getStaticBackgroundData();
   if (staticData.has_value()) {
     printStaticBackgroundInfo(staticData.value(), backgroundSet);
   }
 
-  const std::optional<DynamicBackgroundData> dynamicData = backgroundSet.getDynamicBackgroundData();
+  const std::optional<DynamicBackgroundData> dynamicData =
+      backgroundSet.getDynamicBackgroundData();
   if (dynamicData.has_value()) {
     printDynamicBackgroundInfo(dynamicData.value(), backgroundSet);
   }
