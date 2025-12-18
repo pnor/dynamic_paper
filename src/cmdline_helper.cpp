@@ -633,12 +633,16 @@ void validateBackgroundSets(const Config &config) {
     }
   }
 
-  std::cout << "\n"
-            << ANSI_BOLD
-            << (goodSetCount == backgroundSets.size() ? ANSI_COLOR_GREEN
-                                                      : ANSI_COLOR_RED)
-            << goodSetCount << " / " << backgroundSets.size()
-            << " have no issues" << ANSI_COLOR_RESET << "\n";
+  if (goodSetCount == backgroundSets.size()) {
+    std::cout << ANSI_COLOR_GREEN << "All good 🎉\n"
+              << backgroundSets.size() << " have no issues" << ANSI_COLOR_RESET
+              << "\n";
+  } else {
+    std::cout << "\n"
+              << ANSI_BOLD << ANSI_COLOR_RED << goodSetCount << " / "
+              << backgroundSets.size() << " have no issues" << ANSI_COLOR_RESET
+              << "\n";
+  }
 }
 
 } // namespace dynamic_paper
