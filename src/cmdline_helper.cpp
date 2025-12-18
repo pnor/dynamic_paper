@@ -262,6 +262,41 @@ auto backgroundSetterScriptFunc(const Config &config) {
   };
 }
 
+template <typename T>
+  requires(std::is_same_v<T, DynamicBackgroundData> ||
+           std::is_same_v<T, StaticBackgroundData>)
+inline std::vector<std::filesystem::path>
+missingFilesFromBackgroundSetData(const T &data) {
+  std::vector<std::filesystem::path> missingFiles;
+
+  const std::filesystem::path dir = data.imageDirectory;
+  for (const std::string_view name : data.imageNames) {
+    const std::filesystem::path imagePath = dir / name;
+    if (!std::filesystem::exists(imagePath)) {
+      missingFiles.push_back(imagePath);
+    }
+  }
+
+  return missingFiles;
+}
+
+std::vector<std::filesystem::path>
+getMissingFilesInBackgroundSet(const BackgroundSet &backgroundSet) {
+  const std::optional<StaticBackgroundData> optStatic =
+      backgroundSet.getStaticBackgroundData();
+  if (optStatic.has_value()) {
+    return missingFilesFromBackgroundSetData<StaticBackgroundData>(
+        optStatic.value());
+  }
+
+  const std::optional<DynamicBackgroundData> optDynamic =
+      backgroundSet.getDynamicBackgroundData();
+  if (optDynamic.has_value()) {
+    return missingFilesFromBackgroundSetData<DynamicBackgroundData>(
+        optDynamic.value());
+  }
+}
+
 } // namespace
 
 // ===== Header ====================
@@ -566,6 +601,29 @@ void printBackgroundSetInfo(const BackgroundSet &backgroundSet) {
   if (dynamicData.has_value()) {
     printDynamicBackgroundInfo(dynamicData.value(), backgroundSet);
   }
+}
+
+void validateBackgroundSets(const Config &config) {
+  const std::vector<BackgroundSet> backgroundSets =
+      getBackgroundSetsFromFile(config);
+
+  unsigned int goodSetCount = 0;
+  for (const auto &set : backgroundSets) {
+    const std::vector<std::filesystem::path> missingFiles =
+        getMissingFilesInBackgroundSet(set);
+
+    if (missingFiles.empty()) {
+      goodSetCount += 1;
+    } else {
+      std::cout << set.getName() << "\n";
+      for (const auto &file : missingFiles) {
+        std::cout << "missing: " << file << "\n";
+      }
+    }
+  }
+
+  std::cout << goodSetCount << " / " << backgroundSets.size()
+            << " have no issues\n";
 }
 
 } // namespace dynamic_paper

@@ -62,12 +62,12 @@ void showBackgroundOnStaticData(StaticBackgroundTest &test,
                                 const BackgroundSetMode mode) {
   auto setBackgroundFunc = [&history](const std::filesystem::path &imagePath,
                                       BackgroundSetMode mode) -> void {
-    history.addEvent(SetEvent{imagePath, mode});
+    history.addEvent(SetEvent{.imagePath=imagePath, .mode=mode});
   };
 
   const StaticBackgroundData staticData(test.testDataDir, mode, imageNames);
 
-  staticData.show(test.config, setBackgroundFunc);
+  staticData.show(test.config, setBackgroundFunc, std::nullopt);
 }
 
 } // namespace

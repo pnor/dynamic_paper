@@ -152,7 +152,7 @@ testDynamicBackground(TestBackgroundSetterHistory &history,
         dynamicData.updateBackground<LambdaType, TestFilesystemHandler,
                                      TestCompositeImages>(
             timesToUpdateWith.at(i), setConfig.config,
-            std::forward<LambdaType>(setBackgroundFunc));
+            std::forward<LambdaType>(setBackgroundFunc), std::nullopt);
   }
 
   return waitTimes;

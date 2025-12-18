@@ -121,4 +121,7 @@ void showBackgroundSet(BackgroundSet &backgroundSet, const Config &config, std::
 /** Prints info about `backgroundSet` to stdout. */
 void printBackgroundSetInfo(const BackgroundSet &backgroundSet);
 
+/** Validate all background sets, and print results to stdout */
+void validateBackgroundSets(const Config& config); // TODO ...
+
 } // namespace dynamic_paper

@@ -197,6 +197,11 @@ void handleCacheCommand(const Config &config,
   }
 }
 
+
+void handleValidateCommand(const Config &config) {
+  validateBackgroundSets(config);
+}
+
 void showHelp(const argparse::ArgumentParser &program) {
   try {
     std::cout << program.help().str();
@@ -259,12 +264,17 @@ auto main(int argc, char *argv[]) -> int {
       "Show information about cached interpolated images");
   cacheCommand.add_subparser(cacheInfoCommand);
 
+  argparse::ArgumentParser validateCommand("validate");
+  validateCommand.add_description(
+      "Print out background sets from config that are missing images");
+
   program.add_subparser(showCommand);
   program.add_subparser(randomCommand);
   program.add_subparser(listCommand);
   program.add_subparser(infoCommand);
   program.add_subparser(helpCommand);
   program.add_subparser(cacheCommand);
+  program.add_subparser(validateCommand);
 
   try {
     program.parse_args(argc, argv);
@@ -292,6 +302,9 @@ auto main(int argc, char *argv[]) -> int {
     handleCacheCommand(config, cacheCommand, cacheInfoCommand);
   } else if (program.is_subcommand_used(helpCommand)) {
     showHelp(program);
+  } else if (program.is_subcommand_used(validateCommand)) {
+    const Config config = getConfigAndSetupLogging(program, false);
+    handleValidateCommand(config);
   } else {
     errorMsg("Unknown option\n");
     showHelp(program);
