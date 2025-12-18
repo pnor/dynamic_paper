@@ -266,7 +266,7 @@ auto main(int argc, char *argv[]) -> int {
 
   argparse::ArgumentParser validateCommand("validate");
   validateCommand.add_description(
-      "Print out background sets from config that are missing images");
+      "Identify background sets from config that are missing images");
 
   program.add_subparser(showCommand);
   program.add_subparser(randomCommand);
