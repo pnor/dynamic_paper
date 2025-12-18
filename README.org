@@ -186,6 +186,9 @@ dynamic_paper random
 
 # Show where cache'd images are stored
 dynamic_paper cache info
+
+# Validate if the images in a background set exist
+dynamic_paper validate
 #+end_src
 
 By default, =dynamic_paper= reads a file called =~/.config/dynamic_paper/dynamic_paper.yaml= for
