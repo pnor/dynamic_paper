@@ -136,7 +136,7 @@ testDynamicBackground(TestBackgroundSetterHistory &history,
                       std::array<TimeFromMidnight, N> timesToUpdateWith) {
   auto setBackgroundFunc = [&history](const std::filesystem::path &imagePath,
                                       BackgroundSetMode mode) -> void {
-    history.addEvent(SetEvent{imagePath, mode});
+    history.addEvent(SetEvent{.imagePath=imagePath, .mode=mode});
   };
 
   using LambdaType = decltype(setBackgroundFunc);

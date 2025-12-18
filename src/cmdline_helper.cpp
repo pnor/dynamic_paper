@@ -37,10 +37,11 @@ namespace dynamic_paper {
 
 namespace {
 
-constexpr std::string_view ANSI_BOLD = "\x1b[0m";
+constexpr std::string_view ANSI_BOLD = "\e[1m";
 constexpr std::string_view ANSI_COLOR_CYAN = "\x1b[36m";
-constexpr std::string_view ANSI_COLOR_RED = "\x1b[31m";
+constexpr std::string_view ANSI_COLOR_GREEN = "\x1b[32m";
 constexpr std::string_view ANSI_COLOR_MAGENTA = "\x1b[35m";
+constexpr std::string_view ANSI_COLOR_RED = "\x1b[31m";
 constexpr std::string_view ANSI_COLOR_RESET = "\x1b[0m";
 
 /**
@@ -608,22 +609,36 @@ void validateBackgroundSets(const Config &config) {
       getBackgroundSetsFromFile(config);
 
   unsigned int goodSetCount = 0;
-  for (const auto &set : backgroundSets) {
+  unsigned int badSetCount = 0;
+  for (const BackgroundSet &set : backgroundSets) {
     const std::vector<std::filesystem::path> missingFiles =
         getMissingFilesInBackgroundSet(set);
 
     if (missingFiles.empty()) {
       goodSetCount += 1;
     } else {
-      std::cout << set.getName() << "\n";
+      // Skip first newline for first entry
+      if (badSetCount != 0) {
+        std::cout << "\n";
+      }
+      std::cout << ANSI_BOLD
+                << (set.getType() == BackgroundSetType::Static
+                        ? ANSI_COLOR_CYAN
+                        : ANSI_COLOR_MAGENTA)
+                << set.getName() << ANSI_COLOR_RESET << "\n";
       for (const auto &file : missingFiles) {
         std::cout << "missing: " << file << "\n";
       }
+      badSetCount++;
     }
   }
 
-  std::cout << goodSetCount << " / " << backgroundSets.size()
-            << " have no issues\n";
+  std::cout << "\n"
+            << ANSI_BOLD
+            << (goodSetCount == backgroundSets.size() ? ANSI_COLOR_GREEN
+                                                      : ANSI_COLOR_RED)
+            << goodSetCount << " / " << backgroundSets.size()
+            << " have no issues" << ANSI_COLOR_RESET << "\n";
 }
 
 } // namespace dynamic_paper
